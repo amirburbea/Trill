@@ -141,11 +141,11 @@ namespace SimpleTesting
                 ms.Position = 0;
                 ColumnBatch<string> resultStr = s.Deserialize(ms);
 
-                Assert.IsTrue(resultStr.UsedLength == inputStr.UsedLength);
+                Assert.AreEqual(inputStr.UsedLength, resultStr.UsedLength);
 
                 for (int j = 0; j < inputStr.UsedLength; j++)
                 {
-                    Assert.IsTrue(inputStr.col[j] == resultStr.col[j]);
+                    Assert.AreEqual(resultStr.col[j], inputStr.col[j]);
                 }
                 resultStr.ReturnClear();
                 inputStr.ReturnClear();
@@ -165,9 +165,9 @@ namespace SimpleTesting
             var s = input.ToObservable();
             var str = s.ToStreamable();
             var output = str.ToStreamMessageObservable().ToEnumerable().ToArray();
-            Assert.IsTrue(output.Length == 1); // first batch with all data and one punctuation
-            Assert.IsTrue(output[0].Count == length + 1);
-            Assert.IsTrue(output[0].vother.col[output[0].Count - 1] == StreamEvent.PunctuationOtherTime);
+            Assert.HasCount(1, output); // first batch with all data and one punctuation
+            Assert.AreEqual(length + 1, output[0].Count);
+            Assert.AreEqual(StreamEvent.PunctuationOtherTime, output[0].vother.col[output[0].Count - 1]);
             for (int i = 0; i < output.Length; i++)
                 output[i].Free();
         }
@@ -185,11 +185,11 @@ namespace SimpleTesting
             var s = input.ToObservable();
             var str = s.ToStreamable();
             var output = str.ToStreamMessageObservable().ToEnumerable().ToArray();
-            Assert.IsTrue(output.Length == 4); // four data batches
-            Assert.IsTrue(output[0].Count + output[1].Count + output[2].Count + output[3].Count == length + 1);
+            Assert.HasCount(4, output); // four data batches
+            Assert.AreEqual(length + 1, output[0].Count + output[1].Count + output[2].Count + output[3].Count);
 
             // fourth data batch should have a punctuation at the end
-            Assert.IsTrue(output[3].vother.col[output[3].Count - 1] == StreamEvent.PunctuationOtherTime);
+            Assert.AreEqual(StreamEvent.PunctuationOtherTime, output[3].vother.col[output[3].Count - 1]);
             for (int i = 0; i < output.Length; i++)
                 output[i].Free();
         }
@@ -211,15 +211,15 @@ namespace SimpleTesting
 
             // 10 pairs of data and punc, then one with just a punctuation at infinity
             int expectedDataBatches = 11;
-            Assert.IsTrue(output.Length == expectedDataBatches);
+            Assert.HasCount(expectedDataBatches, output);
             var dataEventCount = 0;
             for (int i = 0; i < output.Length; i++)
             {
                 // Data batch should end with a punctuation
-                Assert.IsTrue(output[i].vother.col[output[i].Count - 1] == StreamEvent.PunctuationOtherTime);
+                Assert.AreEqual(StreamEvent.PunctuationOtherTime, output[i].vother.col[output[i].Count - 1]);
                 dataEventCount += output[i].Count - 1; // exclude punctuation
             }
-            Assert.IsTrue(dataEventCount == length - 10); // because every 10th row was a punctuation, not a data row
+            Assert.AreEqual(length - 10, dataEventCount); // because every 10th row was a punctuation, not a data row
             for (int i = 0; i < output.Length; i++)
                 output[i].Free();
         }
@@ -255,7 +255,7 @@ namespace SimpleTesting
             egress.Wait();
 
             output = output.Where(o => o.IsData).ToList();
-            Assert.AreEqual(2, output.Count);
+            Assert.HasCount(2, output);
             Assert.AreEqual(70, output[0].SyncTime);
             Assert.AreEqual(22, output[1].SyncTime);
         }
@@ -920,11 +920,11 @@ namespace SimpleTesting
                         batch =>
                         {
                             var min = batch.MinTimestamp;
-                            Assert.IsTrue(min >= currentMin);
+                            Assert.IsGreaterThanOrEqualTo(currentMin, min);
                             currentMin = min;
 
                             var max = batch.MaxTimestamp;
-                            Assert.IsTrue(max >= currentMax);
+                            Assert.IsGreaterThanOrEqualTo(currentMax, max);
                             currentMax = max;
 
                             batch.Free();
@@ -1311,8 +1311,10 @@ namespace SimpleTesting
             await inputTask;
 
             // Make sure we really got an output data event.
-            Assert.IsTrue(lastSeenSubscription > 0);
+            Assert.IsGreaterThan(0, lastSeenSubscription);
         }
+
+        public TestContext TestContext { get; set; }
     }
 
     [TestClass]
@@ -1412,7 +1414,7 @@ namespace SimpleTesting
             countedNE = countedNE.AlterEventDuration(1);
 
             var output2 = countedNE.ToStreamEventObservable(ReshapingPolicy.CoalesceEndEdges).ToEnumerable().ToArray();
-            Assert.IsTrue(output2.Count() == 9);
+            Assert.AreEqual(9, output2.Count());
         }
     }
 
@@ -1871,7 +1873,7 @@ namespace SimpleTesting
             process.Flush();
 
             var outputData = output.Where(o => o.IsData).ToList();
-            Assert.IsTrue(outputData.Count == 2);
+            Assert.HasCount(2, outputData);
         }
 
         [TestMethod, TestCategory("Gated")]
@@ -1949,7 +1951,7 @@ namespace SimpleTesting
                 .ToArray();
 
             var x = events.Length;
-            Assert.IsTrue(x == inputEnumerable.Count());
+            Assert.AreEqual(inputEnumerable.Count(), x);
         }
     }
 
@@ -2133,12 +2135,14 @@ namespace SimpleTesting
                              });
 
                 var result = successes.ToStreamEventObservable().ToEnumerable().ToArray();
-                Assert.IsTrue(false); // should never reach here.
+                Assert.Fail(); // should never reach here.
             }
-            catch (Exception e)
+            catch (InvalidOperationException)
             {
-                Assert.IsTrue(e is InvalidOperationException);
+                // expected, because the Join should not be able to match the clipped events with the finishing events, since the clipped events have had their lifetime shifted by 1 tick, and thus should not overlap with the finishing events.
+                return;
             }
+            Assert.Fail(); // should never reach here.
         }
 
         /// <summary>
@@ -2249,7 +2253,7 @@ namespace SimpleTesting
                 .ToEnumerable()
                 .ToArray()
                 ;
-            Assert.IsTrue(expected.Count() == output.Length);
+            Assert.AreEqual(output.Length, expected.Count());
             for (int i = 0; i < output.Length; i++)
                 Assert.IsTrue(expected.ElementAt(i).Equals(output[i]));
         }
@@ -2404,18 +2408,15 @@ namespace SimpleTesting
                 .ToStreamable()
                 ;
 
-            try
-            {
-                var result = stream1
+
+            var result = stream1
                        .Join(stream2, e => e.x, e => e, (left, right) => new { LeftX = left.x, RightX = right, })
                        .ToStreamEventObservable()
                        .ToEnumerable()
                        .ToArray();
-                Assert.IsTrue(true); // just test that no exception happened
-            }
-            catch (Exception)
+            if (object.ReferenceEquals(result, null))
             {
-                Assert.IsTrue(false); // should never reach here.
+                // just to use the result and avoid "unused variable" warning
             }
         }
 

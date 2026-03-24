@@ -58,3 +58,5 @@ $tf/pendingchanges.tfb
 $tf/properties.tf1
 project.lock.json
 **/.vs/
+
+.claude/

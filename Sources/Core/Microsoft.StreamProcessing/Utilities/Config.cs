@@ -467,8 +467,12 @@ namespace Microsoft.StreamProcessing
     // in VSTest, which is a good thing, since Config is static and those tests may clash otherwise.
     internal sealed class ConfigModifier
     {
-        // lockable gate allowing only one ConfigModifier active at a time
-        private static readonly object gate = new object();
+        // Serializes concurrent ConfigModifier usage across tests.
+        // SemaphoreSlim instead of Monitor so that async tests can release from a different thread.
+        // AsyncLocal depth counter makes it re-entrant within the same async call context (e.g. nested
+        // using blocks within a single test) without blocking on the semaphore a second time.
+        private static readonly SemaphoreSlim gate = new SemaphoreSlim(1, 1);
+        private static readonly AsyncLocal<int> gateDepth = new AsyncLocal<int>();
 
         // collection of Config modifications
         private readonly List<IGatedModification> modifications = new List<IGatedModification>();
@@ -723,7 +727,8 @@ namespace Microsoft.StreamProcessing
 
         public IDisposable Modify()
         {
-            Monitor.Enter(gate);
+            if (gateDepth.Value == 0) gate.Wait();
+            gateDepth.Value++;
             foreach (var m in this.modifications)
                 m.Modify();
 
@@ -732,7 +737,8 @@ namespace Microsoft.StreamProcessing
                 foreach (var m in this.modifications)
                     m.Modify();
 
-                Monitor.Exit(gate);
+                gateDepth.Value--;
+                if (gateDepth.Value == 0) gate.Release();
             });
         }
 

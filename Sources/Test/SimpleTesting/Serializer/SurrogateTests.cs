@@ -108,7 +108,7 @@ namespace SimpleTesting
 
             input2.OnCompleted();
 
-            Assert.AreEqual(2, output2.Count);
+            Assert.HasCount(2, output2);
             Assert.AreEqual(1, output2[0].Payload.GetValue());
             Assert.AreEqual(StreamEvent.InfinitySyncTime, output2[1].SyncTime);
         }

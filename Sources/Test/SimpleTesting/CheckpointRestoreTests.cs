@@ -1318,7 +1318,7 @@ namespace SimpleTesting
             postCheckpointSubject.OnCompleted();
             outputAsync2.Wait();
 
-            Assert.IsTrue(outputList.Count == 10000);
+            Assert.HasCount(10000, outputList);
             preCheckpointSubject.OnCompleted();
         }
 
@@ -2790,7 +2790,7 @@ namespace SimpleTesting
             postCheckpointSubject.OnCompleted();
             outputAsync2.Wait();
 
-            Assert.IsTrue(outputList.Count == 10000);
+            Assert.HasCount(10000, outputList);
             preCheckpointSubject.OnCompleted();
         }
 
@@ -4260,7 +4260,7 @@ namespace SimpleTesting
             postCheckpointSubject.OnCompleted();
             outputAsync2.Wait();
 
-            Assert.IsTrue(outputList.Count == 10000);
+            Assert.HasCount(10000, outputList);
             preCheckpointSubject.OnCompleted();
         }
 
@@ -5732,7 +5732,7 @@ namespace SimpleTesting
             postCheckpointSubject.OnCompleted();
             outputAsync2.Wait();
 
-            Assert.IsTrue(outputList.Count == 10000);
+            Assert.HasCount(10000, outputList);
             preCheckpointSubject.OnCompleted();
         }
 

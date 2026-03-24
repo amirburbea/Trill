@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SimpleTesting.Flush
 {
-    public class FlushTestBase : TestWithConfigSettingsAndMemoryLeakDetection
+    public abstract class FlushTestBase : TestWithConfigSettingsAndMemoryLeakDetection
     {
         private const int IntervalLength = 5;
         private const int BatchSize = 10; // TODO: this will be identical for FlushPolicy.None and FlushOnBatchBoundary without some filter operator
@@ -55,7 +55,7 @@ namespace SimpleTesting.Flush
                     OnIngress(inputSubject, StreamEvent.CreatePunctuation<int>(i));
 
                 // Make sure we don't have any pending events we expected to be egressed at this point
-                Assert.IsTrue(this.expectedOutput.Count == 0);
+                Assert.IsEmpty(this.expectedOutput);
             }
 
             OnCompleted(inputSubject);
@@ -115,7 +115,7 @@ namespace SimpleTesting.Flush
 
         private void OnEgress(StreamEvent<int> egressEvent)
         {
-            Assert.IsTrue(this.expectedOutput.Count > 0);
+            Assert.IsNotEmpty(this.expectedOutput);
             var expectedEvent = this.expectedOutput.Dequeue();
 
             Assert.IsTrue(expectedEvent.Equals(egressEvent));

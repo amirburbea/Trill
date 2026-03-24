@@ -11,7 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SimpleTesting.PartitionedIngressAndEgress
 {
-    public class TriPartitionedOrderedTestsBase : TestWithConfigSettingsAndMemoryLeakDetection
+    public abstract class TriPartitionedOrderedTestsBase : TestWithConfigSettingsAndMemoryLeakDetection
     {
         internal TriPartitionedOrderedTestsBase(
             ConfigModifier config,
@@ -86,8 +86,8 @@ namespace SimpleTesting.PartitionedIngressAndEgress
             }
             else
             {
-                Assert.IsTrue(lowWatermarks.Count() == 1);
-                Assert.IsTrue(lowWatermarks.First().StartTime == StreamEvent.InfinitySyncTime);
+                Assert.AreEqual(1, lowWatermarks.Count());
+                Assert.AreEqual(StreamEvent.InfinitySyncTime, lowWatermarks.First().StartTime);
             }
 
             if (this.punctuationPolicy.type == PeriodicPunctuationPolicyType.Time)

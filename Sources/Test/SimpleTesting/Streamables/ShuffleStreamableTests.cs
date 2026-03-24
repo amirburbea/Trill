@@ -69,7 +69,7 @@ namespace SimpleTesting
                 .ToStreamEventObservable().Where(e => e.IsData)
                 .ToEnumerable();
             var ct = finalResultSequence.Count();
-            Assert.IsTrue(ct == 249000);
+            Assert.AreEqual(249000, ct);
         }
 
         [TestMethod, TestCategory("Gated")]
@@ -105,7 +105,7 @@ namespace SimpleTesting
                         message += $"{actualEvent}{System.Environment.NewLine}";
                     }
 
-                    Assert.IsTrue(false, message);
+                    Assert.Fail(message);
                 }
             }
         }
@@ -203,7 +203,7 @@ namespace SimpleTesting
                 .ToStreamEventObservable().Where(e => e.IsData)
                 .ToEnumerable();
             var ct = finalResultSequence.Count();
-            Assert.IsTrue(ct == 249000);
+            Assert.AreEqual(249000, ct);
         }
 
         [TestMethod, TestCategory("Gated")]
@@ -239,7 +239,7 @@ namespace SimpleTesting
                         message += $"{actualEvent}{System.Environment.NewLine}";
                     }
 
-                    Assert.IsTrue(false, message);
+                    Assert.Fail(message);
                 }
             }
         }
@@ -336,7 +336,7 @@ namespace SimpleTesting
                 .ToStreamEventObservable().Where(e => e.IsData)
                 .ToEnumerable();
             var ct = finalResultSequence.Count();
-            Assert.IsTrue(ct == 249000);
+            Assert.AreEqual(249000, ct);
         }
 
         [TestMethod, TestCategory("Gated")]
@@ -372,7 +372,7 @@ namespace SimpleTesting
                         message += $"{actualEvent}{System.Environment.NewLine}";
                     }
 
-                    Assert.IsTrue(false, message);
+                    Assert.Fail(message);
                 }
             }
         }
@@ -470,7 +470,7 @@ namespace SimpleTesting
                 .ToStreamEventObservable().Where(e => e.IsData)
                 .ToEnumerable();
             var ct = finalResultSequence.Count();
-            Assert.IsTrue(ct == 249000);
+            Assert.AreEqual(249000, ct);
         }
 
         [TestMethod, TestCategory("Gated")]
@@ -506,7 +506,7 @@ namespace SimpleTesting
                         message += $"{actualEvent}{System.Environment.NewLine}";
                     }
 
-                    Assert.IsTrue(false, message);
+                    Assert.Fail(message);
                 }
             }
         }

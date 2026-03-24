@@ -50,7 +50,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == 2 * i)
                 .All(b => b));
@@ -83,12 +83,12 @@ namespace SimpleTesting
                     input2,
                     e => e.field1,
                     e => e,
-                    (l, r) => new GameData() { EventType = l.field1, GameId = r, });
+                (l, r) => new GameData() { EventType = l.field1, GameId = r, });
             var result = query
                 .ToPayloadEnumerable()
                 .ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == i)
                 .All(b => b));
@@ -132,7 +132,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.Select(gd => gd.EventType == gd.GameId).All(b => b));
         }
 
@@ -175,7 +175,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select(gd => gd.EventType * 2 == gd.GameId)
                 .All(b => b));
@@ -200,7 +200,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new { EventType = (l.field1 * 2).ToString(), GameId = ((int)r.field2).ToString(), });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.All(gd => gd.EventType == gd.GameId));
         }
 
@@ -413,7 +413,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == 2 * i)
                 .All(b => b));
@@ -446,12 +446,12 @@ namespace SimpleTesting
                     input2,
                     e => e.field1,
                     e => e,
-                    (l, r) => new GameData() { EventType = l.field1, GameId = r, });
+                (l, r) => new GameData() { EventType = l.field1, GameId = r, });
             var result = query
                 .ToPayloadEnumerable()
                 .ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == i)
                 .All(b => b));
@@ -495,7 +495,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.Select(gd => gd.EventType == gd.GameId).All(b => b));
         }
 
@@ -538,7 +538,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select(gd => gd.EventType * 2 == gd.GameId)
                 .All(b => b));
@@ -563,7 +563,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new { EventType = (l.field1 * 2).ToString(), GameId = ((int)r.field2).ToString(), });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.All(gd => gd.EventType == gd.GameId));
         }
 
@@ -777,7 +777,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == 2 * i)
                 .All(b => b));
@@ -810,12 +810,12 @@ namespace SimpleTesting
                     input2,
                     e => e.field1,
                     e => e,
-                    (l, r) => new GameData() { EventType = l.field1, GameId = r, });
+                (l, r) => new GameData() { EventType = l.field1, GameId = r, });
             var result = query
                 .ToPayloadEnumerable()
                 .ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == i)
                 .All(b => b));
@@ -859,7 +859,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.Select(gd => gd.EventType == gd.GameId).All(b => b));
         }
 
@@ -902,7 +902,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select(gd => gd.EventType * 2 == gd.GameId)
                 .All(b => b));
@@ -927,7 +927,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new { EventType = (l.field1 * 2).ToString(), GameId = ((int)r.field2).ToString(), });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.All(gd => gd.EventType == gd.GameId));
         }
 
@@ -1141,7 +1141,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == 2 * i)
                 .All(b => b));
@@ -1174,12 +1174,12 @@ namespace SimpleTesting
                     input2,
                     e => e.field1,
                     e => e,
-                    (l, r) => new GameData() { EventType = l.field1, GameId = r, });
+                (l, r) => new GameData() { EventType = l.field1, GameId = r, });
             var result = query
                 .ToPayloadEnumerable()
                 .ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == i)
                 .All(b => b));
@@ -1223,7 +1223,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.Select(gd => gd.EventType == gd.GameId).All(b => b));
         }
 
@@ -1266,7 +1266,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select(gd => gd.EventType * 2 == gd.GameId)
                 .All(b => b));
@@ -1291,7 +1291,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new { EventType = (l.field1 * 2).ToString(), GameId = ((int)r.field2).ToString(), });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.All(gd => gd.EventType == gd.GameId));
         }
 
@@ -1504,7 +1504,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == 2 * i)
                 .All(b => b));
@@ -1537,12 +1537,12 @@ namespace SimpleTesting
                     input2,
                     e => e.field1,
                     e => e,
-                    (l, r) => new GameData() { EventType = l.field1, GameId = r, });
+                (l, r) => new GameData() { EventType = l.field1, GameId = r, });
             var result = query
                 .ToPayloadEnumerable()
                 .ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == i)
                 .All(b => b));
@@ -1586,7 +1586,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.Select(gd => gd.EventType == gd.GameId).All(b => b));
         }
 
@@ -1629,7 +1629,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select(gd => gd.EventType * 2 == gd.GameId)
                 .All(b => b));
@@ -1654,7 +1654,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new { EventType = (l.field1 * 2).ToString(), GameId = ((int)r.field2).ToString(), });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.All(gd => gd.EventType == gd.GameId));
         }
 
@@ -1867,7 +1867,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == 2 * i)
                 .All(b => b));
@@ -1900,12 +1900,12 @@ namespace SimpleTesting
                     input2,
                     e => e.field1,
                     e => e,
-                    (l, r) => new GameData() { EventType = l.field1, GameId = r, });
+                (l, r) => new GameData() { EventType = l.field1, GameId = r, });
             var result = query
                 .ToPayloadEnumerable()
                 .ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == i)
                 .All(b => b));
@@ -1949,7 +1949,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.Select(gd => gd.EventType == gd.GameId).All(b => b));
         }
 
@@ -1992,7 +1992,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select(gd => gd.EventType * 2 == gd.GameId)
                 .All(b => b));
@@ -2017,7 +2017,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new { EventType = (l.field1 * 2).ToString(), GameId = ((int)r.field2).ToString(), });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.All(gd => gd.EventType == gd.GameId));
         }
 
@@ -2231,7 +2231,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == 2 * i)
                 .All(b => b));
@@ -2264,12 +2264,12 @@ namespace SimpleTesting
                     input2,
                     e => e.field1,
                     e => e,
-                    (l, r) => new GameData() { EventType = l.field1, GameId = r, });
+                (l, r) => new GameData() { EventType = l.field1, GameId = r, });
             var result = query
                 .ToPayloadEnumerable()
                 .ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == i)
                 .All(b => b));
@@ -2313,7 +2313,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.Select(gd => gd.EventType == gd.GameId).All(b => b));
         }
 
@@ -2356,7 +2356,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select(gd => gd.EventType * 2 == gd.GameId)
                 .All(b => b));
@@ -2381,7 +2381,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new { EventType = (l.field1 * 2).ToString(), GameId = ((int)r.field2).ToString(), });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.All(gd => gd.EventType == gd.GameId));
         }
 
@@ -2595,7 +2595,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == 2 * i)
                 .All(b => b));
@@ -2628,12 +2628,12 @@ namespace SimpleTesting
                     input2,
                     e => e.field1,
                     e => e,
-                    (l, r) => new GameData() { EventType = l.field1, GameId = r, });
+                (l, r) => new GameData() { EventType = l.field1, GameId = r, });
             var result = query
                 .ToPayloadEnumerable()
                 .ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select((gd, i) => gd.EventType == i && gd.GameId == i)
                 .All(b => b));
@@ -2677,7 +2677,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.Select(gd => gd.EventType == gd.GameId).All(b => b));
         }
 
@@ -2720,7 +2720,7 @@ namespace SimpleTesting
 
             resultAsync.Wait(); // wait for results.
 
-            Assert.IsTrue(result.Count == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result
                 .Select(gd => gd.EventType * 2 == gd.GameId)
                 .All(b => b));
@@ -2745,7 +2745,7 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new { EventType = (l.field1 * 2).ToString(), GameId = ((int)r.field2).ToString(), });
             var result = query.ToPayloadEnumerable().ToArray();
 
-            Assert.IsTrue(result.Length == 200);
+            Assert.HasCount(200, result);
             Assert.IsTrue(result.All(gd => gd.EventType == gd.GameId));
         }
 

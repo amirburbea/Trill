@@ -706,7 +706,7 @@ namespace SimpleTesting
                     j.OnNext(x);
 
                 p.Flush();
-                Assert.IsTrue(res.Count > data.Length, "Flush should push all events out.");
+                Assert.IsGreaterThan(data.Length, res.Count, "Flush should push all events out.");
 
                 j.OnCompleted();
             }
@@ -748,7 +748,7 @@ namespace SimpleTesting
             {
             }
 
-            Assert.IsTrue(res.Count > 0, "There should be some results.");
+            Assert.IsNotEmpty(res, "There should be some results.");
         }
 
         [TestMethod, TestCategory("Gated")]
@@ -801,7 +801,7 @@ namespace SimpleTesting
             {
             }
 
-            Assert.IsTrue(res.Count > 0, "There should be some results.");
+            Assert.IsNotEmpty(res, "There should be some results.");
         }
 
         [TestMethod, TestCategory("Gated")]

@@ -183,11 +183,6 @@ namespace SimpleTesting
                 yield return StreamEvent.CreateInterval(vsSelector(e), veSelector(e), e);
             }
         }
-
-#if NET472
-        // string.Split has different signatures across .NET Framework/Core, so use an extension so we can use a single signature
-        public static string[] Split(this string original, char separator, StringSplitOptions options) => original.Split(separator);
-#endif
     }
 
     public static class Helpers

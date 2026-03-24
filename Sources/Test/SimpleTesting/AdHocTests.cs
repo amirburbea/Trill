@@ -2325,6 +2325,21 @@ namespace SimpleTesting
         public LeftComparerPayload_WithCodegen()
             : base(new ConfigModifier().DontFallBackToRowBasedExecution(true)) { }
 
+        // Named result type so the full closed generic EquiJoinStreamable<,,,,> can be
+        // referenced at compile time (anonymous types cannot be named in typeof/generic arguments).
+        public struct JoinResult { public int LeftX; public int RightX; }
+
+        [TestInitialize]
+        public void ClearCodegenCache()
+        {
+            // Clear the EquiJoin codegen cache before each test so that JoinTestWithException
+            // always triggers a fresh compile and deterministically throws StreamProcessingException,
+            // regardless of which tests ran before it in the same process.
+            // The join is built via Map+Reduce, so the inner EquiJoinStreamable uses TKey=CompoundGroupKey<Empty,int>.
+            EquiJoinStreamable<CompoundGroupKey<Empty, int>, ClassOverridingEquals, int, JoinResult>
+                .cachedPipes.Clear();
+        }
+
         public class ClassOverridingEquals
         {
             public int x;
@@ -2334,9 +2349,10 @@ namespace SimpleTesting
         }
 
         /// <summary>
-        /// This test has a left comparer which has a reference to the left
-        /// payload instead of just to its fields. This causes the streamable
-        /// to thrown an exception.
+        /// This test has a left comparer which has a reference to the left payload instead of
+        /// just to its fields. Codegen should always throw StreamProcessingException when
+        /// compiling this join fresh. The [TestInitialize] method clears the codegen cache
+        /// before this test runs to ensure deterministic behavior in the full test suite.
         /// </summary>
         [TestMethod]
         public void JoinTestWithException()
@@ -2353,20 +2369,17 @@ namespace SimpleTesting
                 .ToStreamable()
                 ;
 
-            bool exceptionHappened = false;
+            bool threw = false;
             try
             {
-                var result = stream1
-                       .Join(stream2, e => e.x, e => e, (left, right) => new { LeftX = left.x, RightX = right, })
-                       .ToStreamEventObservable()
-                       .ToEnumerable()
-                       .ToArray();
+                stream1
+                    .Join(stream2, e => e.x, e => e, (left, right) => new JoinResult { LeftX = left.x, RightX = right })
+                    .ToStreamEventObservable()
+                    .ToEnumerable()
+                    .ToArray();
             }
-            catch (StreamProcessingException)
-            {
-                exceptionHappened = true;
-            }
-            Assert.IsTrue(exceptionHappened);
+            catch (StreamProcessingException) { threw = true; }
+            Assert.IsTrue(threw, "Expected StreamProcessingException from codegen failure on ClassOverridingEquals");
         }
 
     }

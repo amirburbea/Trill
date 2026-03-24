@@ -44,6 +44,18 @@ namespace Microsoft.StreamProcessing.Internal.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator<KeyValuePair<CacheKey, TValue>> GetEnumerator() => this.dictionary.GetEnumerator();
 
+        /// <summary>
+        /// Clears all entries from the dictionary and the per-key lock table.
+        /// Marked internal (not private) so that test code can clear the codegen cache
+        /// (e.g. EquiJoinStreamable.cachedPipes) to ensure deterministic test behavior
+        /// without relying on reflection.
+        /// </summary>
+        internal void Clear()
+        {
+            this.dictionary.Clear();
+            this.keyLocks.Clear();
+        }
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>

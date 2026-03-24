@@ -11,8 +11,10 @@ namespace Microsoft.StreamProcessing
 {
     internal sealed class EquiJoinStreamable<TKey, TLeft, TRight, TResult> : BinaryStreamable<TKey, TLeft, TRight, TResult>
     {
-        private static readonly SafeConcurrentDictionary<Tuple<Type, string>> cachedPipes
-                          = new SafeConcurrentDictionary<Tuple<Type, string>>();
+        // Internal (not private) so test code can call cachedPipes.Clear() to ensure
+        // deterministic behavior in tests that depend on a fresh codegen compile.
+        internal static readonly SafeConcurrentDictionary<Tuple<Type, string>> cachedPipes
+                           = new SafeConcurrentDictionary<Tuple<Type, string>>();
 
         private readonly JoinKind joinKind;
         private readonly Func<CacheKey, Tuple<Type, string>> columnarGenerator;

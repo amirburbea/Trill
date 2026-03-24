@@ -160,15 +160,4 @@
       <DependentUpon>ShuffleStreamableTests.tt</DependentUpon>
     </Compile>
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="StyleCop.Analyzers" Version="1.1.118">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-  
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(MSBuildAssemblyVersion)\TextTemplating\Microsoft.TextTemplating.targets"
-          Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(MSBuildAssemblyVersion)\TextTemplating\Microsoft.TextTemplating.targets')" />
-
 </Project>

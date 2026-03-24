@@ -44,7 +44,7 @@ namespace SimpleTesting
                 .ToObservable()
                 .ToStreamable(DisorderPolicy.Throw(), FlushPolicy.FlushOnPunctuation, PeriodicPunctuationPolicy.None(), OnCompletedPolicy.None);
 
-            var q2 = q1.Select(x => string.Join(",", x.A, x.B, x.C, x.D, x.E));
+            var q2 = q1.Select(x => string.Join(",", new object[] { x.A, x.B, x.C, x.D, x.E }));
 
             int count = 0;
             q2.ToStreamEventObservable().ForEachAsync(x => count++).Wait();
@@ -67,7 +67,7 @@ namespace SimpleTesting
                 .ToObservable()
                 .ToStreamable(DisorderPolicy.Throw(), FlushPolicy.FlushOnPunctuation, PeriodicPunctuationPolicy.None(), OnCompletedPolicy.None);
 
-            var q2 = q1.Select(x => string.Join(",", x.A, x.B, x.C, x.D, x.E));
+            var q2 = q1.Select(x => string.Join(",", new object[] { x.A, x.B, x.C, x.D, x.E }));
 
             int count = 0;
             q2.ToStreamEventObservable().ForEachAsync(x => count++).Wait();

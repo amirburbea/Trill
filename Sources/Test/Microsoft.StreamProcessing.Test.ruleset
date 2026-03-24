@@ -4,6 +4,6 @@
   <Include Path="..\Microsoft.StreamProcessing.ruleset" Action="Default" />
   
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
-    <!-- Override any rules here -->
+    <Rule Id="SA1137" Action="None" /> <!-- Generated T4 files do not guarantee consistent indentation -->
   </Rules>
 </RuleSet>

@@ -183,6 +183,9 @@ namespace Microsoft.StreamProcessing
                 Monitor.Enter(this.sync);
                 try
                 {
+                    // Process any batches that were enqueued while another thread held the lock above.
+                    // Monitor is reentrant, so ProcessPendingBatches()'s TryEnter will succeed here.
+                    ProcessPendingBatches();
                     base.OnCompleted();
 
                     while (this.leftQueue.TryDequeue(out var leftBatch))

@@ -3,6 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 using System;
+using System.Buffers;
 using System.IO;
 using System.Text;
 using Microsoft.StreamProcessing.Internal;
@@ -83,13 +84,10 @@ namespace Microsoft.StreamProcessing.Serializer
 
         public void Encode(float value)
         {
-            byte[] bytes = BitConverter.GetBytes(value);
-            if (!BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(bytes);
-            }
-
-            this.stream.Write(bytes, 0, bytes.Length);
+            Span<byte> bytes = stackalloc byte[4];
+            BitConverter.TryWriteBytes(bytes, value);
+            if (!BitConverter.IsLittleEndian) bytes.Reverse();
+            this.stream.Write(bytes);
         }
 
         public void Encode(double value)
@@ -113,12 +111,40 @@ namespace Microsoft.StreamProcessing.Serializer
             if (value.Length > 0) this.stream.Write(value, 0, value.Length);
         }
 
+        public void Encode(ReadOnlySpan<byte> span)
+        {
+            int count = span.Length;
+            Encode(count);
+            if (count > 0)
+            {
+                this.stream.Write(span);
+            }
+        }
+
         public void Encode(string value)
-            => Encode(Encoding.UTF8.GetBytes(value ?? throw new ArgumentNullException(nameof(value))));
+        {
+            if (value == null) throw new ArgumentNullException(nameof(value));
+            int byteCount = Encoding.UTF8.GetByteCount(value);
+            var rented = ArrayPool<byte>.Shared.Rent(byteCount);
+            try
+            {
+                int written = Encoding.UTF8.GetBytes(value, rented);
+                Encode(rented.AsSpan(0, written));
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(rented);
+            }
+        }
 
         public void EncodeArrayChunk(int size) => Encode(size);
 
-        public void Encode(Guid value) => this.stream.Write(value.ToByteArray(), 0, 16);
+        public void Encode(Guid value)
+        {
+            Span<byte> bytes = stackalloc byte[16];
+            value.TryWriteBytes(bytes);
+            this.stream.Write(bytes);
+        }
 
         private void WriteIntFixed(int encodedValue)
         {

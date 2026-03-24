@@ -3,6 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 using System;
+using System.Buffers;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
@@ -110,18 +111,15 @@ namespace Microsoft.StreamProcessing.Serializer
 
         public float DecodeFloat()
         {
-            var value = new byte[4];
+            Span<byte> value = stackalloc byte[4];
             ReadAllRequiredBytes(value);
-            if (!BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(value);
-            }
-            return BitConverter.ToSingle(value, 0);
+            if (!BitConverter.IsLittleEndian) value.Reverse();
+            return BitConverter.ToSingle(value);
         }
 
         public double DecodeDouble()
         {
-            var value = new byte[8];
+            Span<byte> value = stackalloc byte[8];
             ReadAllRequiredBytes(value);
             long longValue = value[0]
                 | (long)value[1] << 0x8
@@ -142,7 +140,21 @@ namespace Microsoft.StreamProcessing.Serializer
             return array;
         }
 
-        public string DecodeString() => Encoding.UTF8.GetString(DecodeByteArray());
+        public string DecodeString()
+        {
+            int byteCount = DecodeInt();
+            if (byteCount == 0) return string.Empty;
+            var rented = ArrayPool<byte>.Shared.Rent(byteCount);
+            try
+            {
+                ReadAllRequiredBytes(rented.AsSpan(0, byteCount));
+                return Encoding.UTF8.GetString(rented, 0, byteCount);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(rented);
+            }
+        }
 
         public int DecodeArrayChunk()
         {
@@ -157,9 +169,9 @@ namespace Microsoft.StreamProcessing.Serializer
 
         public Guid DecodeGuid()
         {
-            var array = new byte[16];
-            ReadAllRequiredBytes(array);
-            return new Guid(array);
+            Span<byte> value = stackalloc byte[16];
+            ReadAllRequiredBytes(value);
+            return new Guid(value);
         }
 
         private void ReadAllRequiredBytes(byte[] array)
@@ -172,15 +184,26 @@ namespace Microsoft.StreamProcessing.Serializer
             }
         }
 
+        private void ReadAllRequiredBytes(Span<byte> span)
+        {
+            int totalRead = 0;
+            while (totalRead < span.Length)
+            {
+                int read = this.stream.Read(span.Slice(totalRead));
+                if (read == 0)
+                    throw new SerializationException($"Unexpected end of stream: '{span.Length - totalRead}' bytes missing.");
+                totalRead += read;
+            }
+        }
+
         private int ReadIntFixed()
         {
-            var value = new byte[4];
-            this.stream.ReadAllRequiredBytes(value, 0, value.Length);
-            int intValue = value[0]
+            Span<byte> value = stackalloc byte[4];
+            ReadAllRequiredBytes(value);
+            return value[0]
                 | value[1] << 0x8
                 | value[2] << 0x10
                 | value[3] << 0x18;
-            return intValue;
         }
 
         public unsafe T[] DecodeArray<T>() where T : struct

@@ -62,8 +62,8 @@ namespace Microsoft.StreamProcessing
             this.joinKeyOrderComparerExpression = stream.Left.Properties.KeyComparer.GetCompareExpr();
             this.joinKeyOrderComparer = this.joinKeyOrderComparerExpression.Compile();
 
-            this.currentLeftList = new List<ActiveEvent<TLeft>>();
-            this.currentRightList = new List<ActiveEvent<TRight>>();
+            this.currentLeftList = [];
+            this.currentRightList = [];
 
             this.errorMessages = stream.ErrorMessages;
             this.pool = MemoryManager.GetMemoryPool<TKey, TResult>(stream.Properties.IsColumnar);

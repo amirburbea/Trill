@@ -48,7 +48,7 @@ namespace Microsoft.StreamProcessing
             this.pool.Get(out this.output);
             this.output.Allocate();
 
-            this.eventMap = new SortedDictionary<long, FastDictionary2<ActiveEvent, int>>();
+            this.eventMap = [];
             this.lastSyncTime = StreamEvent.MinSyncTime;
             this.lastCti = StreamEvent.MinSyncTime;
         }

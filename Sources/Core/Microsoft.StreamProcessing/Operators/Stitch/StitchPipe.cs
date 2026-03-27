@@ -45,7 +45,7 @@ namespace Microsoft.StreamProcessing
         // The End event moves an item from the OpenEvent to the ClosedEvent set
         [DataMember]
         private SortedDictionary<long, FastDictionary2<KHP, List<ActiveEvent>>> ClosedEvents =
-            new SortedDictionary<long, FastDictionary2<KHP, List<ActiveEvent>>>();
+            [];
 
         [Obsolete("Used only by serialization. Do not call directly.")]
         public StitchPipe() { }
@@ -81,7 +81,7 @@ namespace Microsoft.StreamProcessing
             }
             else
             {
-                lst = new List<V>();
+                lst = [];
                 events.Insert(key, lst);
                 lst.Add(value);
             }

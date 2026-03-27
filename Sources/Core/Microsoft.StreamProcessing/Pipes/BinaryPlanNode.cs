@@ -140,7 +140,7 @@ namespace Microsoft.StreamProcessing
         /// <summary>
         /// Returns the set of expressions employed by the current node to compute the join.
         /// </summary>
-        public Dictionary<string, Expression> JoinExpressions { get; } = new Dictionary<string, Expression>();
+        public Dictionary<string, Expression> JoinExpressions { get; } = [];
     }
 
     /// <summary>

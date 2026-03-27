@@ -19,7 +19,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
         protected override Expression BuildSerializerSafe(Expression encoder, Expression value)
         {
             int rank = this.RuntimeType.GetArrayRank();
-            return BuildSerializerImpl(new List<Expression>(), encoder, value, 0, rank);
+            return BuildSerializerImpl([], encoder, value, 0, rank);
         }
 
         private Expression BuildSerializerImpl(
@@ -78,7 +78,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
 
             var result = Expression.Variable(type, "result");
             body.Add(Expression.Assign(result, Expression.NewArrayBounds(type.GetElementType(), lengths)));
-            body.Add(GenerateCopy(new List<Expression>(), result, deserialized, 0, type.GetArrayRank()));
+            body.Add(GenerateCopy([], result, deserialized, 0, type.GetArrayRank()));
             body.Add(result);
             return Expression.Block(new[] { deserialized, result }, body);
         }

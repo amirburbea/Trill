@@ -35,7 +35,7 @@ namespace Microsoft.StreamProcessing.Internal
 
         private DataStructurePool<PooledElasticCircularBuffer<StreamEvent<TPayload>>> ecbPool;
         private List<PooledElasticCircularBuffer<StreamEvent<TPayload>>> toReturn =
-            new List<PooledElasticCircularBuffer<StreamEvent<TPayload>>>();
+            [];
 
         /// <summary>
         /// Currently for internal use only - do not use directly.
@@ -44,7 +44,7 @@ namespace Microsoft.StreamProcessing.Internal
         public ImpatienceSorter()
         {
             this.Tails = new long[this.MaxFibers];
-            this.Fibers = new List<PooledElasticCircularBuffer<StreamEvent<TPayload>>>();
+            this.Fibers = [];
             this.MergeSource = new PooledElasticCircularBuffer<StreamEvent<TPayload>>[this.MaxFibers];
             this.NextAffectingSyncTime = StreamEvent.InfinitySyncTime;
             this.ecbPool = new DataStructurePool<PooledElasticCircularBuffer<StreamEvent<TPayload>>>();
@@ -442,7 +442,7 @@ namespace Microsoft.StreamProcessing.Internal
     
             private DataStructurePool<PooledElasticCircularBuffer<PartitionedStreamEvent<TKey, TPayload>>> ecbPool;
             private List<PooledElasticCircularBuffer<PartitionedStreamEvent<TKey, TPayload>>> toReturn =
-                new List<PooledElasticCircularBuffer<PartitionedStreamEvent<TKey, TPayload>>>();
+                [];
     
             /// <summary>
             /// Currently for internal use only - do not use directly.
@@ -451,7 +451,7 @@ namespace Microsoft.StreamProcessing.Internal
             public ImpatienceSorter()
             {
                 this.Tails = new long[this.MaxFibers];
-                this.Fibers = new List<PooledElasticCircularBuffer<PartitionedStreamEvent<TKey, TPayload>>>();
+                this.Fibers = [];
                 this.MergeSource = new PooledElasticCircularBuffer<PartitionedStreamEvent<TKey, TPayload>>[this.MaxFibers];
                 this.NextAffectingSyncTime = StreamEvent.InfinitySyncTime;
                 this.ecbPool = new DataStructurePool<PooledElasticCircularBuffer<PartitionedStreamEvent<TKey, TPayload>>>();

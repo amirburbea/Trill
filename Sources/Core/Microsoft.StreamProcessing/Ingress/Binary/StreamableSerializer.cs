@@ -32,8 +32,8 @@ namespace Microsoft.StreamProcessing.Serializer
                 EqualityComparerExpression<TKey>.Default,
                 EqualityComparerExpression<TPayload>.Default,
                 null, null,
-                new Dictionary<Expression, object>(),
-                new Dictionary<Expression, Guid?>(),
+                [],
+                [],
                 null);
 
         public bool IsColumnar;

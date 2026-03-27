@@ -1130,8 +1130,6 @@ namespace Microsoft.StreamProcessing.Internal
     /// <typeparam name="TPayload"></typeparam>
     /// <typeparam name="TResult"></typeparam>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1008:OpeningParenthesisMustBeSpacedCorrectly", Justification = "ValueTuples")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:ClosingParenthesisMustBeSpacedCorrectly", Justification = "ValueTuples")]
     public abstract class DisorderedPartitionedSubscriptionBase<TKey, TIngressStructure, TPayload, TResult> : Pipe<PartitionKey<TKey>, TResult>, IIngressStreamObserver
     {
         private readonly string errorMessages;
@@ -1212,7 +1210,7 @@ namespace Microsoft.StreamProcessing.Internal
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         [DataMember]
-        protected Dictionary<TKey, long> currentTime = new Dictionary<TKey, long>();
+        protected Dictionary<TKey, long> currentTime = [];
 
 #if DEBUG
         /// <summary>
@@ -1221,7 +1219,7 @@ namespace Microsoft.StreamProcessing.Internal
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         [DataMember]
-        protected Dictionary<TKey, long> lastEventTime = new Dictionary<TKey, long>();
+        protected Dictionary<TKey, long> lastEventTime = [];
 #endif
 
         /// <summary>
@@ -1235,7 +1233,7 @@ namespace Microsoft.StreamProcessing.Internal
         /// Currently for internal use only - do not use directly.
         /// </summary>
         [DataMember]
-        protected Dictionary<TKey, (long lastPunctuation, long lastPunctuationQuantized)> lastPunctuationTime = new Dictionary<TKey, (long, long)>();
+        protected Dictionary<TKey, (long lastPunctuation, long lastPunctuationQuantized)> lastPunctuationTime = [];
 
         /// <summary>
         /// Currently for internal use only - do not use directly.
@@ -1251,7 +1249,7 @@ namespace Microsoft.StreamProcessing.Internal
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         [DataMember]
-        protected Dictionary<TKey, long> partitionHighWatermarks = new Dictionary<TKey, long>();
+        protected Dictionary<TKey, long> partitionHighWatermarks = [];
 
         /// <summary>
         /// Currently for internal use only - do not use directly.
@@ -1260,7 +1258,7 @@ namespace Microsoft.StreamProcessing.Internal
         /// NB: Do not mark as DataMember or as state managed: this is an inversion of existing data in field partitionHighWatermarks.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        protected SortedDictionary<long, HashSet<TKey>> highWatermarkToPartitionsMap = new SortedDictionary<long, HashSet<TKey>>();
+        protected SortedDictionary<long, HashSet<TKey>> highWatermarkToPartitionsMap = [];
 
         /// <summary>
         /// Currently for internal use only - do not use directly.
@@ -1751,8 +1749,6 @@ namespace Microsoft.StreamProcessing.Internal
     /// <typeparam name="TPayload"></typeparam>
     /// <typeparam name="TResult"></typeparam>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1008:OpeningParenthesisMustBeSpacedCorrectly", Justification = "ValueTuples")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:ClosingParenthesisMustBeSpacedCorrectly", Justification = "ValueTuples")]
     public abstract class PartitionedSubscriptionBase<TKey, TIngressStructure, TPayload, TResult> : Pipe<PartitionKey<TKey>, TResult>, IIngressStreamObserver
     {
         private readonly string errorMessages;
@@ -1833,7 +1829,7 @@ namespace Microsoft.StreamProcessing.Internal
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         [DataMember]
-        protected Dictionary<TKey, long> currentTime = new Dictionary<TKey, long>();
+        protected Dictionary<TKey, long> currentTime = [];
 
 #if DEBUG
         /// <summary>
@@ -1842,7 +1838,7 @@ namespace Microsoft.StreamProcessing.Internal
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         [DataMember]
-        protected Dictionary<TKey, long> lastEventTime = new Dictionary<TKey, long>();
+        protected Dictionary<TKey, long> lastEventTime = [];
 #endif
 
         /// <summary>
@@ -1856,7 +1852,7 @@ namespace Microsoft.StreamProcessing.Internal
         /// Currently for internal use only - do not use directly.
         /// </summary>
         [DataMember]
-        protected Dictionary<TKey, (long lastPunctuation, long lastPunctuationQuantized)> lastPunctuationTime = new Dictionary<TKey, (long, long)>();
+        protected Dictionary<TKey, (long lastPunctuation, long lastPunctuationQuantized)> lastPunctuationTime = [];
 
         /// <summary>
         /// Currently for internal use only - do not use directly.
@@ -1872,7 +1868,7 @@ namespace Microsoft.StreamProcessing.Internal
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         [DataMember]
-        protected Dictionary<TKey, long> partitionHighWatermarks = new Dictionary<TKey, long>();
+        protected Dictionary<TKey, long> partitionHighWatermarks = [];
 
         /// <summary>
         /// Currently for internal use only - do not use directly.
@@ -1881,7 +1877,7 @@ namespace Microsoft.StreamProcessing.Internal
         /// NB: Do not mark as DataMember or as state managed: this is an inversion of existing data in field partitionHighWatermarks.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        protected SortedDictionary<long, HashSet<TKey>> highWatermarkToPartitionsMap = new SortedDictionary<long, HashSet<TKey>>();
+        protected SortedDictionary<long, HashSet<TKey>> highWatermarkToPartitionsMap = [];
 
         /// <summary>
         /// Currently for internal use only - do not use directly.

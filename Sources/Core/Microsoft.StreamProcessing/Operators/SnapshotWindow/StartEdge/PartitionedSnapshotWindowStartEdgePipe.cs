@@ -294,7 +294,7 @@ namespace Microsoft.StreamProcessing
         private sealed class PartitionEntry
         {
             [DataMember]
-            public HashSet<int> heldAggregates = new HashSet<int>();
+            public HashSet<int> heldAggregates = [];
             [DataMember]
             public long lastSyncTime = long.MinValue;
         }

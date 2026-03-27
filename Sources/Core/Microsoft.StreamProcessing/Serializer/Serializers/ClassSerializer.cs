@@ -14,7 +14,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
 {
     internal abstract class ClassSerializer : ObjectSerializerBase
     {
-        protected readonly List<RecordFieldSerializer> fields = new List<RecordFieldSerializer>();
+        protected readonly List<RecordFieldSerializer> fields = [];
 
         protected ClassSerializer(Type runtimeType) : base(runtimeType) { }
 

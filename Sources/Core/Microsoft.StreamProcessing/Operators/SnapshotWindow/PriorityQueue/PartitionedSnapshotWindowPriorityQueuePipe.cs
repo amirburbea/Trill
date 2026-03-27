@@ -434,9 +434,9 @@ namespace Microsoft.StreamProcessing
         private sealed class PartitionEntry
         {
             [DataMember]
-            public HashSet<int> heldAggregates = new HashSet<int>();
+            public HashSet<int> heldAggregates = [];
             [DataMember]
-            public SortedDictionary<long, FastDictionary<TKey, StateAndActive<TState>>> ecq = new SortedDictionary<long, FastDictionary<TKey, StateAndActive<TState>>>();
+            public SortedDictionary<long, FastDictionary<TKey, StateAndActive<TState>>> ecq = [];
             [DataMember]
             public long lastSyncTime = long.MinValue;
         }

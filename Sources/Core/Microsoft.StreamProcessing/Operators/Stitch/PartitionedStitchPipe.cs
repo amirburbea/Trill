@@ -105,7 +105,7 @@ namespace Microsoft.StreamProcessing
             }
             else
             {
-                lst = new List<V>();
+                lst = [];
                 events.Insert(key, lst);
                 lst.Add(value);
             }
@@ -225,7 +225,7 @@ namespace Microsoft.StreamProcessing
                     if ((src_bv[i >> 6] & (1L << (i & 0x3f))) == 0 || *vother < 0)
                     {
                         var partitionKey = this.getPartitionKey(input.key.col[i]);
-                        if (!this.ClosedEvents.Lookup(partitionKey, out this.ClosedEventsIndex)) this.ClosedEvents.Insert(ref this.ClosedEventsIndex, partitionKey, new SortedDictionary<long, FastDictionary2<KHP, List<ActiveEvent>>>());
+                        if (!this.ClosedEvents.Lookup(partitionKey, out this.ClosedEventsIndex)) this.ClosedEvents.Insert(ref this.ClosedEventsIndex, partitionKey, []);
                         if (!this.OpenEvents.Lookup(partitionKey, out this.OpenEventsIndex)) this.OpenEvents.Insert(ref this.OpenEventsIndex, partitionKey, this.OpenEventsGenerator());
                         if (!this.now.Lookup(partitionKey, out this.nowIndex)) this.now.Insert(ref this.nowIndex, partitionKey, StreamEvent.MinSyncTime);
                         if (!this.CurrentTimeOpenEventBufferTime.Lookup(partitionKey, out this.CurrentTimeOpenEventBufferTimeIndex)) this.CurrentTimeOpenEventBufferTime.Insert(ref this.CurrentTimeOpenEventBufferTimeIndex, partitionKey, StreamEvent.MinSyncTime);

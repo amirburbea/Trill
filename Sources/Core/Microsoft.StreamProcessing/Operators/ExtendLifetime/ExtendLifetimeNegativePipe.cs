@@ -29,7 +29,7 @@ namespace Microsoft.StreamProcessing
         [DataMember]
         private EndPointHeap endPointHeap = new EndPointHeap();
         [DataMember]
-        private Dictionary<long, List<ActiveEvent>> contractedToZero = new Dictionary<long, List<ActiveEvent>>();
+        private Dictionary<long, List<ActiveEvent>> contractedToZero = [];
 
         [SchemaSerialization]
         private readonly Expression<Func<TKey, TKey, bool>> keyComparerExpr;

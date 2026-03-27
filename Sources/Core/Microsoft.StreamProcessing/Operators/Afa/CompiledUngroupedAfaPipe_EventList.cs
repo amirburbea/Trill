@@ -36,7 +36,7 @@ namespace Microsoft.StreamProcessing
             this.activeStates = new FastLinkedList<GroupedActiveState<Empty, TRegister>>();
             this.activeStatesTraverser = new FastLinkedList<GroupedActiveState<Empty, TRegister>>.ListTraverser(this.activeStates);
 
-            this.currentList = new List<TPayload>();
+            this.currentList = [];
             this.lastSyncTime = -1;
         }
 
@@ -320,7 +320,7 @@ namespace Microsoft.StreamProcessing
                         {
                             ProcessCurrentTimestamp();
                             this.lastSyncTime = synctime;
-                            this.currentList = new List<TPayload>();
+                            this.currentList = [];
                         }
 
                         this.currentList.Add(batch.payload.col[i]);

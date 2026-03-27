@@ -466,7 +466,7 @@ namespace Microsoft.StreamProcessing
             [DataMember]
             public CircularBuffer<EcqState> ecq;
             [DataMember]
-            public HashSet<int> heldAggregates = new HashSet<int>();
+            public HashSet<int> heldAggregates = [];
             [DataMember]
             public long lastSyncTime = long.MinValue;
         }

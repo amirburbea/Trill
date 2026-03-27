@@ -88,7 +88,7 @@ namespace Microsoft.StreamProcessing
         private void AllocatePartition(TPartitionKey pKey, long timestamp)
         {
             this.syncTimeMapDictionary.Lookup(pKey, out int mapIndex);
-            this.syncTimeMapDictionary.Insert(ref mapIndex, pKey, new SortedDictionary<long, MultiSet<ActiveEvent>>());
+            this.syncTimeMapDictionary.Insert(ref mapIndex, pKey, []);
             this.lastSyncTimeDictionary.Lookup(pKey, out int timeIndex);
             this.lastSyncTimeDictionary.Insert(ref timeIndex, pKey, timestamp);
         }

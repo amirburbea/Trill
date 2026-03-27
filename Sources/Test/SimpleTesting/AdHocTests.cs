@@ -405,7 +405,7 @@ namespace SimpleTesting
                 OnCompletedPolicy.None);
 
             var output = new List<PartitionedStreamEvent<int, int>>();
-            var egress = qc.RegisterOutput(ingress).ForEachAsync(o => output.Add(o));
+            var egress = qc.RegisterOutput(ingress).ForEachAsync(output.Add);
             var process = qc.Restore();
             process.Flush();
             egress.Wait();
@@ -507,7 +507,7 @@ namespace SimpleTesting
                 OnCompletedPolicy.EndOfStream);
 
             var output = new List<PartitionedStreamEvent<int, int>>();
-            var egress = qc.RegisterOutput(ingress).ForEachAsync(o => output.Add(o));
+            var egress = qc.RegisterOutput(ingress).ForEachAsync(output.Add);
             var process = qc.Restore();
             process.Flush();
             egress.Wait();
@@ -547,7 +547,7 @@ namespace SimpleTesting
             // Stream from file
             var fromFile = filePath.ToStreamableFromFile<long>(readPropertiesFromStream: serializeStreamProperties);
             var output = new List<StreamEvent<long>>();
-            fromFile.ToStreamEventObservable().Where(e => e.IsData).ForEachAsync(r => output.Add(r)).Wait();
+            fromFile.ToStreamEventObservable().Where(e => e.IsData).ForEachAsync(output.Add).Wait();
 
             Assert.IsTrue(inputData.SequenceEqual(output));
         }
@@ -579,7 +579,7 @@ namespace SimpleTesting
                 for (int i = 0; i < 2; i++)
                 {
                     var output = new List<StreamEvent<long>>();
-                    streamable.ToStreamEventObservable().Where(e => e.IsData).ForEachAsync(e => output.Add(e)).Wait();
+                    streamable.ToStreamEventObservable().Where(e => e.IsData).ForEachAsync(output.Add).Wait();
                     Assert.IsTrue(inputData.SequenceEqual(output));
                 }
             }
@@ -651,7 +651,7 @@ namespace SimpleTesting
 
             var output = new List<PartitionedStreamEvent<int, int>>();
             input.ToStreamEventObservable()
-                .ForEachAsync(x => output.Add(x))
+                .ForEachAsync(output.Add)
                 .Wait();
 
             var expected = new List<PartitionedStreamEvent<int, int>>
@@ -863,7 +863,7 @@ namespace SimpleTesting
                 e => e);
 
             var output = new List<PartitionedStreamEvent<int, int>>();
-            var egress = qc.RegisterOutput(query).ForEachAsync(o => output.Add(o));
+            var egress = qc.RegisterOutput(query).ForEachAsync(output.Add);
             var process = qc.Restore();
             process.Flush();
             egress.Wait();
@@ -898,7 +898,7 @@ namespace SimpleTesting
                 .Unshard()
                 .ToStreamEventObservable()
                 .Where(e => e.IsData)
-                .ForEachAsync(e => output.Add(e));
+                .ForEachAsync(output.Add);
 
             Assert.IsTrue(output.SequenceEqual(input));
         }
@@ -957,7 +957,7 @@ namespace SimpleTesting
                     e => e);
 
                 var output = new List<PartitionedStreamEvent<int, int>>();
-                qc.RegisterOutput(query).ForEachAsync(o => output.Add(o));
+                qc.RegisterOutput(query).ForEachAsync(output.Add);
                 var process = qc.Restore();
 
                 // Set up state so that the left has an "invisible" (i.e. unmatched on the right) interval.
@@ -1045,7 +1045,7 @@ namespace SimpleTesting
                     (l, r) => l);
 
                 var output = new List<PartitionedStreamEvent<int, int>>();
-                qc.RegisterOutput(query).ForEachAsync(o => output.Add(o));
+                qc.RegisterOutput(query).ForEachAsync(output.Add);
                 var process = qc.Restore();
 
                 // Set up state so that there is outstanding start edges/intervals
@@ -1129,7 +1129,7 @@ namespace SimpleTesting
                     e => e);
 
                 var output = new List<PartitionedStreamEvent<int, int>>();
-                qc.RegisterOutput(query).ForEachAsync(o => output.Add(o));
+                qc.RegisterOutput(query).ForEachAsync(output.Add);
                 var process = qc.Restore();
 
                 // Set up state so that there is outstanding start edges/intervals
@@ -1190,7 +1190,7 @@ namespace SimpleTesting
             var input = new Subject<PartitionedStreamEvent<int, int>>();
             var ingress = qc.RegisterInput(input, DisorderPolicy.Drop(reorderLatency: 500));
             var output = new List<PartitionedStreamEvent<int, int>>();
-            var egress = qc.RegisterOutput(ingress).ForEachAsync(o => output.Add(o));
+            var egress = qc.RegisterOutput(ingress).ForEachAsync(output.Add);
             var process = qc.Restore();
 
             // These will be buffered due to reorderLatency
@@ -1247,7 +1247,7 @@ namespace SimpleTesting
                         (g, byNamePayload) => new Payload { GroupId = g.Key, Name = byNamePayload.Name, Reading = byNamePayload.Reading })
                     .ToStreamEventObservable());
             var output = new List<StreamEvent<Payload>>();
-            var egress = qc.RegisterOutput(ingress).Where(e => e.IsData).ForEachAsync(o => output.Add(o));
+            var egress = qc.RegisterOutput(ingress).Where(e => e.IsData).ForEachAsync(output.Add);
             var process = qc.Restore();
             process.Flush();
             egress.Wait();
@@ -1349,16 +1349,16 @@ namespace SimpleTesting
 
             var input = inputSubject.ToStreamable().SetProperty().IsConstantDuration(true, StreamEvent.InfinitySyncTime).Publish();
 
-            var output1 = input.ToStreamEventObservable().Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(x => outputList1.Add(x));
+            var output1 = input.ToStreamEventObservable().Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(outputList1.Add);
 
             input.Connect();
 
-            preConnectData.ForEachAsync(x => inputSubject.OnNext(x)).Wait();
+            preConnectData.ForEachAsync(inputSubject.OnNext).Wait();
             inputSubject.OnNext(StreamEvent.CreatePunctuation<int>(1));
 
-            var output2 = input.ToStreamEventObservable().Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(x => outputList2.Add(x));
+            var output2 = input.ToStreamEventObservable().Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(outputList2.Add);
 
-            postConnectData.ForEachAsync(x => inputSubject.OnNext(x)).Wait();
+            postConnectData.ForEachAsync(inputSubject.OnNext).Wait();
 
             inputSubject.OnCompleted();
 
@@ -1750,10 +1750,7 @@ namespace SimpleTesting
                 var result = Query(inputEvents);
                 var resultObs = this.container.RegisterOutput(result);
 
-                resultObs.Subscribe(x =>
-                {
-                    this.results.Enqueue(x);
-                });
+                resultObs.Subscribe(this.results.Enqueue);
             }
 
             internal QueryProcessor()
@@ -1844,7 +1841,7 @@ namespace SimpleTesting
                                     s => s,
                                     s => s,
                                     e1 => e1,
-                                    (e1, e2) => null)).ForEachAsync(o => output.Add(o));
+                                    (e1, e2) => null)).ForEachAsync(output.Add);
             var process = qc.Restore();
 
             // This test used to rely on lagAllowance=50 and (Global)PeriodicPunctuationPolicy=10 to generate global punctuations and flush contents.
@@ -2174,7 +2171,7 @@ namespace SimpleTesting
                 .ToStreamEventObservable()
                 .Where(e => e.IsData)
                 .Select(e => e.Payload)
-                .ForEachAsync(x => outputList.Add(x));
+                .ForEachAsync(outputList.Add);
 
             streamResult.Connect();
 
@@ -2212,7 +2209,7 @@ namespace SimpleTesting
                 .ToStreamEventObservable()
                 .Where(e => e.IsData)
                 .Select(e => e.Payload)
-                .ForEachAsync(x => outputList.Add(x));
+                .ForEachAsync(outputList.Add);
 
             streamResult.Connect();
 

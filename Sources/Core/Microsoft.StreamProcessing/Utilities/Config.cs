@@ -475,7 +475,7 @@ namespace Microsoft.StreamProcessing
         private static readonly AsyncLocal<int> gateDepth = new AsyncLocal<int>();
 
         // collection of Config modifications
-        private readonly List<IGatedModification> modifications = new List<IGatedModification>();
+        private readonly List<IGatedModification> modifications = [];
 
         public ConfigModifier GeneratedCodePath(string value)
         {

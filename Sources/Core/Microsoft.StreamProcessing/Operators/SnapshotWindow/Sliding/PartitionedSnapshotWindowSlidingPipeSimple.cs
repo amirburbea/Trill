@@ -361,7 +361,7 @@ namespace Microsoft.StreamProcessing
         private sealed class PartitionEntry
         {
             [DataMember]
-            public ElasticCircularBuffer<HeldState<TState>> ecq = new ElasticCircularBuffer<HeldState<TState>>();
+            public ElasticCircularBuffer<HeldState<TState>> ecq = [];
             [DataMember]
             public long lastSyncTime = long.MinValue;
 

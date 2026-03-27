@@ -32,7 +32,7 @@ namespace Microsoft.StreamProcessing
             foreach (var pair in OperatorNameLookup)
             {
                 KnownSupportedOperators.TryAdd(
-                    pair.Key, new HashSet<Type> { typeof(long), typeof(ulong), typeof(int), typeof(uint), typeof(short), typeof(ushort), typeof(double), typeof(float), typeof(decimal), typeof(byte), typeof(sbyte) });
+                    pair.Key, [typeof(long), typeof(ulong), typeof(int), typeof(uint), typeof(short), typeof(ushort), typeof(double), typeof(float), typeof(decimal), typeof(byte), typeof(sbyte)]);
             }
         }
 
@@ -518,7 +518,7 @@ namespace Microsoft.StreamProcessing
 
         public static string GetCSharpSourceSyntax(this Type t, ref List<string> introducedGenericTypeParameters)
         {
-            if (introducedGenericTypeParameters == null) introducedGenericTypeParameters = new List<string>();
+            if (introducedGenericTypeParameters == null) introducedGenericTypeParameters = [];
             string ret = TurnTypeIntoCSharpSource(t, ref introducedGenericTypeParameters);
             return ret;
         }
@@ -678,11 +678,11 @@ namespace Microsoft.StreamProcessing
                 && !type.GetTypeInfo().IsInterface
                 && !(type.GetTypeInfo().IsGenericType && SupportedInterfaces.Contains(type.GetGenericTypeDefinition())));
 
-        private static readonly HashSet<Type> SupportedInterfaces = new HashSet<Type>
-        {
+        private static readonly HashSet<Type> SupportedInterfaces =
+        [
             typeof(IList<>),
             typeof(IDictionary<,>)
-        };
+        ];
 
         /// <summary>
         /// Validates that a type can be serialized.

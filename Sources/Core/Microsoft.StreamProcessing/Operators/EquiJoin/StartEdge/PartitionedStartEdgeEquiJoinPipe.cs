@@ -32,11 +32,11 @@ namespace Microsoft.StreamProcessing
         [DataMember]
         private FastDictionary2<TPartitionKey, PooledElasticCircularBuffer<REntry>> rightQueue = new FastDictionary2<TPartitionKey, PooledElasticCircularBuffer<REntry>>();
         [DataMember]
-        private HashSet<TPartitionKey> processQueue = new HashSet<TPartitionKey>();
+        private HashSet<TPartitionKey> processQueue = [];
         [DataMember]
-        private HashSet<TPartitionKey> seenKeys = new HashSet<TPartitionKey>();
+        private HashSet<TPartitionKey> seenKeys = [];
         [DataMember]
-        private HashSet<TPartitionKey> cleanKeys = new HashSet<TPartitionKey>();
+        private HashSet<TPartitionKey> cleanKeys = [];
 
         [DataMember]
         private StreamMessage<TKey, TResult> output;
@@ -99,8 +99,8 @@ namespace Microsoft.StreamProcessing
 
         private void NewPartition(TPartitionKey pKey)
         {
-            this.leftQueue.Insert(pKey, new PooledElasticCircularBuffer<LEntry>());
-            this.rightQueue.Insert(pKey, new PooledElasticCircularBuffer<REntry>());
+            this.leftQueue.Insert(pKey, []);
+            this.rightQueue.Insert(pKey, []);
 
             if (!this.partitionData.Lookup(pKey, out int index)) this.partitionData.Insert(ref index, pKey, new PartitionEntry { key = pKey });
         }

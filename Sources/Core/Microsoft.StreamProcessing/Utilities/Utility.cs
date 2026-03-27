@@ -91,7 +91,7 @@ namespace Microsoft.StreamProcessing
         {
             if (!dict.TryGetValue(key, out var list))
             {
-                list = new List<TValue>();
+                list = [];
                 dict.Add(key, list);
             }
             list.Add(value);

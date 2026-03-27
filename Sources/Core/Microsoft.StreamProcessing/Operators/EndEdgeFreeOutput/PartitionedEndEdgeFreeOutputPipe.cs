@@ -291,7 +291,7 @@ namespace Microsoft.StreamProcessing
         private sealed class PartitionEntry
         {
             [DataMember]
-            public SortedDictionary<long, FastDictionary2<ActiveEvent, int>> eventMap = new SortedDictionary<long, FastDictionary2<ActiveEvent, int>>();
+            public SortedDictionary<long, FastDictionary2<ActiveEvent, int>> eventMap = [];
             [DataMember]
             public long lastSyncTime = StreamEvent.MinSyncTime;
             [DataMember]

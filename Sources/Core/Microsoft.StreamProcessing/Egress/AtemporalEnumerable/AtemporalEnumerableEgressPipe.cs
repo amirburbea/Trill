@@ -16,9 +16,9 @@ namespace Microsoft.StreamProcessing
         [DataMember]
         private long currentTimestamp = long.MinValue;
         [DataMember]
-        private SortedDictionary<long, List<TPayload>> toDelete = new SortedDictionary<long, List<TPayload>>();
+        private SortedDictionary<long, List<TPayload>> toDelete = [];
         [DataMember]
-        private List<ChangeListEvent<TPayload>> currentVersion = new List<ChangeListEvent<TPayload>>();
+        private List<ChangeListEvent<TPayload>> currentVersion = [];
 
         [Obsolete("Used only by serialization. Do not call directly.")]
         public AtemporalEnumerableEgressPipe() { }
@@ -86,7 +86,7 @@ namespace Microsoft.StreamProcessing
                 if (this.currentVersion.Count > 0)
                 {
                     this.observer.OnNext(this.currentVersion);
-                    this.currentVersion = new List<ChangeListEvent<TPayload>>();
+                    this.currentVersion = [];
                 }
             }
         }
@@ -95,7 +95,7 @@ namespace Microsoft.StreamProcessing
         {
             if (!this.toDelete.TryGetValue(currentTime, out List<TPayload> queue))
             {
-                queue = new List<TPayload>();
+                queue = [];
                 this.toDelete.Add(currentTime, queue);
             }
             queue.Add(payload);

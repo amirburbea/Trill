@@ -380,7 +380,7 @@ namespace Microsoft.StreamProcessing
                             key = Tuple.Create(value.SyncTime, value.Payload);
                             if (!this.startEventInformation.TryGetValue(key, out q))
                             {
-                                q = new ElasticCircularBuffer<AdjustInfo>();
+                                q = [];
                                 this.startEventInformation.Add(key, q);
                                 var x = new AdjustInfo(current);
                                 q.Enqueue(ref x);
@@ -763,7 +763,7 @@ namespace Microsoft.StreamProcessing
                             key = Tuple.Create(value.SyncTime, value.Payload);
                             if (!this.startEventInformation.TryGetValue(key, out q))
                             {
-                                q = new ElasticCircularBuffer<AdjustInfo>();
+                                q = [];
                                 this.startEventInformation.Add(key, q);
                                 var x = new AdjustInfo(current);
                                 q.Enqueue(ref x);
@@ -1144,7 +1144,7 @@ namespace Microsoft.StreamProcessing
                             key = Tuple.Create(value.SyncTime, value.Payload);
                             if (!this.startEventInformation.TryGetValue(key, out q))
                             {
-                                q = new ElasticCircularBuffer<AdjustInfo>();
+                                q = [];
                                 this.startEventInformation.Add(key, q);
                                 var x = new AdjustInfo(current);
                                 q.Enqueue(ref x);
@@ -1435,7 +1435,7 @@ namespace Microsoft.StreamProcessing
                             key = Tuple.Create(value.SyncTime, value.Payload);
                             if (!this.startEventInformation.TryGetValue(key, out q))
                             {
-                                q = new ElasticCircularBuffer<AdjustInfo>();
+                                q = [];
                                 this.startEventInformation.Add(key, q);
                                 var x = new AdjustInfo(current);
                                 q.Enqueue(ref x);
@@ -1715,7 +1715,7 @@ namespace Microsoft.StreamProcessing
                             key = Tuple.Create(value.SyncTime, value.Payload);
                             if (!this.startEventInformation.TryGetValue(key, out q))
                             {
-                                q = new ElasticCircularBuffer<AdjustInfo>();
+                                q = [];
                                 this.startEventInformation.Add(key, q);
                                 var x = new AdjustInfo(current);
                                 q.Enqueue(ref x);
@@ -1993,7 +1993,7 @@ namespace Microsoft.StreamProcessing
                             key = Tuple.Create(value.SyncTime, value.Payload);
                             if (!this.startEventInformation.TryGetValue(key, out q))
                             {
-                                q = new ElasticCircularBuffer<AdjustInfo>();
+                                q = [];
                                 this.startEventInformation.Add(key, q);
                                 var x = new AdjustInfo(current);
                                 q.Enqueue(ref x);
@@ -3722,7 +3722,7 @@ namespace Microsoft.StreamProcessing
                 this.partitionHighWatermarks.Add(value.PartitionKey, this.lowWatermark.rawValue);
 
                 if (this.highWatermarkToPartitionsMap.TryGetValue(this.lowWatermark.rawValue, out HashSet<TKey> keySet)) keySet.Add(value.PartitionKey);
-                else this.highWatermarkToPartitionsMap.Add(this.lowWatermark.rawValue, new HashSet<TKey> { value.PartitionKey });
+                else this.highWatermarkToPartitionsMap.Add(this.lowWatermark.rawValue, [value.PartitionKey]);
             }
             long moveTo = moveFrom;
 
@@ -3743,7 +3743,7 @@ namespace Microsoft.StreamProcessing
                 else oldSet.Remove(value.PartitionKey);
 
                 if (this.highWatermarkToPartitionsMap.TryGetValue(value.SyncTime, out HashSet<TKey> set)) set.Add(value.PartitionKey);
-                else this.highWatermarkToPartitionsMap.Add(value.SyncTime, new HashSet<TKey> { value.PartitionKey });
+                else this.highWatermarkToPartitionsMap.Add(value.SyncTime, [value.PartitionKey]);
 
                 if (value.IsData)
                 {
@@ -3864,7 +3864,7 @@ namespace Microsoft.StreamProcessing
                                 key = Tuple.Create(value.SyncTime, value.Payload);
                                 if (!this.startEventInformation.TryGetValue(key, out q))
                                 {
-                                    q = new ElasticCircularBuffer<AdjustInfo>();
+                                    q = [];
                                     this.startEventInformation.Add(key, q);
                                     var x = new AdjustInfo(current);
                                     q.Enqueue(ref x);
@@ -4114,7 +4114,7 @@ namespace Microsoft.StreamProcessing
                 if (this.highWatermarkToPartitionsMap.TryGetValue(kvp.Value, out HashSet<TKey> set))
                     set.Add(kvp.Key);
                 else
-                    this.highWatermarkToPartitionsMap.Add(kvp.Value, new HashSet<TKey> { kvp.Key });
+                    this.highWatermarkToPartitionsMap.Add(kvp.Value, [kvp.Key]);
             }
         }
 
@@ -4216,7 +4216,7 @@ namespace Microsoft.StreamProcessing
                 this.partitionHighWatermarks.Add(value.PartitionKey, this.lowWatermark.rawValue);
 
                 if (this.highWatermarkToPartitionsMap.TryGetValue(this.lowWatermark.rawValue, out HashSet<TKey> keySet)) keySet.Add(value.PartitionKey);
-                else this.highWatermarkToPartitionsMap.Add(this.lowWatermark.rawValue, new HashSet<TKey> { value.PartitionKey });
+                else this.highWatermarkToPartitionsMap.Add(this.lowWatermark.rawValue, [value.PartitionKey]);
             }
             long moveTo = moveFrom;
 
@@ -4237,7 +4237,7 @@ namespace Microsoft.StreamProcessing
                 else oldSet.Remove(value.PartitionKey);
 
                 if (this.highWatermarkToPartitionsMap.TryGetValue(value.SyncTime, out HashSet<TKey> set)) set.Add(value.PartitionKey);
-                else this.highWatermarkToPartitionsMap.Add(value.SyncTime, new HashSet<TKey> { value.PartitionKey });
+                else this.highWatermarkToPartitionsMap.Add(value.SyncTime, [value.PartitionKey]);
 
                 if (value.IsData)
                 {
@@ -4358,7 +4358,7 @@ namespace Microsoft.StreamProcessing
                                 key = Tuple.Create(value.SyncTime, value.Payload);
                                 if (!this.startEventInformation.TryGetValue(key, out q))
                                 {
-                                    q = new ElasticCircularBuffer<AdjustInfo>();
+                                    q = [];
                                     this.startEventInformation.Add(key, q);
                                     var x = new AdjustInfo(current);
                                     q.Enqueue(ref x);
@@ -4603,7 +4603,7 @@ namespace Microsoft.StreamProcessing
                 if (this.highWatermarkToPartitionsMap.TryGetValue(kvp.Value, out HashSet<TKey> set))
                     set.Add(kvp.Key);
                 else
-                    this.highWatermarkToPartitionsMap.Add(kvp.Value, new HashSet<TKey> { kvp.Key });
+                    this.highWatermarkToPartitionsMap.Add(kvp.Value, [kvp.Key]);
             }
         }
 
@@ -4708,7 +4708,7 @@ namespace Microsoft.StreamProcessing
                 this.partitionHighWatermarks.Add(value.PartitionKey, this.lowWatermark.rawValue);
 
                 if (this.highWatermarkToPartitionsMap.TryGetValue(this.lowWatermark.rawValue, out HashSet<TKey> keySet)) keySet.Add(value.PartitionKey);
-                else this.highWatermarkToPartitionsMap.Add(this.lowWatermark.rawValue, new HashSet<TKey> { value.PartitionKey });
+                else this.highWatermarkToPartitionsMap.Add(this.lowWatermark.rawValue, [value.PartitionKey]);
             }
             long moveTo = moveFrom;
 
@@ -4729,7 +4729,7 @@ namespace Microsoft.StreamProcessing
                 else oldSet.Remove(value.PartitionKey);
 
                 if (this.highWatermarkToPartitionsMap.TryGetValue(value.SyncTime, out HashSet<TKey> set)) set.Add(value.PartitionKey);
-                else this.highWatermarkToPartitionsMap.Add(value.SyncTime, new HashSet<TKey> { value.PartitionKey });
+                else this.highWatermarkToPartitionsMap.Add(value.SyncTime, [value.PartitionKey]);
 
                 if (value.IsData)
                 {
@@ -4850,7 +4850,7 @@ namespace Microsoft.StreamProcessing
                                 key = Tuple.Create(value.SyncTime, value.Payload);
                                 if (!this.startEventInformation.TryGetValue(key, out q))
                                 {
-                                    q = new ElasticCircularBuffer<AdjustInfo>();
+                                    q = [];
                                     this.startEventInformation.Add(key, q);
                                     var x = new AdjustInfo(current);
                                     q.Enqueue(ref x);
@@ -5100,7 +5100,7 @@ namespace Microsoft.StreamProcessing
                 if (this.highWatermarkToPartitionsMap.TryGetValue(kvp.Value, out HashSet<TKey> set))
                     set.Add(kvp.Key);
                 else
-                    this.highWatermarkToPartitionsMap.Add(kvp.Value, new HashSet<TKey> { kvp.Key });
+                    this.highWatermarkToPartitionsMap.Add(kvp.Value, [kvp.Key]);
             }
         }
 
@@ -5225,7 +5225,7 @@ namespace Microsoft.StreamProcessing
                                 key = Tuple.Create(value.SyncTime, value.Payload);
                                 if (!this.startEventInformation.TryGetValue(key, out q))
                                 {
-                                    q = new ElasticCircularBuffer<AdjustInfo>();
+                                    q = [];
                                     this.startEventInformation.Add(key, q);
                                     var x = new AdjustInfo(current);
                                     q.Enqueue(ref x);
@@ -5542,7 +5542,7 @@ namespace Microsoft.StreamProcessing
                                 key = Tuple.Create(value.SyncTime, value.Payload);
                                 if (!this.startEventInformation.TryGetValue(key, out q))
                                 {
-                                    q = new ElasticCircularBuffer<AdjustInfo>();
+                                    q = [];
                                     this.startEventInformation.Add(key, q);
                                     var x = new AdjustInfo(current);
                                     q.Enqueue(ref x);
@@ -5857,7 +5857,7 @@ namespace Microsoft.StreamProcessing
                                 key = Tuple.Create(value.SyncTime, value.Payload);
                                 if (!this.startEventInformation.TryGetValue(key, out q))
                                 {
-                                    q = new ElasticCircularBuffer<AdjustInfo>();
+                                    q = [];
                                     this.startEventInformation.Add(key, q);
                                     var x = new AdjustInfo(current);
                                     q.Enqueue(ref x);
@@ -6140,7 +6140,7 @@ namespace Microsoft.StreamProcessing
                 this.partitionHighWatermarks.Add(value.PartitionKey, this.lowWatermark.rawValue);
 
                 if (this.highWatermarkToPartitionsMap.TryGetValue(this.lowWatermark.rawValue, out HashSet<TKey> keySet)) keySet.Add(value.PartitionKey);
-                else this.highWatermarkToPartitionsMap.Add(this.lowWatermark.rawValue, new HashSet<TKey> { value.PartitionKey });
+                else this.highWatermarkToPartitionsMap.Add(this.lowWatermark.rawValue, [value.PartitionKey]);
             }
             long moveTo = moveFrom;
 
@@ -6161,7 +6161,7 @@ namespace Microsoft.StreamProcessing
                 else oldSet.Remove(value.PartitionKey);
 
                 if (this.highWatermarkToPartitionsMap.TryGetValue(value.SyncTime, out HashSet<TKey> set)) set.Add(value.PartitionKey);
-                else this.highWatermarkToPartitionsMap.Add(value.SyncTime, new HashSet<TKey> { value.PartitionKey });
+                else this.highWatermarkToPartitionsMap.Add(value.SyncTime, [value.PartitionKey]);
 
                 moveTo = value.SyncTime - this.reorderLatency;
                 if (moveTo < StreamEvent.MinSyncTime) moveTo = StreamEvent.MinSyncTime;
@@ -6419,7 +6419,7 @@ namespace Microsoft.StreamProcessing
                 if (this.highWatermarkToPartitionsMap.TryGetValue(kvp.Value, out HashSet<TKey> set))
                     set.Add(kvp.Key);
                 else
-                    this.highWatermarkToPartitionsMap.Add(kvp.Value, new HashSet<TKey> { kvp.Key });
+                    this.highWatermarkToPartitionsMap.Add(kvp.Value, [kvp.Key]);
             }
         }
 
@@ -6540,7 +6540,7 @@ namespace Microsoft.StreamProcessing
                 this.partitionHighWatermarks.Add(value.PartitionKey, this.lowWatermark.rawValue);
 
                 if (this.highWatermarkToPartitionsMap.TryGetValue(this.lowWatermark.rawValue, out HashSet<TKey> keySet)) keySet.Add(value.PartitionKey);
-                else this.highWatermarkToPartitionsMap.Add(this.lowWatermark.rawValue, new HashSet<TKey> { value.PartitionKey });
+                else this.highWatermarkToPartitionsMap.Add(this.lowWatermark.rawValue, [value.PartitionKey]);
             }
             long moveTo = moveFrom;
 
@@ -6561,7 +6561,7 @@ namespace Microsoft.StreamProcessing
                 else oldSet.Remove(value.PartitionKey);
 
                 if (this.highWatermarkToPartitionsMap.TryGetValue(value.SyncTime, out HashSet<TKey> set)) set.Add(value.PartitionKey);
-                else this.highWatermarkToPartitionsMap.Add(value.SyncTime, new HashSet<TKey> { value.PartitionKey });
+                else this.highWatermarkToPartitionsMap.Add(value.SyncTime, [value.PartitionKey]);
 
                 moveTo = value.SyncTime - this.reorderLatency;
                 if (moveTo < StreamEvent.MinSyncTime) moveTo = StreamEvent.MinSyncTime;
@@ -6814,7 +6814,7 @@ namespace Microsoft.StreamProcessing
                 if (this.highWatermarkToPartitionsMap.TryGetValue(kvp.Value, out HashSet<TKey> set))
                     set.Add(kvp.Key);
                 else
-                    this.highWatermarkToPartitionsMap.Add(kvp.Value, new HashSet<TKey> { kvp.Key });
+                    this.highWatermarkToPartitionsMap.Add(kvp.Value, [kvp.Key]);
             }
         }
 
@@ -6937,7 +6937,7 @@ namespace Microsoft.StreamProcessing
                 this.partitionHighWatermarks.Add(value.PartitionKey, this.lowWatermark.rawValue);
 
                 if (this.highWatermarkToPartitionsMap.TryGetValue(this.lowWatermark.rawValue, out HashSet<TKey> keySet)) keySet.Add(value.PartitionKey);
-                else this.highWatermarkToPartitionsMap.Add(this.lowWatermark.rawValue, new HashSet<TKey> { value.PartitionKey });
+                else this.highWatermarkToPartitionsMap.Add(this.lowWatermark.rawValue, [value.PartitionKey]);
             }
             long moveTo = moveFrom;
 
@@ -6958,7 +6958,7 @@ namespace Microsoft.StreamProcessing
                 else oldSet.Remove(value.PartitionKey);
 
                 if (this.highWatermarkToPartitionsMap.TryGetValue(value.SyncTime, out HashSet<TKey> set)) set.Add(value.PartitionKey);
-                else this.highWatermarkToPartitionsMap.Add(value.SyncTime, new HashSet<TKey> { value.PartitionKey });
+                else this.highWatermarkToPartitionsMap.Add(value.SyncTime, [value.PartitionKey]);
 
                 moveTo = value.SyncTime - this.reorderLatency;
                 if (moveTo < StreamEvent.MinSyncTime) moveTo = StreamEvent.MinSyncTime;
@@ -7216,7 +7216,7 @@ namespace Microsoft.StreamProcessing
                 if (this.highWatermarkToPartitionsMap.TryGetValue(kvp.Value, out HashSet<TKey> set))
                     set.Add(kvp.Key);
                 else
-                    this.highWatermarkToPartitionsMap.Add(kvp.Value, new HashSet<TKey> { kvp.Key });
+                    this.highWatermarkToPartitionsMap.Add(kvp.Value, [kvp.Key]);
             }
         }
 

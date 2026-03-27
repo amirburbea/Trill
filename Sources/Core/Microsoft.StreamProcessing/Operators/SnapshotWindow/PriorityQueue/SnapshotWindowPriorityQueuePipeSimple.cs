@@ -44,7 +44,7 @@ namespace Microsoft.StreamProcessing
         private StreamMessage<Empty, TOutput> batch;
 
         [DataMember]
-        private SortedDictionary<long, HeldState<TState>> ecq = new SortedDictionary<long, HeldState<TState>>();
+        private SortedDictionary<long, HeldState<TState>> ecq = [];
         [DataMember]
         private long lastSyncTime = long.MinValue;
         [DataMember]

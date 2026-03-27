@@ -88,7 +88,7 @@ namespace Microsoft.StreamProcessing
 
                 template.outputFields = new ColumnarRepresentation(outputType).AllFields;
 
-                assemblyReferences = new List<Assembly>();
+                assemblyReferences = [];
 
                 #region Key Comparer
                 IEqualityComparerExpression<TKey> keyComparer;

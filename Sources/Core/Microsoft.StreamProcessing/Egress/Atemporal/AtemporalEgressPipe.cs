@@ -14,7 +14,7 @@ namespace Microsoft.StreamProcessing
     internal sealed class MonotonicEgressPipe<TPayload> : EgressBoundary<Empty, TPayload, TPayload>
     {
         [DataMember]
-        private SortedDictionary<long, List<TPayload>> toDelete = new SortedDictionary<long, List<TPayload>>();
+        private SortedDictionary<long, List<TPayload>> toDelete = [];
 
         [Obsolete("Used only by serialization. Do not call directly.")]
         public MonotonicEgressPipe() { }
@@ -76,7 +76,7 @@ namespace Microsoft.StreamProcessing
         {
             if (!this.toDelete.TryGetValue(currentTime, out List<TPayload> queue))
             {
-                queue = new List<TPayload>();
+                queue = [];
                 this.toDelete.Add(currentTime, queue);
             }
             queue.Add(payload);

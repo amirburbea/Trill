@@ -10,7 +10,7 @@ namespace Microsoft.StreamProcessing
 {
     internal sealed class DiagnosticObservable<TPayload> : IObservable<OutOfOrderStreamEvent<TPayload>>, IObserver<OutOfOrderStreamEvent<TPayload>>, IDisposable
     {
-        private List<IObserver<OutOfOrderStreamEvent<TPayload>>> observers = new List<IObserver<OutOfOrderStreamEvent<TPayload>>>();
+        private List<IObserver<OutOfOrderStreamEvent<TPayload>>> observers = [];
 
         public IDisposable Subscribe(IObserver<OutOfOrderStreamEvent<TPayload>> observer)
         {
@@ -83,7 +83,7 @@ namespace Microsoft.StreamProcessing
 
     internal sealed class PartitionedDiagnosticObservable<TKey, TPayload> : IObservable<OutOfOrderPartitionedStreamEvent<TKey, TPayload>>, IObserver<OutOfOrderPartitionedStreamEvent<TKey, TPayload>>, IDisposable
     {
-        private List<IObserver<OutOfOrderPartitionedStreamEvent<TKey, TPayload>>> observers = new List<IObserver<OutOfOrderPartitionedStreamEvent<TKey, TPayload>>>();
+        private List<IObserver<OutOfOrderPartitionedStreamEvent<TKey, TPayload>>> observers = [];
 
         public IDisposable Subscribe(IObserver<OutOfOrderPartitionedStreamEvent<TKey, TPayload>> observer)
         {

@@ -19,7 +19,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
 
         private readonly SerializerSettings settings;
         private readonly HashSet<Type> knownTypes;
-        private readonly Dictionary<Type, ObjectSerializerBase> seenTypes = new Dictionary<Type, ObjectSerializerBase>();
+        private readonly Dictionary<Type, ObjectSerializerBase> seenTypes = [];
 
         static ReflectionSchemaBuilder()
         {

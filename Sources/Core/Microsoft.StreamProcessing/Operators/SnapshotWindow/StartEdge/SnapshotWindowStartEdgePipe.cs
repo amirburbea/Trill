@@ -46,7 +46,7 @@ namespace Microsoft.StreamProcessing
         [DataMember]
         private FastDictionary2<TKey, HeldState<TState>> aggregateByKey;
         [DataMember]
-        private HashSet<int> heldAggregates = new HashSet<int>();
+        private HashSet<int> heldAggregates = [];
         [DataMember]
         private long lastSyncTime = long.MinValue;
 

@@ -76,7 +76,7 @@ namespace Microsoft.StreamProcessing.Sharding
             this.cache = cache;
             this.sourceProps = sourceProps;
 
-            this.elements = new List<QueuedMessage<StreamMessage<TKey, TPayload>>>();
+            this.elements = [];
         }
 
         public void Dispose()

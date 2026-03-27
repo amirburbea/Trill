@@ -45,7 +45,7 @@ namespace SimpleTesting.Flush
 
             query = query.Where(this.FilterExpression);
             query = query.ClipEventDuration(IntervalLength);
-            var filtered = qc.RegisterOutput(query).ForEachAsync(o => OnEgress(o));
+            var filtered = qc.RegisterOutput(query).ForEachAsync(OnEgress);
             var process = qc.Restore();
 
             for (int i = 0; i < IngressEventCount; i++)

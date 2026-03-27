@@ -101,16 +101,16 @@ namespace SimpleTesting
             var s = x3.ExpressionToCSharp();
         }
 
-        public static void Main(string[] args)
+        public static void Main()
         {
             Alpha();
             var meths = typeof(int).GetMethods();
             var x = new { A = 3, B = 'a' };
             var y = EqualsExprForAnonymousType(x.GetType());
             var z = TestEquality(Enumerable.Range(0, 5), i => new { X = i, Y = (char)('a' + i), });
-            z = TestEquality(new int[] { 3, 3, 3 }, i => new { Z = i, A = (char)('a' + i), W = "abc", });
-            var ii = TestHash(new int[] { 3, 3, 3 }, i => new { Z = i, A = (char)('a' + i), W = "abc", });
-            ii = TestComparer(new int[] { 3, 3, 3 }, i => new { Z = i, A = (char)('a' + i), W = "abc" });
+            z = TestEquality([3, 3, 3], i => new { Z = i, A = (char)('a' + i), W = "abc", });
+            var ii = TestHash([3, 3, 3], i => new { Z = i, A = (char)('a' + i), W = "abc", });
+            ii = TestComparer([3, 3, 3], i => new { Z = i, A = (char)('a' + i), W = "abc" });
             NativeMethods.AffinitizeThread(0);
             Config.ForceRowBasedExecution = true;
 

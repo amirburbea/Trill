@@ -87,7 +87,7 @@ namespace SimpleTesting
             var input = new Subject<StreamEvent<IMyInterface>>();
 
             var ingress = qc.RegisterInput(input);
-            var egress = qc.RegisterOutput(ingress).ForEachAsync(o => output1.Add(o));
+            var egress = qc.RegisterOutput(ingress).ForEachAsync(output1.Add);
             var process = qc.Restore();
 
             input.OnNext(StreamEvent.CreatePoint(1, (IMyInterface)new MyType(1)));
@@ -103,7 +103,7 @@ namespace SimpleTesting
 
             var qc2 = new QueryContainer(new MySurrogate());
             var ingress2 = qc2.RegisterInput(input2);
-            var egress2 = qc2.RegisterOutput(ingress2).ForEachAsync(o => output2.Add(o));
+            var egress2 = qc2.RegisterOutput(ingress2).ForEachAsync(output2.Add);
             var process2 = qc2.Restore(stream);
 
             input2.OnCompleted();

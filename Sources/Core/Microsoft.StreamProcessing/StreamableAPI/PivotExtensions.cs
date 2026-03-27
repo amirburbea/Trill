@@ -204,8 +204,8 @@ namespace Microsoft.StreamProcessing
 
         private sealed class UnpivotEnumerable<TInput, TPivotKey, TValue, TResult>
         {
-            private readonly Dictionary<string, Func<TInput, string, TResult>> fields = new Dictionary<string, Func<TInput, string, TResult>>();
-            private readonly Dictionary<string, Func<TInput, bool>> isNull = new Dictionary<string, Func<TInput, bool>>();
+            private readonly Dictionary<string, Func<TInput, string, TResult>> fields = [];
+            private readonly Dictionary<string, Func<TInput, bool>> isNull = [];
 
             public UnpivotEnumerable(Expression<Func<TInput, TPivotKey>> keySelector, NewExpression newExpression, MemberExpression attributeField, MemberExpression valueField)
             {

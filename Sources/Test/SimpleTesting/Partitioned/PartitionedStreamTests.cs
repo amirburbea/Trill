@@ -813,7 +813,7 @@ namespace SimpleTesting
             var input = qc.RegisterInput(subject);
 
             var output = new List<PartitionedStreamEvent<string, string>>();
-            var egress = qc.RegisterOutput(input.Stitch()).ForEachAsync(o => output.Add(o));
+            var egress = qc.RegisterOutput(input.Stitch()).ForEachAsync(output.Add);
             var process = qc.Restore();
 
             var payload = new[] { "c1payload", "c2payload" };

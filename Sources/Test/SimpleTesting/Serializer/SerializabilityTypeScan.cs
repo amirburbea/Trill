@@ -174,7 +174,7 @@ namespace SimpleTesting
         {
             if (name.Contains('`'))
                 name = name.Substring(0, name.LastIndexOf('`'));
-            return name + "<" + string.Join(", ", args.Select(a => DescribeType(a))) + ">";
+            return name + "<" + string.Join(", ", args.Select(DescribeType)) + ">";
         }
 
         private static string DescribeType(Type type)

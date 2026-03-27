@@ -387,10 +387,10 @@ namespace SimpleTesting.PartitionedIngressAndEgress
                 PartitionedFlushPolicy.None, PeriodicPunctuationPolicy.None(), this.lowWatermarkPolicy);
 
             var outOfOrderEvents = new List<OutOfOrderPartitionedStreamEvent<int, int>>();
-            ingress.GetDroppedAdjustedEventsDiagnostic().Subscribe(o => outOfOrderEvents.Add(o));
+            ingress.GetDroppedAdjustedEventsDiagnostic().Subscribe(outOfOrderEvents.Add);
 
             var output = new List<PartitionedStreamEvent<int, int>>();
-            var egress = qc.RegisterOutput(ingress).ForEachAsync(o => output.Add(o));
+            var egress = qc.RegisterOutput(ingress).ForEachAsync(output.Add);
             var process = qc.Restore();
             process.Flush();
             egress.Wait();

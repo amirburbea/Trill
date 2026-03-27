@@ -24,7 +24,7 @@ namespace Microsoft.StreamProcessing
         private StreamMessage<TKey, TPayload> output;
 
         [DataMember]
-        private SortedDictionary<long, MultiSet<ActiveEvent>> syncTimeMap = new SortedDictionary<long, MultiSet<ActiveEvent>>();
+        private SortedDictionary<long, MultiSet<ActiveEvent>> syncTimeMap = [];
 
         [Obsolete("Used only by serialization. Do not call directly.")]
         public ClipByConstantPipe() { }

@@ -17,7 +17,7 @@ namespace Microsoft.StreamProcessing
         private FastLinkedList<GroupedActiveState<Empty, TRegister>> activeStates;
 
         [DataMember]
-        private List<TPayload> currentTimestampEventList = new List<TPayload>();
+        private List<TPayload> currentTimestampEventList = [];
 
         [DataMember]
         private long lastSyncTime;

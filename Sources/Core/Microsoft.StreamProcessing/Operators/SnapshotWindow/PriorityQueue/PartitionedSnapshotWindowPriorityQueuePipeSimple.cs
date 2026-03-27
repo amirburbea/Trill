@@ -360,7 +360,7 @@ namespace Microsoft.StreamProcessing
         private sealed class PartitionEntry
         {
             [DataMember]
-            public SortedDictionary<long, StateAndActive<TState>> ecq = new SortedDictionary<long, StateAndActive<TState>>();
+            public SortedDictionary<long, StateAndActive<TState>> ecq = [];
             [DataMember]
             public long lastSyncTime = long.MinValue;
 

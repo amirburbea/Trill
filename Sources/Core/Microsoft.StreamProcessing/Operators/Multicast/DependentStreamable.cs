@@ -39,7 +39,7 @@ namespace Microsoft.StreamProcessing
                 throw new InvalidOperationException("Cannot generate a streamable array more than once.");
             }
 
-            this.toSubscribe = new HashSet<int>();
+            this.toSubscribe = [];
 
             var output = new IStreamable<TKey, TSource>[this.outputCount];
             for (int i = 0; i < this.outputCount; i++)
@@ -105,7 +105,7 @@ namespace Microsoft.StreamProcessing
 
             public DisposableManager(int count)
             {
-                this.toDispose = new HashSet<int>();
+                this.toDispose = [];
                 for (int i = 0; i < count; i++)
                 {
                     this.toDispose.Add(i);

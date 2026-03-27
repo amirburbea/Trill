@@ -13,8 +13,8 @@ namespace Microsoft.StreamProcessing
     internal partial class AfaMultiEventListTemplate : AfaTemplate
     {
         private Func<string, string, string> keyEqualityComparer;
-        protected readonly List<Tuple<int, List<EdgeInfo>>> edgeInfos = new List<Tuple<int, List<EdgeInfo>>>();
-        protected readonly List<Tuple<int, List<EdgeInfo>>> startEdgeInfos = new List<Tuple<int, List<EdgeInfo>>>();
+        protected readonly List<Tuple<int, List<EdgeInfo>>> edgeInfos = [];
+        protected readonly List<Tuple<int, List<EdgeInfo>>> startEdgeInfos = [];
         private bool payloadIsAnon;
         private bool payloadHasNoFields;
 

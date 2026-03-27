@@ -47,7 +47,7 @@ namespace Microsoft.StreamProcessing
             this.l1Pool = MemoryManager.GetMemoryPool<TInnerKey, TSource>(stream.Properties.IsColumnar);
             this.l1Pool.GetBV(out this.resetBV);
             for (int i = 0; i < this.resetBV.col.Length; i++) this.resetBV.col[i] = ~0;
-            this.Observers = new List<IStreamObserver<TInnerKey, TSource>>();
+            this.Observers = [];
         }
 
         public void AddObserver(IStreamObserver<TInnerKey, TSource> observer) => this.Observers.Add(observer);

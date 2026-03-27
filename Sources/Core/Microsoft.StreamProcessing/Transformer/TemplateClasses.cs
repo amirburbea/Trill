@@ -365,7 +365,7 @@ namespace Microsoft.StreamProcessing
 
         private sealed class AssemblyLocationFinder : ExpressionVisitor
         {
-            private readonly HashSet<Assembly> assemblyLocations = new HashSet<Assembly>();
+            private readonly HashSet<Assembly> assemblyLocations = [];
 
             private AssemblyLocationFinder() { }
             public static IEnumerable<Assembly> GetAssemblyLocationsFor(Expression e)
@@ -612,7 +612,7 @@ namespace System.Runtime.CompilerServices
         public readonly MyFieldInfo PseudoField; // used only when noFields is true
 
         public IEnumerable<MyFieldInfo> AllFields => this.noFields
-                    ? new List<MyFieldInfo>() { this.PseudoField }
+                    ? [this.PseudoField]
                     : this.Fields.Values;
 
         public ColumnarRepresentation(Type t)
@@ -734,12 +734,10 @@ namespace System.Runtime.CompilerServices
         {
             var template = new SafeBatchTemplate();
 
-            assemblyReferences = new List<Assembly>
-            {
-                Transformer.SystemRuntimeSerializationDll // needed for [DataContract] and [DataMember] in generated code
-            };
-
-            assemblyReferences.AddRange(Transformer.AssemblyReferencesNeededFor(keyType));
+            assemblyReferences =
+            [
+                Transformer.SystemRuntimeSerializationDll, .. Transformer.AssemblyReferencesNeededFor(keyType) // needed for [DataContract] and [DataMember] in generated code
+            ];
             template.keyType = keyType;
 
             assemblyReferences.AddRange(Transformer.AssemblyReferencesNeededFor(payloadType));
@@ -780,7 +778,7 @@ namespace System.Runtime.CompilerServices
 
         internal MemoryPoolTemplate(ColumnarRepresentation keyRepresentation, ColumnarRepresentation payloadRepresentation)
         {
-            this.assemblyReferences = new List<Assembly>();
+            this.assemblyReferences = [];
 
             var keyType = keyRepresentation == null ? typeof(Empty) : keyRepresentation.RepresentationFor;
 

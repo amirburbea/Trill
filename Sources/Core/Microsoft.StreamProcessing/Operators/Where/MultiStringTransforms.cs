@@ -33,7 +33,7 @@ namespace Microsoft.StreamProcessing
                 return new MultiStringTransformationResult
                 {
                     vectorOperation = string.Join("\n", vectorStatements),
-                    wrapperTable = new Dictionary<FieldInfo, ParameterExpression>(),
+                    wrapperTable = [],
                 };
             }
             var wrapperVisitor = new WrapperTransformer(t);
@@ -149,7 +149,7 @@ namespace Microsoft.StreamProcessing
         private sealed class Vectorize : ExpressionVisitor
         {
             private static int counter = 0;
-            public List<string> vectorStatements = new List<string>();
+            public List<string> vectorStatements = [];
             private string incomingBV = "batch.bitvector";
             private bool inPlace = false;
             private string resultBV;
@@ -346,7 +346,7 @@ namespace Microsoft.StreamProcessing
         private class WrapperTransformer : ExpressionVisitor
         {
             private readonly Type batchType;
-            public Dictionary<FieldInfo, ParameterExpression> multiStringTable = new Dictionary<FieldInfo, ParameterExpression>();
+            public Dictionary<FieldInfo, ParameterExpression> multiStringTable = [];
 
             public WrapperTransformer(Type t) => this.batchType = t;
 

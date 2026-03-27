@@ -26,7 +26,7 @@ namespace Microsoft.StreamProcessing
         [DataMember]
         private StreamMessage<TKey, TPayload> output;
 
-        private Dictionary<TPartitionKey, LinkedList<TKey>> orderedKeysDictionary = new Dictionary<TPartitionKey, LinkedList<TKey>>();
+        private Dictionary<TPartitionKey, LinkedList<TKey>> orderedKeysDictionary = [];
         [DataMember]
         private FastDictionary2<TKey, long> windowEndTimeDictionary = new FastDictionary2<TKey, long>();
         [DataMember]

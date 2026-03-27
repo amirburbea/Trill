@@ -13,8 +13,8 @@ namespace Microsoft.StreamProcessing
     internal partial class GroupedAfaMultiEventTemplate : AfaTemplate
     {
         private Func<string, string, string> keyEqualityComparer;
-        protected readonly List<Tuple<int, List<MultiEdgeInfo>>> edgeInfos = new List<Tuple<int, List<MultiEdgeInfo>>>();
-        protected readonly List<Tuple<int, List<MultiEdgeInfo>>> startEdgeInfos = new List<Tuple<int, List<MultiEdgeInfo>>>();
+        protected readonly List<Tuple<int, List<MultiEdgeInfo>>> edgeInfos = [];
+        protected readonly List<Tuple<int, List<MultiEdgeInfo>>> startEdgeInfos = [];
 
         private GroupedAfaMultiEventTemplate(string className, Type keyType, Type payloadType, Type registerType, Type accumulatorType)
             : base(className, keyType, payloadType, registerType, accumulatorType)

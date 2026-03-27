@@ -19,7 +19,7 @@ namespace Microsoft.StreamProcessing
 
     internal sealed class FuseModule
     {
-        private readonly List<ExpressionProfile> expressions = new List<ExpressionProfile>();
+        private readonly List<ExpressionProfile> expressions = [];
         private Expression durationAdjustment = null;
 
         public FuseModule() { }

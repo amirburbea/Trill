@@ -17,8 +17,8 @@ namespace Microsoft.StreamProcessing
         protected Type accumulatorType;
         protected bool hasRegister;
         protected bool isSyncTimeSimultaneityFree;
-        protected readonly List<Tuple<int, List<EdgeInfo>>> currentlyActiveInfo = new List<Tuple<int, List<EdgeInfo>>>();
-        protected readonly List<Tuple<int, List<EdgeInfo>>> newActivationInfo = new List<Tuple<int, List<EdgeInfo>>>();
+        protected readonly List<Tuple<int, List<EdgeInfo>>> currentlyActiveInfo = [];
+        protected readonly List<Tuple<int, List<EdgeInfo>>> newActivationInfo = [];
         protected string TKey;
         protected string TPayload;
         protected string TRegister;

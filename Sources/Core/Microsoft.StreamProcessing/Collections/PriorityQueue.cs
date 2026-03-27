@@ -18,7 +18,7 @@ namespace Microsoft.StreamProcessing
     public class PriorityQueue<T> : IEnumerable<T>
     {
         [DataMember]
-        private List<T> data = new List<T>();
+        private List<T> data = [];
 
         private readonly IComparer<T> comp;
 

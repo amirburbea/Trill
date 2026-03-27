@@ -78,7 +78,7 @@ namespace Microsoft.StreamProcessing
             this.pool.Get(out this.batch);
             this.batch.Allocate();
 
-            this.ecq = new ElasticCircularBuffer<HeldState<TState>>();
+            this.ecq = [];
         }
 
         public override void ProduceQueryPlan(PlanNode previous)

@@ -118,7 +118,7 @@ namespace Microsoft.StreamProcessing
             this.lastSyncTimeDictionary.Lookup(pKey, out int timeIndex);
             this.lastSyncTimeDictionary.Insert(ref timeIndex, pKey, timestamp);
             this.contractedToZeroDictionary.Lookup(pKey, out int collapseIndex);
-            this.contractedToZeroDictionary.Insert(ref collapseIndex, pKey, new Dictionary<long, List<ActiveEvent>>());
+            this.contractedToZeroDictionary.Insert(ref collapseIndex, pKey, []);
         }
 
         public override unsafe void OnNext(StreamMessage<TKey, TPayload> batch)

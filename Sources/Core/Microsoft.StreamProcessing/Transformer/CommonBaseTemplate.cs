@@ -26,7 +26,7 @@ namespace Microsoft.StreamProcessing
         /// <summary>
         /// A list of the lengths of each indent that was added with PushIndent
         /// </summary>
-        private List<int> IndentLengths { get; } = new List<int>();
+        private List<int> IndentLengths { get; } = [];
 
         /// <summary>
         /// Gets the current indent we use when adding lines to the output

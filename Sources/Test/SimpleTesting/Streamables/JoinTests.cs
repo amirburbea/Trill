@@ -118,12 +118,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e, (l, r) => new GameData() { EventType = l.field1, GameId = r, });
 
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -161,12 +161,12 @@ namespace SimpleTesting
 
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -230,12 +230,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -273,12 +273,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -316,12 +316,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -359,12 +359,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -481,12 +481,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e, (l, r) => new GameData() { EventType = l.field1, GameId = r, });
 
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -524,12 +524,12 @@ namespace SimpleTesting
 
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -593,12 +593,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -636,12 +636,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -679,12 +679,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -722,12 +722,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -845,12 +845,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e, (l, r) => new GameData() { EventType = l.field1, GameId = r, });
 
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -888,12 +888,12 @@ namespace SimpleTesting
 
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -957,12 +957,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1000,12 +1000,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1043,12 +1043,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1086,12 +1086,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1209,12 +1209,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e, (l, r) => new GameData() { EventType = l.field1, GameId = r, });
 
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1252,12 +1252,12 @@ namespace SimpleTesting
 
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1321,12 +1321,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1364,12 +1364,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1407,12 +1407,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1450,12 +1450,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1572,12 +1572,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e, (l, r) => new GameData() { EventType = l.field1, GameId = r, });
 
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1615,12 +1615,12 @@ namespace SimpleTesting
 
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1684,12 +1684,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1727,12 +1727,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1770,12 +1770,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1813,12 +1813,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1935,12 +1935,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e, (l, r) => new GameData() { EventType = l.field1, GameId = r, });
 
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -1978,12 +1978,12 @@ namespace SimpleTesting
 
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2047,12 +2047,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2090,12 +2090,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2133,12 +2133,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2176,12 +2176,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2299,12 +2299,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e, (l, r) => new GameData() { EventType = l.field1, GameId = r, });
 
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2342,12 +2342,12 @@ namespace SimpleTesting
 
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2411,12 +2411,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2454,12 +2454,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2497,12 +2497,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2540,12 +2540,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2663,12 +2663,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e.field1, e => e, (l, r) => new GameData() { EventType = l.field1, GameId = r, });
 
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2706,12 +2706,12 @@ namespace SimpleTesting
 
             var query = input1.Join(input2, e => e.field1, e => e.field1, (l, r) => new GameData() { EventType = l.field1, GameId = (int)r.field2, });
             var output = container.RegisterAtemporalOutput(query);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2775,12 +2775,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2818,12 +2818,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2861,12 +2861,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 
@@ -2904,12 +2904,12 @@ namespace SimpleTesting
             var query = input1.Join(input2, e => e, e => e, (l, r) => l);
 
             var output = container.RegisterOutput(query, ReshapingPolicy.CoalesceEndEdges);
-            var resultAsync = output.ForEachAsync(o => result.Add(o));
+            var resultAsync = output.ForEachAsync(result.Add);
 
             container.Restore(null); // start the query
 
-            var i1async = data1.ForEachAsync(e => d1Subject.OnNext(e)); // send data
-            var i2async = data2.ForEachAsync(e => d2Subject.OnNext(e)); // send data
+            var i1async = data1.ForEachAsync(d1Subject.OnNext); // send data
+            var i2async = data2.ForEachAsync(d2Subject.OnNext); // send data
 
             Task.WaitAll(i1async, i2async); // wait for data to be processed.
 

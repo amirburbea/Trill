@@ -54,7 +54,7 @@ namespace Microsoft.StreamProcessing
         [DataMember]
         private FastDictionary2<TKey, HeldState<TState>> aggregateByKey;
         [DataMember]
-        private HashSet<int> heldAggregates = new HashSet<int>();
+        private HashSet<int> heldAggregates = [];
         [DataMember]
         private ElasticCircularBuffer<EcqState> ecq;
         [DataMember]
@@ -92,7 +92,7 @@ namespace Microsoft.StreamProcessing
             this.batch.Allocate();
 
             this.aggregateByKey = comparer.CreateFastDictionary2Generator<TKey, HeldState<TState>>(1, this.keyComparerEquals, this.keyComparerGetHashCode, stream.Properties.QueryContainer).Invoke();
-            this.ecq = new ElasticCircularBuffer<EcqState>();
+            this.ecq = [];
             var stateDictGenerator = comparer.CreateFastDictionaryGenerator<TKey, StateAndActive<TState>>(1, this.keyComparerEquals, this.keyComparerGetHashCode, stream.Properties.QueryContainer);
             this.ecqEntryPool = new DataStructurePool<FastDictionary<TKey, StateAndActive<TState>>>(() => stateDictGenerator.Invoke());
         }

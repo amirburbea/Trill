@@ -71,12 +71,12 @@ namespace Microsoft.StreamProcessing
         /// <summary>
         /// The set of final states in the AFA.
         /// </summary>
-        internal List<int> finalStates = new List<int>();
+        internal List<int> finalStates = [];
 
         /// <summary>
         /// The arcs present in the AFA.
         /// </summary>
-        internal Dictionary<int, Dictionary<int, Arc<TInput, TRegister>>> transitionInfo = new Dictionary<int, Dictionary<int, Arc<TInput, TRegister>>>();
+        internal Dictionary<int, Dictionary<int, Arc<TInput, TRegister>>> transitionInfo = [];
 
         /// <summary>
         /// Start state of the AFA.
@@ -180,7 +180,7 @@ namespace Microsoft.StreamProcessing
 
             if (!this.transitionInfo.ContainsKey(fromState))
             {
-                this.transitionInfo.Add(fromState, new Dictionary<int, Arc<TInput, TRegister>>());
+                this.transitionInfo.Add(fromState, []);
             }
 
             if (!this.transitionInfo[fromState].ContainsKey(toState))

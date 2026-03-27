@@ -96,7 +96,7 @@ namespace Microsoft.StreamProcessing
             bool doMultiStringTransform,
             bool hasStartEdge)
         {
-            this.parameterInformation = new Dictionary<ParameterExpression, SelectParameterInformation>();
+            this.parameterInformation = [];
             foreach (var tup in substitutionInformation)
             {
                 this.parameterInformation.Add(tup.Item1, tup.Item2);
@@ -105,10 +105,10 @@ namespace Microsoft.StreamProcessing
             this.noSwingingFields = noSwingingFields;
             this.doMultiStringTransform = doMultiStringTransform;
 
-            this.swingingFields = new List<Tuple<MyFieldInfo, MyFieldInfo>>();
-            this.computedFields = new Dictionary<MyFieldInfo, Expression>();
-            this.multiStringOperations = new List<string>();
-            this.multiStringResultFields = new List<MyFieldInfo>();
+            this.swingingFields = [];
+            this.computedFields = [];
+            this.multiStringOperations = [];
+            this.multiStringResultFields = [];
 
             var body = function.Body;
 

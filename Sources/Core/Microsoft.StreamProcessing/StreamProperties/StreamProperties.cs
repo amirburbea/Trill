@@ -49,8 +49,8 @@ namespace Microsoft.StreamProcessing
                 EqualityComparerExpression<TPayload>.Default,
                 null,
                 null,
-                new Dictionary<Expression, object>(),
-                new Dictionary<Expression, Guid?>(),
+                [],
+                [],
                 null);
 
         internal static StreamProperties<TKey, TPayload> DefaultIngress(LambdaExpression startEdgeSelector, LambdaExpression endEdgeSelector)
@@ -79,8 +79,8 @@ namespace Microsoft.StreamProcessing
                     EqualityComparerExpression<TPayload>.Default,
                     null,
                     null,
-                    new Dictionary<Expression, object>(),
-                    new Dictionary<Expression, Guid?>(),
+                    [],
+                    [],
                     null);
         }
 
@@ -605,8 +605,8 @@ namespace Microsoft.StreamProcessing
                 this.IsIntervalFree, false, this.IsSnapshotSorted, false,
                 this.KeyEqualityComparer, EqualityComparerExpression<TResult>.Default,
                 this.KeyComparer, newPayloadComparer,
-                new Dictionary<Expression, object>(),
-                new Dictionary<Expression, Guid?>(),
+                [],
+                [],
                 this.QueryContainer);
         }
 
@@ -718,7 +718,7 @@ namespace Microsoft.StreamProcessing
             result.IsSnapshotSorted = false;
             result.KeyComparer = null;
             result.PayloadComparer = null;
-            result.SortSelectorMap = new Dictionary<Expression, Guid?>();
+            result.SortSelectorMap = [];
 
             // Union can be columnar only if both are
             result.IsColumnar = this.IsColumnar && right.IsColumnar;
@@ -774,8 +774,8 @@ namespace Microsoft.StreamProcessing
                     EqualityComparerExpression<TResult>.Default,
                     newKeyComparer,
                     null,
-                    new Dictionary<Expression, object>(),
-                    new Dictionary<Expression, Guid?>(), this.QueryContainer);
+                    [],
+                    [], this.QueryContainer);
         }
 
         /// <summary>
@@ -907,11 +907,11 @@ namespace Microsoft.StreamProcessing
         [DataMember]
         private long? constantHopOffset = null;
         [DataMember]
-        private readonly Dictionary<TKey, long> lastSyncTimeForSimultaneous = new Dictionary<TKey, long>();
+        private readonly Dictionary<TKey, long> lastSyncTimeForSimultaneous = [];
         [DataMember]
         private long lastSeenTimestamp = StreamEvent.MinSyncTime;
         [DataMember]
-        private readonly Dictionary<object, long> lastSeenTimestampPartitioned = new Dictionary<object, long>();
+        private readonly Dictionary<object, long> lastSeenTimestampPartitioned = [];
 
         [Obsolete("Used only by serialization. Do not call directly.")]
         public VerifyPropertiesPipe() { }

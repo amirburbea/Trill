@@ -47,7 +47,7 @@ namespace Microsoft.StreamProcessing
         /// Creates a new instance of a Sorted Multiset.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public SortedMultiSet() : this(() => new SortedDictionary<T, long>()) { }
+        public SortedMultiSet() : this(() => []) { }
 
         /// <summary>
         /// Creates a new instance of a Sorted Multiset where the underlying dictionary is generated.

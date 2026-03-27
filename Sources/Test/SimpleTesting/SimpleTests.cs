@@ -6453,7 +6453,7 @@ namespace SimpleTesting
             var outputObservable = container.RegisterOutput(union);
 
             // Test the output
-            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(o => outputList.Add(o));
+            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(outputList.Add);
             container.Restore(state);
             outputAsync.Wait();
 
@@ -8320,7 +8320,7 @@ namespace SimpleTesting
             var outputObservable = container.RegisterOutput(union);
 
             // Test the output
-            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(o => outputList.Add(o));
+            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(outputList.Add);
             container.Restore(state);
             outputAsync.Wait();
 
@@ -10310,7 +10310,7 @@ namespace SimpleTesting
             var outputObservable = container.RegisterOutput(union);
 
             // Test the output
-            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(o => outputList.Add(o));
+            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(outputList.Add);
             container.Restore(state);
             outputAsync.Wait();
 
@@ -12178,7 +12178,7 @@ namespace SimpleTesting
             var outputObservable = container.RegisterOutput(union);
 
             // Test the output
-            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(o => outputList.Add(o));
+            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(outputList.Add);
             container.Restore(state);
             outputAsync.Wait();
 
@@ -14167,7 +14167,7 @@ namespace SimpleTesting
             var outputObservable = container.RegisterOutput(union);
 
             // Test the output
-            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(o => outputList.Add(o));
+            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(outputList.Add);
             container.Restore(state);
             outputAsync.Wait();
 
@@ -16034,7 +16034,7 @@ namespace SimpleTesting
             var outputObservable = container.RegisterOutput(union);
 
             // Test the output
-            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(o => outputList.Add(o));
+            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(outputList.Add);
             container.Restore(state);
             outputAsync.Wait();
 
@@ -18024,7 +18024,7 @@ namespace SimpleTesting
             var outputObservable = container.RegisterOutput(union);
 
             // Test the output
-            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(o => outputList.Add(o));
+            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(outputList.Add);
             container.Restore(state);
             outputAsync.Wait();
 
@@ -19892,7 +19892,7 @@ namespace SimpleTesting
             var outputObservable = container.RegisterOutput(union);
 
             // Test the output
-            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(o => outputList.Add(o));
+            var outputAsync = outputObservable.Where(e => e.IsData).Select(e => e.Payload).ForEachAsync(outputList.Add);
             container.Restore(state);
             outputAsync.Wait();
 

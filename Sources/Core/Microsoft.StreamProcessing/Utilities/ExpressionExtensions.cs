@@ -188,7 +188,7 @@ namespace Microsoft.StreamProcessing
 
     internal sealed class EqualityComparer : ExpressionVisitor
     {
-        private readonly Dictionary<ParameterExpression, int> parameterMap = new Dictionary<ParameterExpression, int>();
+        private readonly Dictionary<ParameterExpression, int> parameterMap = [];
         private int uniqueParameterNumber;
 
         private EqualityComparer() => this.uniqueParameterNumber = 0;
@@ -353,7 +353,7 @@ namespace Microsoft.StreamProcessing
 
     internal sealed class VariableFinder : ExpressionVisitor
     {
-        private readonly List<object> foundVariables = new List<object>();
+        private readonly List<object> foundVariables = [];
 
         public static List<object> Find(Expression exp)
         {
@@ -428,11 +428,11 @@ namespace Microsoft.StreamProcessing
     internal class ConvertToCSharp : ExpressionVisitor
     {
         public readonly TextWriter writer;
-        private readonly HashSet<ExpressionType> nonExpressionFeatures = new HashSet<ExpressionType>
-        {
+        private readonly HashSet<ExpressionType> nonExpressionFeatures =
+        [
             ExpressionType.Loop,
             ExpressionType.Block
-        };
+        ];
 
         public ConvertToCSharp(TextWriter writer) => this.writer = writer ?? throw new ArgumentNullException(nameof(writer));
 
@@ -1266,8 +1266,8 @@ namespace Microsoft.StreamProcessing
 
             var me = new ColumnOriented
             {
-                parameterTableForDecomposableTypes = new Dictionary<Tuple<ParameterExpression, string>, ParameterInformation>(),
-                parameterTableForAtomicTypes = new Dictionary<ParameterExpression, ParameterInformation>()
+                parameterTableForDecomposableTypes = [],
+                parameterTableForAtomicTypes = []
             };
             var parameterMapping = new Dictionary<ParameterExpression, ParameterExpression>();
             var i = 0;

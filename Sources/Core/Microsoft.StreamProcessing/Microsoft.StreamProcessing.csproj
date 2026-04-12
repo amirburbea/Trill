@@ -14,7 +14,7 @@
     <PackageId>Trill.StreamProcessing</PackageId>
     <IsPackable>true</IsPackable>
     <Authors>Microsoft, Amir Burbea</Authors>
-    <Description>Trill is a high-performance one-pass in-memory streaming analytics engine, updated for .NET 10. Includes the core streaming library and LINQ provider.</Description>
+    <Description>Trill is a high-performance one-pass in-memory streaming analytics engine, updated for .NET 10. Includes the core streaming library (IStreamable, operators, ingress/egress).</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/amirburbea/trill</PackageProjectUrl>
     <PackageTags>Streaming Temporal Data Analytics</PackageTags>
@@ -48,17 +48,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Build dependency only — ensures Provider is compiled before packing -->
-    <ProjectReference Include="..\Microsoft.StreamProcessing.Provider\Microsoft.StreamProcessing.Provider.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- Bundle Provider assembly into this package; path is $(OutputPath)/net10.0/ per Directory.Build.props -->
-    <None Include="$(OutputPath)net10.0\Microsoft.StreamProcessing.Provider.dll" Pack="true" PackagePath="lib/net10.0/" />
-    <None Include="$(OutputPath)net10.0\Microsoft.StreamProcessing.Provider.xml" Pack="true" PackagePath="lib/net10.0/" Condition="Exists('$(OutputPath)net10.0\Microsoft.StreamProcessing.Provider.xml')" />
     <None Include="..\..\..\PACKAGE_README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
@@ -1357,8 +1346,4 @@
     </None>
   </ItemGroup>
 
-<!--  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.StreamProcessing.Provider\Microsoft.StreamProcessing.Provider.csproj" />
-  </ItemGroup> -->
-  
 </Project>

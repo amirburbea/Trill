@@ -10,7 +10,7 @@ This package is a community-maintained fork of [Microsoft's Trill](https://githu
 dotnet add package Trill.StreamProcessing
 ```
 
-This package includes both `Microsoft.StreamProcessing` (the core streaming engine) and `Microsoft.StreamProcessing.Provider` (the LINQ provider).
+This package contains `Microsoft.StreamProcessing` (the core streaming engine). The experimental `Microsoft.StreamProcessing.Provider` project in the repo is not published as part of this package.
 
 ## Learn More
 

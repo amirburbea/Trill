@@ -471,8 +471,8 @@ namespace Microsoft.StreamProcessing
         // SemaphoreSlim instead of Monitor so that async tests can release from a different thread.
         // AsyncLocal depth counter makes it re-entrant within the same async call context (e.g. nested
         // using blocks within a single test) without blocking on the semaphore a second time.
-        private static readonly SemaphoreSlim gate = new SemaphoreSlim(1, 1);
-        private static readonly AsyncLocal<int> gateDepth = new AsyncLocal<int>();
+        private static readonly SemaphoreSlim gate = new(1, 1);
+        private static readonly AsyncLocal<int> gateDepth = new();
 
         // collection of Config modifications
         private readonly List<IGatedModification> modifications = [];
@@ -764,7 +764,7 @@ namespace Microsoft.StreamProcessing
             private Func<T, T> modifier;
 
             public static GatedModification<T> Create(T newValue, Func<T, T> modifier)
-                => new GatedModification<T>
+                => new()
                 {
                     val = newValue,
                     modifier = modifier

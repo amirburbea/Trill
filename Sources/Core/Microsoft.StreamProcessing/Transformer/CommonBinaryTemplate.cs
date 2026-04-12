@@ -38,20 +38,20 @@ namespace Microsoft.StreamProcessing
             this.TResult = this.tm.CSharpNameFor(resultType);
         }
 
-        protected Tuple<Type, string> Generate<TKey, TPayload>() => GenerateInternal<TKey, TPayload, TPayload, TPayload>(2, null);
+        protected Tuple<Type, string> Generate<TKey, TPayload>() => this.GenerateInternal<TKey, TPayload, TPayload, TPayload>(2, null);
 
         protected Tuple<Type, string> Generate<TKey, TLeft, TRight>(Expression expression = null)
-            => GenerateInternal<TKey, TLeft, TRight, TLeft>(3, expression);
+            => this.GenerateInternal<TKey, TLeft, TRight, TLeft>(3, expression);
 
         protected Tuple<Type, string> Generate<TKey, TLeft, TRight, TResult>(Expression expression = null)
-            => GenerateInternal<TKey, TLeft, TRight, TResult>(4, expression);
+            => this.GenerateInternal<TKey, TLeft, TRight, TResult>(4, expression);
 
         private Tuple<Type, string> GenerateInternal<TKey, TLeft, TRight, TResult>(int numParameters, Expression expression)
         {
             string errorMessages = null;
             try
             {
-                var expandedCode = TransformText();
+                var expandedCode = this.TransformText();
 
                 var assemblyReferences = Transformer.AssemblyReferencesNeededFor(this.keyType, this.leftType, this.rightType, this.resultType);
                 assemblyReferences.Add(typeof(IStreamable<,>).GetTypeInfo().Assembly);

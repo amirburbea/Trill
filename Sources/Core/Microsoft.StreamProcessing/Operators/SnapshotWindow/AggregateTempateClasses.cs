@@ -42,7 +42,7 @@ namespace Microsoft.StreamProcessing
 
         public static Tuple<Type, string> Generate<TKey, TInput, TState, TOutput>(SnapshotWindowStreamable<TKey, TInput, TState, TOutput> stream, AggregatePipeType pipeType)
         {
-            Contract.Requires(stream != null);
+            ArgumentNullException.ThrowIfNull(stream);
             Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(IStreamObserver<TKey, TInput>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
             var container = stream.Properties.QueryContainer;
@@ -280,7 +280,7 @@ namespace Microsoft.StreamProcessing
         /// </summary>
         private static Expression/*?*/ Transform(NewExpression newExpression, Type outputBatchType)
         {
-            Contract.Requires(newExpression != null);
+            ArgumentNullException.ThrowIfNull(newExpression);
 
             Contract.Assume(newExpression != null && newExpression.Type.IsAnonymousType());
             Contract.Assume(newExpression.Arguments != null);

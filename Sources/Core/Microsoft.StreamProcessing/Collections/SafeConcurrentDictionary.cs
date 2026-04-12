@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Microsoft.StreamProcessing.Internal.Collections
 {
@@ -16,11 +17,15 @@ namespace Microsoft.StreamProcessing.Internal.Collections
     /// guarantee atomicity per-key for factory lambdas.
     /// </summary>
     /// <typeparam name="TValue">Type of values in the dictionary</typeparam>
-    internal sealed class SafeConcurrentDictionary<TValue> : IEnumerable<KeyValuePair<CacheKey, TValue>>
+    internal sealed class SafeConcurrentDictionary<TValue> : IReadOnlyCollection<KeyValuePair<CacheKey, TValue>>
     {
-        private readonly ConcurrentDictionary<CacheKey, TValue> dictionary = new ConcurrentDictionary<CacheKey, TValue>();
+        private readonly ConcurrentDictionary<CacheKey, TValue> dictionary = [];
+        private readonly ConcurrentDictionary<CacheKey, Lock> keyLocks = [];
 
-        private readonly ConcurrentDictionary<CacheKey, object> keyLocks = new ConcurrentDictionary<CacheKey, object>();
+        /// <summary>
+        /// Returns the number of elements in the dictionary.
+        /// </summary>
+        public int Count { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => this.dictionary.Count; }
 
         /// <summary>
         /// Adds a key/value pair to the dictionary if it does not exist.
@@ -32,11 +37,12 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             {
                 return value;
             }
-            lock (GetLock(key))
+            using (this.GetLock(key).EnterScope())
             {
                 return this.dictionary.GetOrAdd(key, valueFactory);
             }
         }
+
 
         /// <summary>
         /// Returns an enumerator of the elements in the dictionary.
@@ -56,12 +62,12 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             this.keyLocks.Clear();
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
         /// <summary>
         /// Retrieves lock associated with a key (creating it if it does not exist).
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private object GetLock(CacheKey key) => this.keyLocks.GetOrAdd(key, v => new object());
+        private Lock GetLock(CacheKey key) => this.keyLocks.GetOrAdd(key, static _ => new());
     }
 }

@@ -69,7 +69,7 @@ namespace Microsoft.StreamProcessing.Sharding
         private Exception e = null;
 
         private readonly List<QueuedMessage<StreamMessage<TKey, TPayload>>> elements;
-        private readonly AutoResetEvent done = new AutoResetEvent(false);
+        private readonly AutoResetEvent done = new(false);
 
         public ShardedCacheObserver(StreamCache<TKey, TPayload> cache, StreamProperties<TKey, TPayload> sourceProps)
         {
@@ -129,6 +129,6 @@ namespace Microsoft.StreamProcessing.Sharding
         /// <param name="source">The sharded streamable to cache</param>
         /// <returns>A cached sharded streamable</returns>
         public static ShardedStreamCache<TKey, TPayload> Cache<TKey, TPayload>(this IShardedStreamable<TKey, TPayload> source)
-            => new ShardedStreamCache<TKey, TPayload>(source);
+            => new(source);
     }
 }

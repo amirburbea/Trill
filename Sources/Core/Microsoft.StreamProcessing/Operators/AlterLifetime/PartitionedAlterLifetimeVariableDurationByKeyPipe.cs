@@ -26,7 +26,7 @@ namespace Microsoft.StreamProcessing
         private readonly Func<TPartitionKey, long, long> startTimeSelectorCompiled;
 
         [DataMember]
-        private FastDictionary<TPartitionKey, long> lastSync = new FastDictionary<TPartitionKey, long>();
+        private FastDictionary<TPartitionKey, long> lastSync = new();
 
         [Obsolete("Used only by serialization. Do not call directly.")]
         public PartitionedAlterLifetimeVariableDurationByKeyPipe() { }
@@ -34,7 +34,7 @@ namespace Microsoft.StreamProcessing
         public PartitionedAlterLifetimeVariableDurationByKeyPipe(AlterLifetimeStreamable<PartitionKey<TPartitionKey>, TPayload> stream, IStreamObserver<PartitionKey<TPartitionKey>, TPayload> observer)
             : base(stream, observer)
         {
-            Contract.Requires(stream != null);
+            ArgumentNullException.ThrowIfNull(stream);
 
             this.durationSelector = (Expression<Func<TPartitionKey, long, long, long>>)stream.DurationSelector;
             this.startTimeSelector = (Expression<Func<TPartitionKey, long, long>>)stream.StartTimeSelector;

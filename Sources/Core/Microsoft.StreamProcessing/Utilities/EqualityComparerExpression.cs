@@ -38,9 +38,9 @@ namespace Microsoft.StreamProcessing
 
     internal static class EqualityComparerExpressionCache
     {
-        private static readonly ConcurrentDictionary<Type, object> typeComparerCache = new ConcurrentDictionary<Type, object>();
-        private static readonly ConcurrentDictionary<Type, object> equalsCache = new ConcurrentDictionary<Type, object>();
-        private static readonly ConcurrentDictionary<Type, object> getHashCodeCache = new ConcurrentDictionary<Type, object>();
+        private static readonly ConcurrentDictionary<Type, object> typeComparerCache = new();
+        private static readonly ConcurrentDictionary<Type, object> equalsCache = new();
+        private static readonly ConcurrentDictionary<Type, object> getHashCodeCache = new();
 
         static EqualityComparerExpressionCache()
         {
@@ -111,9 +111,9 @@ namespace Microsoft.StreamProcessing
     /// <typeparam name="T">The type for which the equality comparers are defined.</typeparam>
     public class EqualityComparerExpression<T> : IEqualityComparerExpression<T>
     {
-        private static readonly object sentinel = new object();
-        private static readonly object equalsSentinel = new object();
-        private static readonly object getHashCodeSentinel = new object();
+        private static readonly object sentinel = new();
+        private static readonly object equalsSentinel = new();
+        private static readonly object getHashCodeSentinel = new();
 
         private readonly Expression<Func<T, T, bool>> EqualsExpr;
         private readonly Expression<Func<T, int>> GetHashCodeExpr;

@@ -495,19 +495,19 @@ namespace SimpleTesting.PartitionedIngressAndEgress
         private long highWatermark = 100;
         private long lowWatermark = 0;
 
-        private readonly List<PartitionedStreamEvent<int, int>> input = new List<PartitionedStreamEvent<int, int>>();
+        private readonly List<PartitionedStreamEvent<int, int>> input = new();
         private readonly List<PartitionedStreamEvent<int, int>>[] expected = new List<PartitionedStreamEvent<int, int>>[]
         {
-            new List<PartitionedStreamEvent<int, int>>(),
-            new List<PartitionedStreamEvent<int, int>>(),
-            new List<PartitionedStreamEvent<int, int>>(),
+            new(),
+            new(),
+            new(),
         };
         private readonly List<OutOfOrderPartitionedStreamEvent<int, int>>[] diagnostic = new List<OutOfOrderPartitionedStreamEvent<int, int>>[]
         {
-            new List<OutOfOrderPartitionedStreamEvent<int, int>>(),
-            new List<OutOfOrderPartitionedStreamEvent<int, int>>(),
-            new List<OutOfOrderPartitionedStreamEvent<int, int>>(),
+            new(),
+            new(),
+            new(),
         };
-        private readonly List<PartitionedStreamEvent<int, int>> expectedLowWatermarks = new List<PartitionedStreamEvent<int, int>>();
+        private readonly List<PartitionedStreamEvent<int, int>> expectedLowWatermarks = new();
     }
 }

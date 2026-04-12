@@ -49,11 +49,11 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
 
                 // For handling potential recursive types.
                 this.cachedSerializer = (o, e) => { };
-                this.cachedSerializer = GenerateCachedSerializer();
+                this.cachedSerializer = this.GenerateCachedSerializer();
 
                 // For performance reasons we do not use a cached serializer
                 // for the first encounter of the type in the schema tree.
-                return SerializeFields(encoder, value);
+                return this.SerializeFields(encoder, value);
             }
 
             protected override Expression BuildDeserializerSafe(Expression decoder)
@@ -62,7 +62,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
 
                 // For handling potential recursive types.
                 this.cachedDeserializer = d => default;
-                var deserializeLambda = GenerateCachedDeserializer();
+                var deserializeLambda = this.GenerateCachedDeserializer();
                 this.cachedDeserializer = deserializeLambda.Compile();
 
                 return Expression.Invoke(deserializeLambda, decoder);
@@ -100,7 +100,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
             {
                 var instanceParam = Expression.Parameter(this.RuntimeType, "instance");
                 var encoderParam = Expression.Parameter(typeof(BinaryEncoder), "encoder");
-                var block = SerializeFields(encoderParam, instanceParam);
+                var block = this.SerializeFields(encoderParam, instanceParam);
                 var lambda = Expression.Lambda<Action<T, BinaryEncoder>>(block, instanceParam, encoderParam);
                 return lambda.Compile();
             }

@@ -119,9 +119,9 @@ namespace Microsoft.StreamProcessing
                 : Tuple.Create(new MyFieldInfo(t).Yield(), true);
         }
 
-        private static readonly ConcurrentDictionary<string, string> OperatorNameLookup = new ConcurrentDictionary<string, string>();
+        private static readonly ConcurrentDictionary<string, string> OperatorNameLookup = new();
 
-        private static readonly ConcurrentDictionary<string, HashSet<Type>> KnownSupportedOperators = new ConcurrentDictionary<string, HashSet<Type>>();
+        private static readonly ConcurrentDictionary<string, HashSet<Type>> KnownSupportedOperators = new();
 
         public static bool SupportsOperator(this Type t, string @operator)
         {
@@ -130,7 +130,7 @@ namespace Microsoft.StreamProcessing
                 if (KnownSupportedOperators[@operator].Contains(t)) return true;
 
                 // Get all operator methods that have the correct name for the given operator and have the given type as the first parameter and return type.
-                var secondParameter = @operator.EndsWith("d", StringComparison.Ordinal) ? typeof(double) : t;
+                var secondParameter = @operator.EndsWith('d') ? typeof(double) : t;
                 var operatorMethods = t.GetTypeInfo().GetMethods(BindingFlags.Static | BindingFlags.Public)
                     .Where(o => o.CallingConvention == CallingConventions.Standard
                         && o.IsSpecialName
@@ -153,8 +153,8 @@ namespace Microsoft.StreamProcessing
 
         public static Type InstantiateAsNecessary(this Type type, params Type[] types)
         {
-            Contract.Requires(type != null);
-            Contract.Requires(types != null);
+            ArgumentNullException.ThrowIfNull(type);
+            ArgumentNullException.ThrowIfNull(types);
 
             if (type == null) throw new NullReferenceException(nameof(type));
             var genericArgs = types
@@ -167,7 +167,7 @@ namespace Microsoft.StreamProcessing
 
         public static bool IsAnonymousTypeName(this Type type)
         {
-            Contract.Requires(type != null);
+            ArgumentNullException.ThrowIfNull(type);
 
             return type.GetTypeInfo().IsClass
                 && type.GetTypeInfo().IsDefined(typeof(CompilerGeneratedAttribute))
@@ -184,7 +184,7 @@ namespace Microsoft.StreamProcessing
         [Pure]
         public static bool IsAnonymousType(this Type type)
         {
-            Contract.Requires(type != null);
+            ArgumentNullException.ThrowIfNull(type);
 
             return type.IsAnonymousTypeName()
                 || type.GetTypeInfo().Assembly.IsDynamic
@@ -285,7 +285,7 @@ namespace Microsoft.StreamProcessing
 
         public static List<Type> GetAnonymousTypes(this Type t)
         {
-            Contract.Requires(t != null);
+            ArgumentNullException.ThrowIfNull(t);
 
             var list = new List<Type>();
             GetAnonymousTypes(t, list);
@@ -329,7 +329,7 @@ namespace Microsoft.StreamProcessing
         /// <returns></returns>
         private static bool NeedGeneratedMemoryPool(this Type type)
         {
-            Contract.Requires(type != null);
+            ArgumentNullException.ThrowIfNull(type);
 
             if (type.MemoryPoolHasGetMethodFor()) return false;
 
@@ -361,7 +361,7 @@ namespace Microsoft.StreamProcessing
         /// </summary>
         public static bool CanRepresentAsColumnar(this Type type)
         {
-            Contract.Requires(type != null);
+            ArgumentNullException.ThrowIfNull(type);
 
             // If any public instance fields are anonymous types, then they
             // cannot be represented as columns.
@@ -390,7 +390,7 @@ namespace Microsoft.StreamProcessing
             {
                 var allFields = type
                     .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
-                    .Where(f => !(f.Name.StartsWith("<", StringComparison.Ordinal) && f.Name.EndsWith(">k__BackingField", StringComparison.Ordinal))) // ignore backing fields for autoprops
+                    .Where(f => !(f.Name.StartsWith('<') && f.Name.EndsWith(">k__BackingField", StringComparison.Ordinal))) // ignore backing fields for autoprops
                     ;
                 if (allFields.Any()) return false;
 
@@ -439,8 +439,8 @@ namespace Microsoft.StreamProcessing
 
         private static string TurnTypeIntoCSharpSource(Type t, ref List<string> introducedGenericTypeParameters)
         {
-            Contract.Requires(t != null);
-            Contract.Requires(introducedGenericTypeParameters != null);
+            ArgumentNullException.ThrowIfNull(t);
+            ArgumentNullException.ThrowIfNull(introducedGenericTypeParameters);
 
             var typeName = t.FullName.Replace('#', '_').Replace('+', '.');
             if (t.IsAnonymousTypeName())
@@ -602,7 +602,7 @@ namespace Microsoft.StreamProcessing
 
         private static bool DependsOnDefinitelyManagedType(Type type, HashSet<Type> partialClosure)
         {
-            Contract.Requires(type != null);
+            ArgumentNullException.ThrowIfNull(type);
 
             // NOTE: unlike in StructDependsClosure, we don't have to check for expanding cycles,
             // because as soon as we see something with non-zero arity we kick out (generic => managed).
@@ -693,7 +693,7 @@ namespace Microsoft.StreamProcessing
         /// </returns>
         public static Type ValidateTypeForSerializer(this Type type)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
+            ArgumentNullException.ThrowIfNull(type);
             Contract.EndContractBlock();
 
             if (type.IsUnsupported())
@@ -711,7 +711,7 @@ namespace Microsoft.StreamProcessing
         /// </returns>
         public static IEnumerable<MyFieldInfo> ResolveMembers(this Type type)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
+            ArgumentNullException.ThrowIfNull(type);
             Contract.EndContractBlock();
 
             if (type.GetTypeInfo().IsPrimitive) return Enumerable.Empty<MyFieldInfo>();

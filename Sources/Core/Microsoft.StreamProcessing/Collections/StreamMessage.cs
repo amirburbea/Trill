@@ -199,7 +199,7 @@ namespace Microsoft.StreamProcessing
             this.memPool.Get(out this.hash);
             this.memPool.GetBV(out this.bitvector);
             this.memPool.GetKey(out this.key);
-            AllocatePayload();
+            this.AllocatePayload();
         }
 
         /// <summary>
@@ -215,7 +215,7 @@ namespace Microsoft.StreamProcessing
             this.hash.pool = memPool.intPool;
             this.bitvector.pool = memPool.bitvectorPool;
 
-            AssignPayloadPool(memPool);
+            this.AssignPayloadPool(memPool);
         }
 
         /// <summary>
@@ -659,7 +659,7 @@ namespace Microsoft.StreamProcessing
             Contract.Ensures(this.IsSealed);
             this.isSealed = true;
 
-            EnsureConsistency();
+            this.EnsureConsistency();
         }
 
         /// <summary>
@@ -724,8 +724,8 @@ namespace Microsoft.StreamProcessing
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override void Free()
         {
-            Release();
-            Return();
+            this.Release();
+            this.Return();
         }
 
         /// <summary>
@@ -756,7 +756,7 @@ namespace Microsoft.StreamProcessing
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.AppendFormat(CultureInfo.InvariantCulture, "Batch has {0} rows:\n", ComputeCount());
+            sb.AppendFormat(CultureInfo.InvariantCulture, "Batch has {0} rows:\n", this.ComputeCount());
             sb.AppendFormat(CultureInfo.InvariantCulture, " ###:   vSync  vOther        Key    Payload\n");
             for (int row = 0; row < this.Count; row++)
             {
@@ -782,7 +782,7 @@ namespace Microsoft.StreamProcessing
         /// Currently for internal use only - do not use directly.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public void Print() => Console.WriteLine(ToString());
+        public void Print() => Console.WriteLine(this.ToString());
 
         /* TODO: Everything after this should be made internal - how to do that in the presence of generated subclasses? */
 
@@ -835,7 +835,7 @@ namespace Microsoft.StreamProcessing
                 value.payload.IncrementRefCount(1);
             }
 
-            CloneFromNoPayload(value, swing);
+            this.CloneFromNoPayload(value, swing);
         }
 
         /// <summary>
@@ -880,7 +880,7 @@ namespace Microsoft.StreamProcessing
         {
             Contract.Ensures(Contract.Result<int>() <= this.Count);
 
-            return this.Count == 0 ? 0 : ComputeCount(0, this.Count - 1);
+            return this.Count == 0 ? 0 : this.ComputeCount(0, this.Count - 1);
         }
 
         /// <summary>
@@ -976,10 +976,10 @@ namespace Microsoft.StreamProcessing
         {
             this.vsync.Return();
             this.vother.Return();
-            ReleaseKey();
+            this.ReleaseKey();
             this.hash.Return();
             this.bitvector.ReturnClear();
-            ReleasePayload();
+            this.ReleasePayload();
         }
 
         /// <summary>

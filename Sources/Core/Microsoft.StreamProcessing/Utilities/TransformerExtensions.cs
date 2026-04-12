@@ -17,14 +17,14 @@ namespace Microsoft.StreamProcessing
     {
         public static string CleanUpIdentifierName(this string s)
         {
-            Contract.Requires(s != null);
+            ArgumentNullException.ThrowIfNull(s);
 
             return s.Replace('`', '_').Replace('.', '_').Replace('<', '_').Replace('>', '_').Replace(',', '_').Replace(' ', '_').Replace('`', '_').Replace('[', '_').Replace(']', '_').Replace('=', '_').Replace('+', '_');
         }
 
         public static string AddNumberOfNecessaryGenericArguments(this string s, params Type[] types)
         {
-            Contract.Requires(types != null);
+            ArgumentNullException.ThrowIfNull(types);
             var i = types.Count(t => t.IsAnonymousType());
             return i > 0
                 ? s + "`" + i.ToString(CultureInfo.InvariantCulture)

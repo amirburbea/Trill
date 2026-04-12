@@ -34,7 +34,7 @@ namespace SimpleTesting
             return this;
         }
 
-        public FList<T> Clone() => new FList<T>(this);
+        public FList<T> Clone() => new(this);
 
         public new FList<T> Clear()
         {
@@ -77,7 +77,7 @@ namespace SimpleTesting
         public FList<Payload2> MatchedPayloads { get; set; }
 
         public static Register AggregateRegister(Register reg, Payload2 payload, bool isNegativeMatch) =>
-            new Register
+            new()
             {
                 IsNegative = (reg?.IsNegative ?? default) || isNegativeMatch,
                 MatchedPayloads = (reg?.MatchedPayloads.Clone() ?? new FList<Payload2>()).Add(payload)

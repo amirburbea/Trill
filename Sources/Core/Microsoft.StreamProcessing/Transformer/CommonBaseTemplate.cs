@@ -80,7 +80,7 @@ namespace Microsoft.StreamProcessing
         /// </summary>
         public void WriteLine(string textToAppend)
         {
-            Write(textToAppend);
+            this.Write(textToAppend);
             this.GenerationEnvironment.AppendLine();
             this.endsWithNewline = true;
         }
@@ -89,13 +89,13 @@ namespace Microsoft.StreamProcessing
         /// Write formatted text directly into the generated output
         /// </summary>
         public void Write(string format, params object[] args)
-            => Write(string.Format(CultureInfo.CurrentCulture, format, args));
+            => this.Write(string.Format(CultureInfo.CurrentCulture, format, args));
 
         /// <summary>
         /// Write formatted text directly into the generated output
         /// </summary>
         public void WriteLine(string format, params object[] args)
-            => WriteLine(string.Format(CultureInfo.CurrentCulture, format, args));
+            => this.WriteLine(string.Format(CultureInfo.CurrentCulture, format, args));
 
         /// <summary>
         /// Increase the indent
@@ -160,7 +160,7 @@ namespace Microsoft.StreamProcessing
             /// </summary>
             public string ToStringWithCulture(object objectToConvert)
             {
-                if (objectToConvert == null) throw new ArgumentNullException(nameof(objectToConvert));
+                ArgumentNullException.ThrowIfNull(objectToConvert);
 
                 var t = objectToConvert.GetType();
                 var method = t.GetTypeInfo().GetMethod("ToString", new Type[] { typeof(IFormatProvider) });

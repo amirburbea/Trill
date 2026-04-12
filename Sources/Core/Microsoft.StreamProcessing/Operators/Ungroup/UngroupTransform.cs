@@ -29,11 +29,11 @@ namespace Microsoft.StreamProcessing
             Type innerResultType,
             Type resultType) : base(className)
         {
-            Contract.Requires(className != null);
-            Contract.Requires(outerKeyType != null);
-            Contract.Requires(innerKeyType != null);
-            Contract.Requires(innerResultType != null);
-            Contract.Requires(resultType != null);
+            ArgumentNullException.ThrowIfNull(className);
+            ArgumentNullException.ThrowIfNull(outerKeyType);
+            ArgumentNullException.ThrowIfNull(innerKeyType);
+            ArgumentNullException.ThrowIfNull(innerResultType);
+            ArgumentNullException.ThrowIfNull(resultType);
 
             this.outerKeyType = outerKeyType;
             this.innerKeyType = innerKeyType;

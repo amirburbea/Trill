@@ -37,7 +37,7 @@ namespace SimpleTesting
         {
             var inputs = new List<MyPropertiesContainer>
             {
-                new MyPropertiesContainer { A = 1, B = true, C = 3M, D = "4", E = new Nested() },
+                new() { A = 1, B = true, C = 3M, D = "4", E = new Nested() },
             };
 
             var q1 = inputs.Select(x => StreamEvent.CreatePoint(10, x))
@@ -60,7 +60,7 @@ namespace SimpleTesting
         {
             var inputs = new List<MyFieldsContainer>
             {
-                new MyFieldsContainer { A = 1, B = true, C = 3M, D = "4", E = new Nested() },
+                new() { A = 1, B = true, C = 3M, D = "4", E = new Nested() },
             };
 
             var q1 = inputs.Select(x => StreamEvent.CreatePoint(10, x))
@@ -83,7 +83,7 @@ namespace SimpleTesting
         {
             var inputs = new List<MyFieldsContainer>
             {
-                new MyFieldsContainer { A = 1, B = true, C = 3M, D = "4", E = new Nested() { Value = "five" } },
+                new() { A = 1, B = true, C = 3M, D = "4", E = new Nested() { Value = "five" } },
             };
 
             var q1 = inputs.Select(x => StreamEvent.CreatePoint(10, x))
@@ -155,13 +155,15 @@ namespace SimpleTesting
         [TestMethod, TestCategory("Gated")]
         public void StreamEventArrayIngress1()
         {
-            // Test where full array can fit into one batch
+            // Test where full array can fit into one batch — pin DataBatchSize so the
+            // assertion on batch count is not sensitive to Config state set by other tests.
+            using var _ = new ConfigModifier().DataBatchSize(80000).Modify();
             var startTime = 0;
             var length = 100;
             var a = Enumerable.Range(0, length)
                 .Select(i => StreamEvent.CreateStart(startTime++ / 80000, i))
                 .ToArray();
-            var input = new ArraySegment<StreamEvent<int>>[] { new ArraySegment<StreamEvent<int>>(a), };
+            var input = new ArraySegment<StreamEvent<int>>[] { new(a), };
             var s = input.ToObservable();
             var str = s.ToStreamable();
             var output = str.ToStreamMessageObservable().ToEnumerable().ToArray();
@@ -181,7 +183,7 @@ namespace SimpleTesting
             var a = Enumerable.Range(0, length)
                 .Select(i => StreamEvent.CreateStart(startTime++ / 80000, i))
                 .ToArray();
-            var input = new ArraySegment<StreamEvent<int>>[] { new ArraySegment<StreamEvent<int>>(a) };
+            var input = new ArraySegment<StreamEvent<int>>[] { new(a) };
             var s = input.ToObservable();
             var str = s.ToStreamable();
             var output = str.ToStreamMessageObservable().ToEnumerable().ToArray();
@@ -204,7 +206,7 @@ namespace SimpleTesting
                     StreamEvent.CreatePunctuation<int>(i)
                     : StreamEvent.CreateStart(i, i))
                 .ToArray();
-            var input = new ArraySegment<StreamEvent<int>>[] { new ArraySegment<StreamEvent<int>>(a) };
+            var input = new ArraySegment<StreamEvent<int>>[] { new(a) };
             var s = input.ToObservable();
             var str = s.ToStreamable();
             var output = str.ToStreamMessageObservable().ToEnumerable().ToArray();
@@ -1739,8 +1741,8 @@ namespace SimpleTesting
         {
             private IObserver<StreamEvent<InputEvent>> observer;
             private readonly Process process = null;
-            private readonly Queue<StreamEvent<OutputEvent>> results = new Queue<StreamEvent<OutputEvent>>();
-            private readonly QueryContainer container = new QueryContainer();
+            private readonly Queue<StreamEvent<OutputEvent>> results = new();
+            private readonly QueryContainer container = new();
 
             private void CommonInitialize()
             {
@@ -2317,21 +2319,28 @@ namespace SimpleTesting
     }
 
     [TestClass]
+    [DoNotParallelize]
     public class LeftComparerPayload_WithCodegen : TestWithConfigSettingsAndMemoryLeakDetection
     {
         public LeftComparerPayload_WithCodegen()
-            : base(new ConfigModifier().DontFallBackToRowBasedExecution(true)) { }
+            : base(new ConfigModifier()
+                .ForceRowBasedExecution(false)
+                .DontFallBackToRowBasedExecution(true)) { }
 
         // Named result type so the full closed generic EquiJoinStreamable<,,,,> can be
         // referenced at compile time (anonymous types cannot be named in typeof/generic arguments).
         public struct JoinResult { public int LeftX; public int RightX; }
 
+        /// <summary>
+        /// Apply gated config first, then clear the join codegen cache. Ordering is important:
+        /// multiple test initializer methods do not have a guaranteed run order, so a separate
+        /// initializer could clear the cache before base setup applied
+        /// <c>DontFallBackToRowBasedExecution</c>, letting another test repopulate the cache.
+        /// </summary>
         [TestInitialize]
-        public void ClearCodegenCache()
+        public override void Setup()
         {
-            // Clear the EquiJoin codegen cache before each test so that JoinTestWithException
-            // always triggers a fresh compile and deterministically throws StreamProcessingException,
-            // regardless of which tests ran before it in the same process.
+            base.Setup();
             // The join is built via Map+Reduce, so the inner EquiJoinStreamable uses TKey=CompoundGroupKey<Empty,int>.
             EquiJoinStreamable<CompoundGroupKey<Empty, int>, ClassOverridingEquals, int, JoinResult>
                 .cachedPipes.Clear();
@@ -2516,9 +2525,9 @@ namespace SimpleTesting
 
             var expectedOutput = new StreamEvent<List<RankedEvent<char>>>[]
             {
-                StreamEvent.CreateInterval(1, 2, new List<RankedEvent<char>> { new RankedEvent<char>(1, 'a') }),
-                StreamEvent.CreateInterval(2, 3, new List<RankedEvent<char>> { new RankedEvent<char>(1, 'a') }),
-                StreamEvent.CreateInterval(3, 4, new List<RankedEvent<char>> { new RankedEvent<char>(1, 'b') }),
+                StreamEvent.CreateInterval(1, 2, new List<RankedEvent<char>> { new(1, 'a') }),
+                StreamEvent.CreateInterval(2, 3, new List<RankedEvent<char>> { new(1, 'a') }),
+                StreamEvent.CreateInterval(3, 4, new List<RankedEvent<char>> { new(1, 'b') }),
                 StreamEvent.CreatePunctuation<List<RankedEvent<char>>>(StreamEvent.InfinitySyncTime),
             };
             var str = input.ToObservable().ToStreamable(null, FlushPolicy.FlushOnPunctuation, null, OnCompletedPolicy.None).Cache();
@@ -2565,7 +2574,7 @@ namespace SimpleTesting
                 // BUG? Should codegen be able to handle this?
                 var s = "string";
                 var t = "another string";
-                TestWhere(e => e.field2.mystring.Contains(s + t));
+                this.TestWhere(e => e.field2.mystring.Contains(s + t));
             }
         }
 

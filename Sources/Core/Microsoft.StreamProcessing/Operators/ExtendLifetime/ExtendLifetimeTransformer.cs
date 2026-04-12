@@ -32,7 +32,7 @@ namespace Microsoft.StreamProcessing
         /// </returns>
         internal static Tuple<Type, string> Generate<TKey, TPayload>(ExtendLifetimeStreamable<TKey, TPayload> stream, long duration)
         {
-            Contract.Requires(stream != null);
+            ArgumentNullException.ThrowIfNull(stream);
             Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(UnaryPipe<TKey, TPayload, TPayload>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
             var result = Generate(stream, duration, false, false);
@@ -48,7 +48,7 @@ namespace Microsoft.StreamProcessing
 
         internal static Tuple<Type, string> Generate<TKey, TPayload>(ExtendLifetimeStreamable<TKey, TPayload> stream, long duration, bool useCompiledKeyComparer, bool useCompiledPayloadComparer)
         {
-            Contract.Requires(stream != null);
+            ArgumentNullException.ThrowIfNull(stream);
             Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(UnaryPipe<TKey, TPayload, TPayload>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
 #if CODEGEN_TIMING

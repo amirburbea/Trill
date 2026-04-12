@@ -78,7 +78,8 @@ namespace Microsoft.StreamProcessing
         /// <param name="delta">The amount of time that the event was out of order.</param>
         /// <returns></returns>
         public static OutOfOrderStreamEvent<TPayload> Create<TPayload>(StreamEvent<TPayload> e, long? delta)
-            => new OutOfOrderStreamEvent<TPayload> { Event = e, TimeAdjustment = delta };
+            => new()
+            { Event = e, TimeAdjustment = delta };
     }
 
     internal sealed class PartitionedDiagnosticObservable<TKey, TPayload> : IObservable<OutOfOrderPartitionedStreamEvent<TKey, TPayload>>, IObserver<OutOfOrderPartitionedStreamEvent<TKey, TPayload>>, IDisposable
@@ -153,7 +154,8 @@ namespace Microsoft.StreamProcessing
         /// <param name="delta">The amount of time that the event was out of order.</param>
         /// <returns></returns>
         public static OutOfOrderPartitionedStreamEvent<TKey, TPayload> Create<TKey, TPayload>(PartitionedStreamEvent<TKey, TPayload> e, long? delta)
-            => new OutOfOrderPartitionedStreamEvent<TKey, TPayload> { Event = e, TimeAdjustment = delta };
+            => new()
+            { Event = e, TimeAdjustment = delta };
     }
 
 }

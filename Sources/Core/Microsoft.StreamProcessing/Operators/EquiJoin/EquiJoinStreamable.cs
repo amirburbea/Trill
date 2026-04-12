@@ -14,7 +14,7 @@ namespace Microsoft.StreamProcessing
         // Internal (not private) so test code can call cachedPipes.Clear() to ensure
         // deterministic behavior in tests that depend on a fresh codegen compile.
         internal static readonly SafeConcurrentDictionary<Tuple<Type, string>> cachedPipes
-                           = new SafeConcurrentDictionary<Tuple<Type, string>>();
+                           = new();
 
         private readonly JoinKind joinKind;
         private readonly Func<CacheKey, Tuple<Type, string>> columnarGenerator;
@@ -27,7 +27,7 @@ namespace Microsoft.StreamProcessing
         public EquiJoinStreamable(IStreamable<TKey, TLeft> left, IStreamable<TKey, TRight> right, Expression<Func<TLeft, TRight, TResult>> selector)
             : base(left.Properties.Join(right.Properties, selector), left, right)
         {
-            Contract.Requires(selector != null);
+            ArgumentNullException.ThrowIfNull(selector);
 
             this.Selector = selector;
 
@@ -73,7 +73,7 @@ namespace Microsoft.StreamProcessing
                 this.columnarGenerator = k => EquiJoinTemplate.Generate(this, this.Selector);
             }
 
-            Initialize();
+            this.Initialize();
         }
 
         private static Type CreatePartitionedEquiJoinType()
@@ -144,7 +144,7 @@ namespace Microsoft.StreamProcessing
             => typeof(TKey).GetPartitionType() != null
                 ? this.partitionedGenerator(this, this.Selector, observer)
                 : this.properties.IsColumnar
-                    ? GetPipe(observer)
+                    ? this.GetPipe(observer)
                     : this.fallbackGenerator(this, this.Selector, observer);
 
         protected override bool CanGenerateColumnar()

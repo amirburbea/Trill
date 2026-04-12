@@ -33,12 +33,12 @@ namespace Microsoft.StreamProcessing
         private readonly Dictionary<string, IIngressStreamObserver> ingressPipes = [];
         private readonly Dictionary<string, IEgressStreamObserver> egressPipes = [];
 
-        private readonly ConcurrentDictionary<Tuple<string, Type, Type>, Type> sortedDictionaryTypes = new ConcurrentDictionary<Tuple<string, Type, Type>, Type>();
-        private readonly ConcurrentDictionary<Tuple<string, Type, Type>, Type> fastDictionaryTypes = new ConcurrentDictionary<Tuple<string, Type, Type>, Type>();
-        private readonly ConcurrentDictionary<Tuple<string, Type, Type>, Type> fastDictionary2Types = new ConcurrentDictionary<Tuple<string, Type, Type>, Type>();
-        private readonly ConcurrentDictionary<Tuple<string, Type, Type>, Type> fastDictionary3Types = new ConcurrentDictionary<Tuple<string, Type, Type>, Type>();
+        private readonly ConcurrentDictionary<Tuple<string, Type, Type>, Type> sortedDictionaryTypes = new();
+        private readonly ConcurrentDictionary<Tuple<string, Type, Type>, Type> fastDictionaryTypes = new();
+        private readonly ConcurrentDictionary<Tuple<string, Type, Type>, Type> fastDictionary2Types = new();
+        private readonly ConcurrentDictionary<Tuple<string, Type, Type>, Type> fastDictionary3Types = new();
 
-        private readonly ConcurrentDictionary<Type, object> serializers = new ConcurrentDictionary<Type, object>();
+        private readonly ConcurrentDictionary<Type, object> serializers = new();
 
         /// <summary>
         /// Creates a new instance of a query container for use in checkpointable queries.
@@ -125,7 +125,7 @@ namespace Microsoft.StreamProcessing
         /// <returns>A Process object that represents an active, running query that can be checkpointed.</returns>
         public Process Restore(Stream inputStream = null)
         {
-            using var _ = sentinel.EnterScope();
+            using var _ = this.sentinel.EnterScope();
             // Restoration should not happen until after all streams have been both registered and subscribed
             if (this.ingressSites.Count != this.ingressPipes.Count) throw new StreamProcessingException("Not all input data sources have been subscribed to.");
             if (this.egressSites.Count != this.egressPipes.Count) throw new StreamProcessingException("Not all output data sources have been subscribed to.");
@@ -169,7 +169,7 @@ namespace Microsoft.StreamProcessing
         /// <param name="outputStream">The stream to which the checkpoint is recorded.</param>
         public void Checkpoint(Stream outputStream)
         {
-            Invariant.IsNotNull(outputStream, nameof(outputStream));
+            ArgumentNullException.ThrowIfNull(outputStream);
             using var _ = this.sentinel.EnterScope();
             Span<byte> buffer = stackalloc byte[sizeof(int) * 3];
             BitConverter.TryWriteBytes(buffer, CheckpointVersionMajor);

@@ -18,7 +18,7 @@ namespace Microsoft.StreamProcessing
         /// <summary>
         /// Maps pair TKey,TPayload to the generated batch type
         /// </summary>
-        private static readonly SafeConcurrentDictionary<Type> cachedObjects = new SafeConcurrentDictionary<Type>();
+        private static readonly SafeConcurrentDictionary<Type> cachedObjects = new();
         public static IEnumerable<Type> GeneratedTypes()
         {
             var enumerator = cachedObjects.GetEnumerator();

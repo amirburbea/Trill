@@ -71,7 +71,7 @@ namespace Microsoft.StreamProcessing
 
         public override void OnFlush()
         {
-            FlushContents();
+            this.FlushContents();
             for (int j = 0; j < this.totalBranchesL2; j++)
             {
                 this.Observers[j].OnFlush();
@@ -378,7 +378,7 @@ namespace Microsoft.StreamProcessing
 
         public override void OnFlush()
         {
-            FlushContents();
+            this.FlushContents();
             for (int j = 0; j < this.totalBranchesL2; j++)
             {
                 this.Observers[j].OnFlush();
@@ -667,7 +667,7 @@ namespace Microsoft.StreamProcessing
 
         public override void OnFlush()
         {
-            FlushContents();
+            this.FlushContents();
             for (int j = 0; j < this.totalBranchesL2; j++)
             {
                 this.Observers[j].OnFlush();
@@ -941,7 +941,7 @@ namespace Microsoft.StreamProcessing
 
         public override void OnFlush()
         {
-            FlushContents();
+            this.FlushContents();
             for (int j = 0; j < this.totalBranchesL2; j++)
             {
                 this.Observers[j].OnFlush();

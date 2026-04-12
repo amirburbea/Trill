@@ -48,7 +48,7 @@ namespace Microsoft.StreamProcessing
             if (Config.ForceRowBasedExecution)
             {
                 // then need to use the field "payload" that is defined on the generic StreamMessage
-                this.sourceFields = new MyFieldInfo[] { new MyFieldInfo(payloadType, "payload") };
+                this.sourceFields = new MyFieldInfo[] { new(payloadType, "payload") };
             }
             else
             {
@@ -64,7 +64,7 @@ namespace Microsoft.StreamProcessing
             string errorMessages = null;
             try
             {
-                var expandedCode = TransformText();
+                var expandedCode = this.TransformText();
 
                 var assemblyReferences = Transformer.AssemblyReferencesNeededFor(
                     typeof(TKey), typeof(TPayload), typeof(TRegister), typeof(Stack<>), typeof(IStreamable<,>));
@@ -159,7 +159,7 @@ namespace Microsoft.StreamProcessing
             var newRegisterValue = !this.hasRegister || e.Transfer == null
                 ? defaultRegisterValue
                 : e.Transfer(ts, payloadList, reg);
-            WriteLine("{0}var newReg = {1};", this.CurrentIndent, newRegisterValue);
+            this.WriteLine("{0}var newReg = {1};", this.CurrentIndent, newRegisterValue);
             return;
         }
 
@@ -168,7 +168,7 @@ namespace Microsoft.StreamProcessing
             var newRegisterValue = e.Transfer == null
                 ? defaultRegisterValue
                 : e.Transfer(ts, acc, reg);
-            WriteLine("{0}var newReg = {1};", this.CurrentIndent, newRegisterValue);
+            this.WriteLine("{0}var newReg = {1};", this.CurrentIndent, newRegisterValue);
             return;
         }
 

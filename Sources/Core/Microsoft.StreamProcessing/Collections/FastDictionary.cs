@@ -141,9 +141,9 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             this.Count++;
             if (this.Count > this.resizeThreshold)
             {
-                Resize();
+                this.Resize();
                 /* resizing may make index obsolete, hence we compute the index */
-                Lookup(key, out index);
+                this.Lookup(key, out index);
             }
         }
 

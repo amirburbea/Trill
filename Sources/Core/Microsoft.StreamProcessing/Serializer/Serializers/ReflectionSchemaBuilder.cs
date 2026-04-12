@@ -15,7 +15,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
     internal sealed class ReflectionSchemaBuilder
     {
         private static readonly ConcurrentDictionary<Type, Func<ObjectSerializerBase>> RuntimeTypeToSerializer =
-            new ConcurrentDictionary<Type, Func<ObjectSerializerBase>>();
+            new();
 
         private readonly SerializerSettings settings;
         private readonly HashSet<Type> knownTypes;
@@ -77,10 +77,10 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
 
         public ObjectSerializerBase BuildSchema(Type type)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
+            ArgumentNullException.ThrowIfNull(type);
 
             this.knownTypes.UnionWith(type.GetAllKnownTypes() ?? new List<Type>());
-            return CreateSchema(type, 0);
+            return this.CreateSchema(type, 0);
         }
 
         private ObjectSerializerBase CreateSchema(Type type, uint currentDepth)
@@ -105,17 +105,17 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
             }
 
             return type.ValidateTypeForSerializer().CanContainNull()
-                ? CreateNullableSchema(type, currentDepth)
-                : CreateNotNullableSchema(type, currentDepth);
+                ? this.CreateNullableSchema(type, currentDepth)
+                : this.CreateNotNullableSchema(type, currentDepth);
         }
 
         private ObjectSerializerBase CreateNullableSchema(Type type, uint currentDepth)
         {
-            if (type.GetTypeInfo().IsInterface || type.GetTypeInfo().IsAbstract || HasApplicableKnownType(type))
-                return new UnionSerializer(FindKnownTypes(type, currentDepth).ToList(), type);
+            if (type.GetTypeInfo().IsInterface || type.GetTypeInfo().IsAbstract || this.HasApplicableKnownType(type))
+                return new UnionSerializer(this.FindKnownTypes(type, currentDepth).ToList(), type);
 
             var typeSchemas = new List<ObjectSerializerBase>();
-            var notNullableSchema = CreateNotNullableSchema(Nullable.GetUnderlyingType(type) ?? type, currentDepth);
+            var notNullableSchema = this.CreateNotNullableSchema(Nullable.GetUnderlyingType(type) ?? type, currentDepth);
 
             typeSchemas.Add(notNullableSchema);
 
@@ -128,10 +128,10 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
             if (this.seenTypes.TryGetValue(type, out var schema)) return schema;
 
             var typeInfo = type.GetTypeInfo();
-            if (typeInfo.IsEnum) return BuildEnumTypeSchema(type);
+            if (typeInfo.IsEnum) return this.BuildEnumTypeSchema(type);
 
             // Array
-            if (type.IsArray || type == typeof(Array)) return BuildArrayTypeSchema(type, currentDepth);
+            if (type.IsArray || type == typeof(Array)) return this.BuildArrayTypeSchema(type, currentDepth);
 
             // Enumerable
             var enumerableType = typeInfo
@@ -140,11 +140,11 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
             if (enumerableType != null)
             {
                 var itemType = enumerableType.GetTypeInfo().GetGenericArguments()[0];
-                return EnumerableSerializer.Create(type, itemType, CreateSchema(itemType, currentDepth + 1));
+                return EnumerableSerializer.Create(type, itemType, this.CreateSchema(itemType, currentDepth + 1));
             }
 
             // Others
-            if (typeInfo.IsClass || typeInfo.IsValueType) return BuildRecordTypeSchema(type, currentDepth);
+            if (typeInfo.IsClass || typeInfo.IsValueType) return this.BuildRecordTypeSchema(type, currentDepth);
 
             throw new SerializationException($"Type '{type}' is not supported.");
         }
@@ -158,7 +158,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
 
         private ObjectSerializerBase BuildArrayTypeSchema(Type type, uint currentDepth)
         {
-            var elementSchema = CreateSchema(type.GetElementType(), currentDepth + 1);
+            var elementSchema = this.CreateSchema(type.GetElementType(), currentDepth + 1);
 
             return type == typeof(Array) || type.GetArrayRank() == 1
                 ? new ArraySerializer(elementSchema, type)
@@ -173,7 +173,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
             var members = type.ResolveMembers();
             foreach (var info in members)
             {
-                var fieldSchema = CreateSchema(info.Type, currentDepth + 1);
+                var fieldSchema = this.CreateSchema(info.Type, currentDepth + 1);
 
                 var recordField = new RecordFieldSerializer(fieldSchema, info);
                 record.AddField(recordField);
@@ -191,7 +191,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
             }
 
             if (!type.IsAbstract && !type.IsInterface && !this.knownTypes.Contains(type)) applicable.Add(type);
-            return applicable.Select(t => CreateNotNullableSchema(t, currentDepth));
+            return applicable.Select(t => this.CreateNotNullableSchema(t, currentDepth));
         }
 
         private bool HasApplicableKnownType(Type type) => this.knownTypes.Where(t => t.CanBeKnownTypeOf(type)).Any();

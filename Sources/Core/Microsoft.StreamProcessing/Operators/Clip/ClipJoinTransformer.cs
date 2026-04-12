@@ -39,7 +39,7 @@ namespace Microsoft.StreamProcessing
         /// </returns>
         internal static Tuple<Type, string> Generate<TKey, TLeft, TRight>(ClipJoinStreamable<TKey, TLeft, TRight> stream)
         {
-            Contract.Requires(stream != null);
+            ArgumentNullException.ThrowIfNull(stream);
             Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(BinaryPipe<TKey, TLeft, TRight, TLeft>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
             var template = new ClipJoinTemplate($"GeneratedClip_{ClipSequenceNumber++}", typeof(TKey), typeof(TLeft), typeof(TRight));

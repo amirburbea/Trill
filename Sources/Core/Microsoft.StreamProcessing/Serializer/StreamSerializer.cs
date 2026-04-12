@@ -14,7 +14,7 @@ namespace Microsoft.StreamProcessing.Serializer
     public static class StreamSerializer
     {
         private static readonly ConcurrentDictionary<Tuple<Type, SerializerSettings>, object> TypedSerializers
-            = new ConcurrentDictionary<Tuple<Type, SerializerSettings>, object>();
+            = new();
 
         /// <summary>
         /// Create instance of serializer for given object type
@@ -36,7 +36,7 @@ namespace Microsoft.StreamProcessing.Serializer
         /// </remarks>
         public static StateSerializer<T> Create<T>(SerializerSettings settings)
         {
-            if (settings == null) throw new ArgumentNullException(nameof(settings));
+            ArgumentNullException.ThrowIfNull(settings);
 
             var key = Tuple.Create(typeof(T), settings);
             lock (TypedSerializers)

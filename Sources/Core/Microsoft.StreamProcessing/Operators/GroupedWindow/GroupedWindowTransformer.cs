@@ -62,7 +62,7 @@ namespace Microsoft.StreamProcessing
         internal static Tuple<Type, string> Generate<TKey, TInput, TState, TOutput, TResult>(
             GroupedWindowStreamable<TKey, TInput, TState, TOutput, TResult> stream)
         {
-            Contract.Requires(stream != null);
+            ArgumentNullException.ThrowIfNull(stream);
             Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(IStreamObserver<Empty, TInput>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
             string errorMessages = null;

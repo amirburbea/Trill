@@ -63,7 +63,7 @@ namespace Microsoft.StreamProcessing
             GroupedWindowStreamable<TKey, TInput, TState, TOutput, TResult> stream)
         {
             ArgumentNullException.ThrowIfNull(stream);
-            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(IStreamObserver<Empty, TInput>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
+            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(IStreamObserver<Empty, TInput>).IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
             string errorMessages = null;
             try
@@ -282,14 +282,14 @@ namespace Microsoft.StreamProcessing
                 expandedCode = template.TransformText();
 
                 assemblyReferences.AddRange(Transformer.AssemblyReferencesNeededFor(typeof(Empty), typeof(TKey), typeof(TInput), typeof(TState), typeof(TOutput), typeof(FastDictionaryGenerator3)));
-                assemblyReferences.Add(typeof(IStreamable<,>).GetTypeInfo().Assembly);
+                assemblyReferences.Add(typeof(IStreamable<,>).Assembly);
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<Empty, TInput>());
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<Empty, TResult>());
                 assemblyReferences.Add(Transformer.GeneratedMemoryPoolAssembly<Empty, TResult>());
 
                 var assembly = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
                 var t = assembly.GetType(template.className);
-                if (t.GetTypeInfo().IsGenericType)
+                if (t.IsGenericType)
                 {
                     var list = typeof(TKey).GetAnonymousTypes();
                     list.AddRange(typeof(TInput).GetAnonymousTypes());

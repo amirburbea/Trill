@@ -22,7 +22,7 @@ namespace Microsoft.StreamProcessing
         {
             ArgumentNullException.ThrowIfNull(stream);
             Contract.Ensures(Contract.Result<Tuple<Type, string>>() != null);
-            Contract.Ensures(typeof(UnaryPipe<TKey, TPayload, TPayload>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
+            Contract.Ensures(typeof(UnaryPipe<TKey, TPayload, TPayload>).IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
             var keyType = typeof(TKey);
             var payloadType = typeof(TPayload);
@@ -36,7 +36,7 @@ namespace Microsoft.StreamProcessing
 
             var expandedCode = template.TransformText();
 
-            assemblyReferences.Add(typeof(IStreamable<,>).GetTypeInfo().Assembly);
+            assemblyReferences.Add(typeof(IStreamable<,>).Assembly);
             assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<TKey, TPayload>());
 
             generatedClassName = generatedClassName.AddNumberOfNecessaryGenericArguments(keyType, payloadType);
@@ -49,7 +49,7 @@ namespace Microsoft.StreamProcessing
             }
 
             var t = a.GetType(generatedClassName);
-            if (t.GetTypeInfo().IsGenericType)
+            if (t.IsGenericType)
             {
                 var list = keyType.GetAnonymousTypes();
                 list.AddRange(payloadType.GetAnonymousTypes());

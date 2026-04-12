@@ -78,7 +78,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
                 {
                     // Cannot create an object beforehand. Have to call a constructor with parameters.
                     var properties = this.fields.Select(f => f.Schema.BuildDeserializer(decoderParam));
-                    var ctor = this.RuntimeType.GetTypeInfo()
+                    var ctor = this.RuntimeType
                         .GetConstructors()
                         .Single(c => c.GetParameters().Select(p => p.ParameterType).SequenceEqual(this.fields.Select(f => f.Schema.RuntimeType)));
                     body.Add(Expression.Assign(instance, Expression.New(ctor, properties)));
@@ -116,7 +116,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
                 }
 
                 // Check for null.
-                if (!this.RuntimeType.GetTypeInfo().IsValueType)
+                if (!this.RuntimeType.IsValueType)
                 {
                     body.Add(Expression.IfThen(
                         Expression.Equal(value, Expression.Constant(null)),

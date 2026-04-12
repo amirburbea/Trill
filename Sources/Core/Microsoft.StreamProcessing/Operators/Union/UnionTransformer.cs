@@ -33,7 +33,7 @@ namespace Microsoft.StreamProcessing
             UnionStreamable<TKey, TPayload> stream)
         {
             ArgumentNullException.ThrowIfNull(stream);
-            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(BinaryPipe<TKey, TPayload, TPayload, TPayload>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
+            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(BinaryPipe<TKey, TPayload, TPayload, TPayload>).IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
 #if CODEGEN_TIMING
           Stopwatch sw = new Stopwatch();

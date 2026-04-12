@@ -106,7 +106,7 @@ namespace Microsoft.StreamProcessing
             Type newType = typeof(TNew);
             foreach (var pair in newColumnFormulas)
             {
-                if (newType.GetTypeInfo().GetMember(pair.Key).Length == 0) throw new ArgumentException("Dictionary keys must refer to valid members of the destination type", nameof(newColumnFormulas));
+                if (newType.GetMember(pair.Key).Length == 0) throw new ArgumentException("Dictionary keys must refer to valid members of the destination type", nameof(newColumnFormulas));
             }
 
             if (!(initializer.Body is NewExpression newExpression)) throw new ArgumentException("Initializer must return a constructor expression.", nameof(initializer));
@@ -204,22 +204,22 @@ namespace Microsoft.StreamProcessing
             var inputParameter = Expression.Parameter(oldType, "input");
 
             var oldPublicFields =
-                oldType.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance).Select(o => o.Name)
+                oldType.GetFields(BindingFlags.Public | BindingFlags.Instance).Select(o => o.Name)
                 .Union(
-                oldType.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.GetIndexParameters().Length == 0).Select(o => o.Name));
+                oldType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.GetIndexParameters().Length == 0).Select(o => o.Name));
 
             var newPublicFields =
-                newType.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance).Select(o => o.Name)
+                newType.GetFields(BindingFlags.Public | BindingFlags.Instance).Select(o => o.Name)
                 .Union(
-                newType.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.GetIndexParameters().Length == 0).Select(o => o.Name));
+                newType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.GetIndexParameters().Length == 0).Select(o => o.Name));
 
             var fieldsInCommon = oldPublicFields.Intersect(newPublicFields).Except(newColumnFormulas.Keys);
 
             var commonFieldAssignments = fieldsInCommon.Select(
-                o => Expression.Bind(newType.GetTypeInfo().GetMember(o).Single(), Expression.PropertyOrField(inputParameter, o)));
+                o => Expression.Bind(newType.GetMember(o).Single(), Expression.PropertyOrField(inputParameter, o)));
 
             var newFieldAssignments = newColumnFormulas.Select(
-                o => Expression.Bind(newType.GetTypeInfo().GetMember(o.Key).Single(), o.Value.RemoveCastToObject().ReplaceParametersInBody(inputParameter)));
+                o => Expression.Bind(newType.GetMember(o.Key).Single(), o.Value.RemoveCastToObject().ReplaceParametersInBody(inputParameter)));
 
             var member = Expression.MemberInit(newExpression, commonFieldAssignments.Concat(newFieldAssignments).ToArray());
             var lambda = Expression.Lambda<Func<TOld, TNew>>(member, new ParameterExpression[] { inputParameter });

@@ -103,7 +103,7 @@ namespace Microsoft.StreamProcessing
         {
             if (this.serializers.TryGetValue(type, out object serializer)) return serializer;
             var serializerStatic = typeof(StreamSerializer);
-            var method = serializerStatic.GetTypeInfo().GetMethod("Create", [typeof(SerializerSettings)]).MakeGenericMethod(type);
+            var method = serializerStatic.GetMethod("Create", [typeof(SerializerSettings)]).MakeGenericMethod(type);
             var settings = new SerializerSettings()
             {
                 KnownTypes = this.CollectedGeneratedTypes,

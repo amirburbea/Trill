@@ -113,6 +113,7 @@ namespace Microsoft.StreamProcessing
             while (this.leftQueue.Iterate(ref iter)) this.leftQueue.entries[iter].value.Dispose();
             iter = FastDictionary<TPartitionKey, REntry>.IteratorStart;
             while (this.rightQueue.Iterate(ref iter)) this.rightQueue.entries[iter].value.Dispose();
+            this.partitionData.Dispose();
             this.output.Free();
         }
 

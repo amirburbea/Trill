@@ -19,7 +19,7 @@ namespace Microsoft.StreamProcessing
     [DataContract]
     internal sealed class SnapshotWindowTumblingPipeSimple<TInput, TState, TOutput> : UnaryPipe<Empty, TInput, TOutput>
     {
-        private static readonly bool hasDisposableState = typeof(IDisposable).GetTypeInfo().IsAssignableFrom(typeof(TState));
+        private static readonly bool hasDisposableState = typeof(IDisposable).IsAssignableFrom(typeof(TState));
         private readonly MemoryPool<Empty, TOutput> pool;
         private readonly string errorMessages;
         private readonly IAggregate<TInput, TState, TOutput> aggregate;

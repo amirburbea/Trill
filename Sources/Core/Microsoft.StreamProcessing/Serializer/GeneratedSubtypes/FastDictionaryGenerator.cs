@@ -46,7 +46,7 @@ namespace Microsoft.StreamProcessing.Internal
 
                     temp = a.GetType(typeName + "`2");
                     temp = temp.MakeGenericType(typeof(TKey), typeof(TValue));
-                    MethodInfo init = temp.GetTypeInfo().GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
+                    MethodInfo init = temp.GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
                     init.Invoke(null, [equalsFunc, getHashCodeFunc, capacity]);
                     generatorCache.Add(key, temp);
                 }
@@ -92,7 +92,7 @@ namespace Microsoft.StreamProcessing.Internal
 
                     temp = a.GetType(typeName + "`2");
                     temp = temp.MakeGenericType(typeof(TKey), typeof(TValue));
-                    MethodInfo init = temp.GetTypeInfo().GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
+                    MethodInfo init = temp.GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
                     init.Invoke(null, [equalsFunc, getHashCodeFunc, capacity]);
                     generatorCache.Add(key, temp);
                 }
@@ -138,7 +138,7 @@ namespace Microsoft.StreamProcessing.Internal
 
                     temp = a.GetType(typeName + "`2");
                     temp = temp.MakeGenericType(typeof(TKey), typeof(TValue));
-                    MethodInfo init = temp.GetTypeInfo().GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
+                    MethodInfo init = temp.GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
                     init.Invoke(null, [equalsFunc, getHashCodeFunc, capacity]);
                     generatorCache.Add(key, temp);
                 }

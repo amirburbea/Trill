@@ -41,9 +41,9 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
         /// <param name="value">The value.</param>
         /// <returns>Expression, serializing an enumerable.</returns>
         protected override Expression BuildSerializerSafe(Expression encoder, Expression value)
-            => typeof(IList<TItem>).GetTypeInfo().IsAssignableFrom(typeof(TCollection).GetTypeInfo())
+            => typeof(IList<TItem>).IsAssignableFrom(typeof(TCollection))
                 ? this.BuildSerializerForList(encoder, value)
-                : typeof(ICollection<TItem>).GetTypeInfo().IsAssignableFrom(typeof(TCollection).GetTypeInfo())
+                : typeof(ICollection<TItem>).IsAssignableFrom(typeof(TCollection))
                     ? this.BuildSerializerForCollection(encoder, value)
                     : this.BuildSerializerForEnumerable(encoder, value);
 
@@ -151,7 +151,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
         }
 
         protected override Expression BuildDeserializerSafe(Expression decoder)
-            => typeof(ICollection<TItem>).GetTypeInfo().IsAssignableFrom(typeof(TCollection).GetTypeInfo())
+            => typeof(ICollection<TItem>).IsAssignableFrom(typeof(TCollection))
                 ? this.BuildDeserializerForCollection(decoder)
                 : this.BuildDeserializerForEnumerable(decoder);
 

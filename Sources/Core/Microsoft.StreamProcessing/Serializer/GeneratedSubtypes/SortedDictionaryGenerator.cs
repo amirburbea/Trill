@@ -51,7 +51,7 @@ namespace Microsoft.StreamProcessing.Internal
 
                     temp = a.GetType(typeName + "`2");
                     temp = temp.MakeGenericType(typeof(TKey), typeof(TValue));
-                    var init = temp.GetTypeInfo().GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
+                    var init = temp.GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
                     init.Invoke(null, new object[] { Comparer<TKey>.Create(expr.Compile()) });
                     DictionaryTypes.Add(key, temp);
                 }

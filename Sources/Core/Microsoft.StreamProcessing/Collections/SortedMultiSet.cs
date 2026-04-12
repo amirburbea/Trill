@@ -35,9 +35,9 @@ namespace Microsoft.StreamProcessing
             var type = typeof(SortedDictionary<T, long>);
             var parameter = Expression.Parameter(type);
 
-            var field = type.GetTypeInfo().GetField("_set", BindingFlags.NonPublic | BindingFlags.Instance);
+            var field = type.GetField("_set", BindingFlags.NonPublic | BindingFlags.Instance);
             var set = Expression.Field(parameter, field);
-            var member = set.Type.GetTypeInfo().GetMethod("Reverse");
+            var member = set.Type.GetMethod("Reverse");
             var reverse = Expression.Call(set, member);
 
             return Expression.Lambda<Func<SortedDictionary<T, long>, IEnumerable<KeyValuePair<T, long>>>>(reverse, parameter).Compile();

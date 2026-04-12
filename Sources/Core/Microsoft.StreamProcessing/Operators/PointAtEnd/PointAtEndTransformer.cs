@@ -28,7 +28,7 @@ namespace Microsoft.StreamProcessing
         internal static Tuple<Type, string> Generate<TKey, TPayload>(PointAtEndStreamable<TKey, TPayload> stream)
         {
             ArgumentNullException.ThrowIfNull(stream);
-            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(UnaryPipe<TKey, TPayload, TPayload>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
+            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(UnaryPipe<TKey, TPayload, TPayload>).IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
 #if CODEGEN_TIMING
           Stopwatch sw = new Stopwatch();

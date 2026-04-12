@@ -82,7 +82,11 @@ namespace Microsoft.StreamProcessing
             if (!this.partitionData.Lookup(pKey, out int eph)) this.partitionData.Insert(ref eph, pKey, new PartitionEntry());
         }
 
-        protected override void DisposeState() => this.output.Free();
+        protected override void DisposeState()
+        {
+            this.partitionData.Dispose();
+            this.output.Free();
+        }
 
         protected override void ProcessBothBatches(StreamMessage<TKey, TLeft> leftBatch, StreamMessage<TKey, TRight> rightBatch, out bool leftBatchDone, out bool rightBatchDone, out bool leftBatchFree, out bool rightBatchFree)
         {

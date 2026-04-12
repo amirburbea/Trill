@@ -26,7 +26,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
             ArgumentNullException.ThrowIfNull(@object);
 
             var member = this.GetMember(@object);
-            if (this.Schema.RuntimeType.GetTypeInfo().IsValueType || this.MemberInfo.isField)
+            if (this.Schema.RuntimeType.IsValueType || this.MemberInfo.isField)
             {
                 return this.Schema.BuildSerializer(encoder, member);
             }
@@ -44,7 +44,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
 
             var value = this.Schema.BuildDeserializer(decoder);
             var member = this.GetMember(@object);
-            if (@object.Type.GetTypeInfo().IsValueType)
+            if (@object.Type.IsValueType)
             {
                 var tmp = Expression.Variable(value.Type);
                 return Expression.Block(

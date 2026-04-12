@@ -34,7 +34,7 @@ namespace Microsoft.StreamProcessing
             StitchStreamable<TKey, TPayload> stream)
         {
             ArgumentNullException.ThrowIfNull(stream);
-            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(UnaryPipe<TKey, TPayload, TPayload>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
+            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(UnaryPipe<TKey, TPayload, TPayload>).IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
             var template = new StitchTemplate(
                 $"GeneratedStitch_{StitchSequenceNumber++}",
@@ -54,7 +54,7 @@ namespace Microsoft.StreamProcessing
 
             #region Payload Equals
             {
-                template.ActiveEventType = typeof(TPayload).GetTypeInfo().IsValueType ? template.TPayload : "Active_Event";
+                template.ActiveEventType = typeof(TPayload).IsValueType ? template.TPayload : "Active_Event";
 
                 var payloadComparer = stream.Properties.PayloadEqualityComparer.GetEqualsExpr();
                 template.payloadEquals = (left, right) => payloadComparer.Inline(left, right);

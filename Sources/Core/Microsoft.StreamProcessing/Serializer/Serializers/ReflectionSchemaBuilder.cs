@@ -43,27 +43,27 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
             RuntimeTypeToSerializer[typeof(DateTimeOffset)] = () => PrimitiveSerializer.DateTimeOffset;
             RuntimeTypeToSerializer[typeof(Guid)] = () => PrimitiveSerializer.Guid;
 
-            RuntimeTypeToSerializer[typeof(char[])] = () => PrimitiveSerializer.CreateForArray<char>();
+            RuntimeTypeToSerializer[typeof(char[])] = PrimitiveSerializer.CreateForArray<char>;
             RuntimeTypeToSerializer[typeof(byte[])] = () => PrimitiveSerializer.ByteArray;
-            RuntimeTypeToSerializer[typeof(short[])] = () => PrimitiveSerializer.CreateForArray<short>();
-            RuntimeTypeToSerializer[typeof(ushort[])] = () => PrimitiveSerializer.CreateForArray<ushort>();
-            RuntimeTypeToSerializer[typeof(int[])] = () => PrimitiveSerializer.CreateForArray<int>();
-            RuntimeTypeToSerializer[typeof(uint[])] = () => PrimitiveSerializer.CreateForArray<uint>();
-            RuntimeTypeToSerializer[typeof(long[])] = () => PrimitiveSerializer.CreateForArray<long>();
-            RuntimeTypeToSerializer[typeof(ulong[])] = () => PrimitiveSerializer.CreateForArray<ulong>();
-            RuntimeTypeToSerializer[typeof(float[])] = () => PrimitiveSerializer.CreateForArray<float>();
-            RuntimeTypeToSerializer[typeof(double[])] = () => PrimitiveSerializer.CreateForArray<double>();
+            RuntimeTypeToSerializer[typeof(short[])] = PrimitiveSerializer.CreateForArray<short>;
+            RuntimeTypeToSerializer[typeof(ushort[])] = PrimitiveSerializer.CreateForArray<ushort>;
+            RuntimeTypeToSerializer[typeof(int[])] = PrimitiveSerializer.CreateForArray<int>;
+            RuntimeTypeToSerializer[typeof(uint[])] = PrimitiveSerializer.CreateForArray<uint>;
+            RuntimeTypeToSerializer[typeof(long[])] = PrimitiveSerializer.CreateForArray<long>;
+            RuntimeTypeToSerializer[typeof(ulong[])] = PrimitiveSerializer.CreateForArray<ulong>;
+            RuntimeTypeToSerializer[typeof(float[])] = PrimitiveSerializer.CreateForArray<float>;
+            RuntimeTypeToSerializer[typeof(double[])] = PrimitiveSerializer.CreateForArray<double>;
             RuntimeTypeToSerializer[typeof(string[])] = () => PrimitiveSerializer.StringArray;
 
-            RuntimeTypeToSerializer[typeof(ColumnBatch<char>)] = () => PrimitiveSerializer.CreateForColumnBatch<char>();
-            RuntimeTypeToSerializer[typeof(ColumnBatch<short>)] = () => PrimitiveSerializer.CreateForColumnBatch<short>();
-            RuntimeTypeToSerializer[typeof(ColumnBatch<ushort>)] = () => PrimitiveSerializer.CreateForColumnBatch<ushort>();
-            RuntimeTypeToSerializer[typeof(ColumnBatch<int>)] = () => PrimitiveSerializer.CreateForColumnBatch<int>();
-            RuntimeTypeToSerializer[typeof(ColumnBatch<uint>)] = () => PrimitiveSerializer.CreateForColumnBatch<uint>();
-            RuntimeTypeToSerializer[typeof(ColumnBatch<long>)] = () => PrimitiveSerializer.CreateForColumnBatch<long>();
-            RuntimeTypeToSerializer[typeof(ColumnBatch<ulong>)] = () => PrimitiveSerializer.CreateForColumnBatch<ulong>();
-            RuntimeTypeToSerializer[typeof(ColumnBatch<float>)] = () => PrimitiveSerializer.CreateForColumnBatch<float>();
-            RuntimeTypeToSerializer[typeof(ColumnBatch<double>)] = () => PrimitiveSerializer.CreateForColumnBatch<double>();
+            RuntimeTypeToSerializer[typeof(ColumnBatch<char>)] = PrimitiveSerializer.CreateForColumnBatch<char>;
+            RuntimeTypeToSerializer[typeof(ColumnBatch<short>)] = PrimitiveSerializer.CreateForColumnBatch<short>;
+            RuntimeTypeToSerializer[typeof(ColumnBatch<ushort>)] = PrimitiveSerializer.CreateForColumnBatch<ushort>;
+            RuntimeTypeToSerializer[typeof(ColumnBatch<int>)] = PrimitiveSerializer.CreateForColumnBatch<int>;
+            RuntimeTypeToSerializer[typeof(ColumnBatch<uint>)] = PrimitiveSerializer.CreateForColumnBatch<uint>;
+            RuntimeTypeToSerializer[typeof(ColumnBatch<long>)] = PrimitiveSerializer.CreateForColumnBatch<long>;
+            RuntimeTypeToSerializer[typeof(ColumnBatch<ulong>)] = PrimitiveSerializer.CreateForColumnBatch<ulong>;
+            RuntimeTypeToSerializer[typeof(ColumnBatch<float>)] = PrimitiveSerializer.CreateForColumnBatch<float>;
+            RuntimeTypeToSerializer[typeof(ColumnBatch<double>)] = PrimitiveSerializer.CreateForColumnBatch<double>;
             RuntimeTypeToSerializer[typeof(ColumnBatch<string>)] = () => PrimitiveSerializer.StringColumnBatch;
 
             RuntimeTypeToSerializer[typeof(CharArrayWrapper)] = () => PrimitiveSerializer.CharArray;
@@ -111,7 +111,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
 
         private ObjectSerializerBase CreateNullableSchema(Type type, uint currentDepth)
         {
-            if (type.GetTypeInfo().IsInterface || type.GetTypeInfo().IsAbstract || this.HasApplicableKnownType(type))
+            if (type.IsInterface || type.IsAbstract || this.HasApplicableKnownType(type))
                 return new UnionSerializer(this.FindKnownTypes(type, currentDepth).ToList(), type);
 
             var typeSchemas = new List<ObjectSerializerBase>();
@@ -127,24 +127,23 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
             if (RuntimeTypeToSerializer.TryGetValue(type, out var p)) return p();
             if (this.seenTypes.TryGetValue(type, out var schema)) return schema;
 
-            var typeInfo = type.GetTypeInfo();
-            if (typeInfo.IsEnum) return this.BuildEnumTypeSchema(type);
+            if (type.IsEnum) return this.BuildEnumTypeSchema(type);
 
             // Array
             if (type.IsArray || type == typeof(Array)) return this.BuildArrayTypeSchema(type, currentDepth);
 
             // Enumerable
-            var enumerableType = typeInfo
+            var enumerableType = type
                 .GetInterfaces()
-                .SingleOrDefault(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+                .SingleOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>));
             if (enumerableType != null)
             {
-                var itemType = enumerableType.GetTypeInfo().GetGenericArguments()[0];
+                var itemType = enumerableType.GetGenericArguments()[0];
                 return EnumerableSerializer.Create(type, itemType, this.CreateSchema(itemType, currentDepth + 1));
             }
 
             // Others
-            if (typeInfo.IsClass || typeInfo.IsValueType) return this.BuildRecordTypeSchema(type, currentDepth);
+            if (type.IsClass || type.IsValueType) return this.BuildRecordTypeSchema(type, currentDepth);
 
             throw new SerializationException($"Type '{type}' is not supported.");
         }

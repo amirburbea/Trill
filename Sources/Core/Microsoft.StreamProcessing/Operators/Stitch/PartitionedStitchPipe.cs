@@ -85,13 +85,13 @@ namespace Microsoft.StreamProcessing
             var getHashCode = khpcomparer.GetGetHashCodeExpr().Compile();
 
             var generator1 = khpcomparer.CreateFastDictionary2Generator<KHP, List<ActiveEvent>>(1, equals, getHashCode, stream.Properties.QueryContainer);
-            this.dictPool = new DataStructurePool<FastDictionary2<KHP, List<ActiveEvent>>>(() => generator1.Invoke());
+            this.dictPool = new DataStructurePool<FastDictionary2<KHP, List<ActiveEvent>>>(generator1.Invoke);
 
             var generator2 = khpcomparer.CreateFastDictionary2Generator<KHP, int>(1, equals, getHashCode, stream.Properties.QueryContainer);
-            this.CurrentTimeOpenEventBufferGenerator = () => generator2.Invoke();
+            this.CurrentTimeOpenEventBufferGenerator = generator2.Invoke;
 
             var generator3 = khpcomparer.CreateFastDictionary2Generator<KHP, List<ActiveEventExt>>(1, equals, getHashCode, stream.Properties.QueryContainer);
-            this.OpenEventsGenerator = () => generator3.Invoke();
+            this.OpenEventsGenerator = generator3.Invoke;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

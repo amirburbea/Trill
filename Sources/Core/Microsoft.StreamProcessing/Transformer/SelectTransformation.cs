@@ -35,7 +35,7 @@ namespace Microsoft.StreamProcessing
         private bool error;
         private readonly List<Tuple<MyFieldInfo, MyFieldInfo>> swingingFields;
         private readonly Dictionary<MyFieldInfo, Expression> computedFields;
-        private readonly ColumnarRepresentation resultTypeInformation;
+        private readonly ColumnarRepresentation resultColumnarRepresentation;
         private readonly bool noSwingingFields;
         private readonly Dictionary<ParameterExpression, SelectParameterInformation> parameterInformation;
         private readonly Expression ProjectionReturningResultInstance;
@@ -47,22 +47,22 @@ namespace Microsoft.StreamProcessing
         internal static SelectTransformationResult Transform(
             LambdaExpression function,
             IEnumerable<Tuple<ParameterExpression, SelectParameterInformation>> substitutionInformation,
-            ColumnarRepresentation resultTypeInformation,
+            ColumnarRepresentation resultColumnarRepresentation,
             bool noSwingingFields = false,
             bool hasStartEdge = false)
         {
             ArgumentNullException.ThrowIfNull(function);
             ArgumentNullException.ThrowIfNull(substitutionInformation);
-            ArgumentNullException.ThrowIfNull(resultTypeInformation);
+            ArgumentNullException.ThrowIfNull(resultColumnarRepresentation);
 
-            var me = new SelectTransformer(function, substitutionInformation, resultTypeInformation, noSwingingFields,
+            var me = new SelectTransformer(function, substitutionInformation, resultColumnarRepresentation, noSwingingFields,
                 Config.UseMultiString && ((Config.MultiStringTransforms & Config.CodegenOptions.MultiStringFlags.VectorOperations) != 0), hasStartEdge);
 
             // Need to find any unmentioned fields from the result type
             var unmentionedFields = new List<MyFieldInfo>();
             if (me.ProjectionReturningResultInstance == null)
             {
-                foreach (var kv in resultTypeInformation.Fields)
+                foreach (var kv in resultColumnarRepresentation.Fields)
                 {
                     var fieldInfo = kv.Value;
                     if (me.swingingFields.Any(t => t.Item1.Equals(fieldInfo))) continue;
@@ -91,7 +91,7 @@ namespace Microsoft.StreamProcessing
         private SelectTransformer(
             LambdaExpression function,
             IEnumerable<Tuple<ParameterExpression, SelectParameterInformation>> substitutionInformation,
-            ColumnarRepresentation resultTypeInformation,
+            ColumnarRepresentation resultColumnarRepresentation,
             bool noSwingingFields,
             bool doMultiStringTransform,
             bool hasStartEdge)
@@ -101,7 +101,7 @@ namespace Microsoft.StreamProcessing
             {
                 this.parameterInformation.Add(tup.Item1, tup.Item2);
             }
-            this.resultTypeInformation = resultTypeInformation;
+            this.resultColumnarRepresentation = resultColumnarRepresentation;
             this.noSwingingFields = noSwingingFields;
             this.doMultiStringTransform = doMultiStringTransform;
 
@@ -129,7 +129,7 @@ namespace Microsoft.StreamProcessing
             // Case: projection is (e_1, e_2, ..., e_n) => new { f1 = ..., f2 = ..., ...}), i.e., projecting into an anonymous type
             if (body is NewExpression newExpression && newExpression.Type.IsAnonymousType())
             {
-                Contract.Assume(newExpression.Type == resultTypeInformation.RepresentationFor);
+                Contract.Assume(newExpression.Type == resultColumnarRepresentation.RepresentationFor);
 
                 // REVIEW: Should these be turned into part of the if-test?
                 Contract.Assume(newExpression.Arguments != null);
@@ -142,7 +142,7 @@ namespace Microsoft.StreamProcessing
 
             // Case: projection is (e_1, e_2, ..., e_n) => new T{ f1 = ..., f2 = ..., ... }), i.e., T is *not* an anonymous type
             // TODO: See if this can be unified with the code above for anonymous types.
-            if (body is MemberInitExpression && !this.resultTypeInformation.noFields)
+            if (body is MemberInitExpression && !this.resultColumnarRepresentation.noFields)
             {
                 this.Visit(body);
                 return;
@@ -153,16 +153,16 @@ namespace Microsoft.StreamProcessing
             // column's pseudo-field, "payload".
             // Note that f is either a real method call or else just an expression
             // that computes a result value (e.g., a type cast which shows up as a unary expression).
-            if (this.resultTypeInformation.noFields)
+            if (this.resultColumnarRepresentation.noFields)
             {
                 if (this.doMultiStringTransform && IsMultiStringCall(body, out string s))
                 {
-                    this.multiStringOperations.Add($"resultBatch.{this.resultTypeInformation.PseudoField.Name} = {s};");
+                    this.multiStringOperations.Add($"resultBatch.{this.resultColumnarRepresentation.PseudoField.Name} = {s};");
                 }
                 else
                 {
                     var transformedBody = this.Visit(body);
-                    this.computedFields.Add(this.resultTypeInformation.PseudoField, transformedBody);
+                    this.computedFields.Add(this.resultColumnarRepresentation.PseudoField, transformedBody);
                 }
                 return;
             }
@@ -204,7 +204,7 @@ namespace Microsoft.StreamProcessing
                 return;
             }
             var columnarField = selectParameter.parameterRepresentation.Fields[fieldOrAutoProp.Name];
-            if (this.resultTypeInformation.noFields)
+            if (this.resultColumnarRepresentation.noFields)
             {
                 // Then e.f is of type R (the result type) where R is a primitive type or some type that doesn't get decomposed.
                 // In that case, there doesn't need to be a loop at all. The pointer to the column for f can just be swung to the
@@ -212,12 +212,12 @@ namespace Microsoft.StreamProcessing
                 if (this.noSwingingFields)
                 {
                     var a = this.GetBatchColumnIndexer(parameter, columnarField);
-                    this.computedFields.Add(this.resultTypeInformation.PseudoField, a);
+                    this.computedFields.Add(this.resultColumnarRepresentation.PseudoField, a);
                 }
                 else
                 {
                     this.swingingFields.Add(
-                        Tuple.Create(this.resultTypeInformation.PseudoField, columnarField));
+                        Tuple.Create(this.resultColumnarRepresentation.PseudoField, columnarField));
                 }
             }
             else
@@ -226,7 +226,7 @@ namespace Microsoft.StreamProcessing
                 // So this has to behave as RowToCol: the value e.f needs to have its subfields assigned to
                 // the corresponding columns.
                 var indexVariable = this.GetIndexVariable(parameter);
-                foreach (var resultField in this.resultTypeInformation.Fields.Values)
+                foreach (var resultField in this.resultColumnarRepresentation.Fields.Values)
                 {
                     var correspondingVariable = Expression.Variable(columnarField.Type.MakeArrayType(), columnarField.Name + "_col");
                     var arrayAccess = Expression.ArrayAccess(correspondingVariable, indexVariable);
@@ -257,7 +257,7 @@ namespace Microsoft.StreamProcessing
             var indexVariable = Expression.Variable(typeof(int), parameterInfo.IndexVariableName);
             if (column.Type.Equals(typeof(Internal.Collections.MultiString)))
             {
-                var indexer = typeof(Internal.Collections.MultiString).GetTypeInfo().GetProperty("Item");
+                var indexer = typeof(Internal.Collections.MultiString).GetProperty("Item");
                 return Expression.MakeIndex(column, indexer, new List<Expression>() { indexVariable });
             }
             else
@@ -277,22 +277,22 @@ namespace Microsoft.StreamProcessing
         /// </summary>
         private void TransformSingleParameterSelect(ParameterExpression parameter, bool hasStartEdge)
         {
-            Contract.Assume(parameter.Type == this.resultTypeInformation.RepresentationFor);
+            Contract.Assume(parameter.Type == this.resultColumnarRepresentation.RepresentationFor);
 
             if (!this.parameterInformation.TryGetValue(parameter, out var selectParameter))
             {
-                if (!hasStartEdge && !this.resultTypeInformation.noFields)
+                if (!hasStartEdge && !this.resultColumnarRepresentation.noFields)
                 {
                     this.error = true;
                     return;
                 }
                 else
                 {
-                    this.computedFields.Add(this.resultTypeInformation.PseudoField, parameter);
+                    this.computedFields.Add(this.resultColumnarRepresentation.PseudoField, parameter);
                     return;
                 }
             }
-            foreach (var resultField in this.resultTypeInformation.AllFields)
+            foreach (var resultField in this.resultColumnarRepresentation.AllFields)
             {
                 var matchingField = selectParameter.parameterRepresentation.AllFields.First(f => f.OriginalName == resultField.OriginalName);
                 if (this.noSwingingFields)
@@ -326,7 +326,7 @@ namespace Microsoft.StreamProcessing
                 Contract.Assume(destinationField != null);
                 var argument = newExpression.Arguments[i];
 
-                var resultField = this.resultTypeInformation.Fields[destinationField.Name]; // result type must have Fields
+                var resultField = this.resultColumnarRepresentation.Fields[destinationField.Name]; // result type must have Fields
 
                 // Special case for MultiString: right-hand side of the assignment could be a method call
                 // (or property, like Length) on a MultiString. This is optimized (but only if
@@ -360,7 +360,7 @@ namespace Microsoft.StreamProcessing
             for (int i = 0; i < methodCall.Arguments.Count; i++)
             {
                 var argument = methodCall.Arguments[i];
-                var resultField = this.resultTypeInformation.Fields[$"Item{i + 1}"];
+                var resultField = this.resultColumnarRepresentation.Fields[$"Item{i + 1}"];
 
                 // Special case for MultiString: right-hand side of the assignment could be a method call
                 // (or property, like Length) on a MultiString. This is optimized (but only if
@@ -394,13 +394,13 @@ namespace Microsoft.StreamProcessing
                 this.error = true;
                 return node;
             }
-            if (!m.DeclaringType.GetTypeInfo().IsAssignableFrom(this.resultTypeInformation.RepresentationFor))
+            if (!m.DeclaringType.IsAssignableFrom(this.resultColumnarRepresentation.RepresentationFor))
             {
                 this.error = true;
                 return node;
             }
 
-            var destinationColumn = this.resultTypeInformation.Fields[m.Name];
+            var destinationColumn = this.resultColumnarRepresentation.Fields[m.Name];
 
             if (this.HandleSimpleAssignments(node.Expression, destinationColumn)) return node;
 

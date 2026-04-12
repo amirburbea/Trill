@@ -64,7 +64,7 @@ namespace Microsoft.StreamProcessing
             var equals = khpcomparer.GetEqualsExpr().Compile();
             var getHashCode = khpcomparer.GetGetHashCodeExpr().Compile();
             var generator = khpcomparer.CreateFastDictionary2Generator<KHP, List<ActiveEvent>>(1, equals, getHashCode, stream.Properties.QueryContainer);
-            this.dictPool = new DataStructurePool<FastDictionary2<KHP, List<ActiveEvent>>>(() => generator.Invoke());
+            this.dictPool = new DataStructurePool<FastDictionary2<KHP, List<ActiveEvent>>>(generator.Invoke);
             this.outputCount = 0;
             this.CurrentTimeOpenEventBuffer = khpcomparer.CreateFastDictionary2Generator<KHP, int>(1, equals, getHashCode, stream.Properties.QueryContainer).Invoke();
             this.OpenEvents = khpcomparer.CreateFastDictionary2Generator<KHP, List<ActiveEventExt>>(1, equals, getHashCode, stream.Properties.QueryContainer).Invoke();

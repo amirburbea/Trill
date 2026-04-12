@@ -163,7 +163,7 @@ namespace Microsoft.StreamProcessing
                 ArgumentNullException.ThrowIfNull(objectToConvert);
 
                 var t = objectToConvert.GetType();
-                var method = t.GetTypeInfo().GetMethod("ToString", new Type[] { typeof(IFormatProvider) });
+                var method = t.GetMethod("ToString", new Type[] { typeof(IFormatProvider) });
 
                 return method == null
                     ? objectToConvert.ToString()

@@ -33,7 +33,7 @@ namespace Microsoft.StreamProcessing
         internal static Tuple<Type, string> Generate<TKey, TPayload>(ExtendLifetimeStreamable<TKey, TPayload> stream, long duration)
         {
             ArgumentNullException.ThrowIfNull(stream);
-            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(UnaryPipe<TKey, TPayload, TPayload>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
+            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(UnaryPipe<TKey, TPayload, TPayload>).IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
             var result = Generate(stream, duration, false, false);
             if (duration >= 0) return result; // only negative pipe uses comparers
@@ -49,7 +49,7 @@ namespace Microsoft.StreamProcessing
         internal static Tuple<Type, string> Generate<TKey, TPayload>(ExtendLifetimeStreamable<TKey, TPayload> stream, long duration, bool useCompiledKeyComparer, bool useCompiledPayloadComparer)
         {
             ArgumentNullException.ThrowIfNull(stream);
-            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(UnaryPipe<TKey, TPayload, TPayload>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
+            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(UnaryPipe<TKey, TPayload, TPayload>).IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
 #if CODEGEN_TIMING
           Stopwatch sw = new Stopwatch();
@@ -62,7 +62,7 @@ namespace Microsoft.StreamProcessing
                 ? new ExtendLifetimeNegativeTemplate(className, typeof(TKey), typeof(TPayload))
                 : (ExtendLifetimeBaseTemplate)new ExtendLifetimeTemplate(className, typeof(TKey), typeof(TPayload));
 
-            template.ActiveEventType = typeof(TPayload).GetTypeInfo().IsValueType ? template.TPayload : "Active_Event";
+            template.ActiveEventType = typeof(TPayload).IsValueType ? template.TPayload : "Active_Event";
 
             #region Key Comparer
             template.useCompiledKeyComparer = useCompiledKeyComparer;

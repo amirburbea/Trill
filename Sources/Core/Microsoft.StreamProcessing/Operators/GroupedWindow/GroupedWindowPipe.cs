@@ -379,6 +379,10 @@ namespace Microsoft.StreamProcessing
             }
         }
 
-        protected override void DisposeState() => this.batch.Free();
+        protected override void DisposeState()
+        {
+            this.heldAggregates.Dispose();
+            this.batch.Free();
+        }
     }
 }

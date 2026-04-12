@@ -64,7 +64,7 @@ namespace Microsoft.StreamProcessing
 
             Expression onNextPunctuation;
             var baseType = typeof(TOutput);
-            if (baseType.GetTypeInfo().IsGenericType) baseType = baseType.GetGenericTypeDefinition();
+            if (baseType.IsGenericType) baseType = baseType.GetGenericTypeDefinition();
 
             onNextPunctuation = baseType == typeof(StreamEvent<>) || baseType == typeof(PartitionedStreamEvent<,>)
                 ? Expression.IfThenElse(

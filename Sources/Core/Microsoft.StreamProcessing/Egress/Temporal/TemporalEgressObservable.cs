@@ -55,7 +55,7 @@ namespace Microsoft.StreamProcessing
         private bool CanGenerateColumnar()
         {
             if (typeof(TPayload).IsAnonymousTypeName()) return false;
-            if (!typeof(TPayload).GetTypeInfo().IsVisible) return false;
+            if (!typeof(TPayload).IsVisible) return false;
 
             var lookupKey = this.CachedPipeLookupKey();
             var generatedPipeType = cachedPipes.GetOrAdd(lookupKey, key => TemporalEgressTemplate.Generate(this));
@@ -131,7 +131,7 @@ namespace Microsoft.StreamProcessing
         private bool CanGenerateColumnar()
         {
             if (typeof(TPayload).IsAnonymousTypeName() || typeof(TResult).IsAnonymousTypeName()) return false;
-            if (!typeof(TPayload).GetTypeInfo().IsVisible || !typeof(TResult).GetTypeInfo().IsVisible) return false;
+            if (!typeof(TPayload).IsVisible || !typeof(TResult).IsVisible) return false;
 
             var lookupKey = this.CachedPipeLookupKey();
             var generatedPipeType = cachedPipes.GetOrAdd(lookupKey, key => TemporalEgressTemplate.Generate(this));
@@ -199,7 +199,7 @@ namespace Microsoft.StreamProcessing
         private bool CanGenerateColumnar()
         {
             if (typeof(TPayload).IsAnonymousTypeName() || typeof(TResult).IsAnonymousTypeName()) return false;
-            if (!typeof(TPayload).GetTypeInfo().IsVisible || !typeof(TResult).GetTypeInfo().IsVisible) return false;
+            if (!typeof(TPayload).IsVisible || !typeof(TResult).IsVisible) return false;
 
             var lookupKey = this.CachedPipeLookupKey();
             var generatedPipeType = cachedPipes.GetOrAdd(lookupKey, key => TemporalEgressTemplate.Generate(this));
@@ -263,7 +263,7 @@ namespace Microsoft.StreamProcessing
         private bool CanGenerateColumnar()
         {
             if (typeof(TKey).IsAnonymousTypeName() || typeof(TPayload).IsAnonymousTypeName()) return false;
-            if (!typeof(TKey).GetTypeInfo().IsVisible || !typeof(TPayload).GetTypeInfo().IsVisible) return false;
+            if (!typeof(TKey).IsVisible || !typeof(TPayload).IsVisible) return false;
 
             var lookupKey = this.CachedPipeLookupKey();
             var generatedPipeType = cachedPipes.GetOrAdd(lookupKey, key => TemporalEgressTemplate.Generate(this));
@@ -339,7 +339,7 @@ namespace Microsoft.StreamProcessing
         private bool CanGenerateColumnar()
         {
             if (typeof(TKey).IsAnonymousTypeName() || typeof(TPayload).IsAnonymousTypeName() || typeof(TResult).IsAnonymousTypeName()) return false;
-            if (!typeof(TKey).GetTypeInfo().IsVisible || !typeof(TPayload).GetTypeInfo().IsVisible || !typeof(TResult).GetTypeInfo().IsVisible) return false;
+            if (!typeof(TKey).IsVisible || !typeof(TPayload).IsVisible || !typeof(TResult).IsVisible) return false;
 
             var lookupKey = this.CachedPipeLookupKey();
             var generatedPipeType = cachedPipes.GetOrAdd(lookupKey, key => TemporalEgressTemplate.Generate(this));
@@ -407,7 +407,7 @@ namespace Microsoft.StreamProcessing
         private bool CanGenerateColumnar()
         {
             if (typeof(TKey).IsAnonymousTypeName() || typeof(TPayload).IsAnonymousTypeName() || typeof(TResult).IsAnonymousTypeName()) return false;
-            if (!typeof(TKey).GetTypeInfo().IsVisible || !typeof(TPayload).GetTypeInfo().IsVisible || !typeof(TResult).GetTypeInfo().IsVisible) return false;
+            if (!typeof(TKey).IsVisible || !typeof(TPayload).IsVisible || !typeof(TResult).IsVisible) return false;
 
             var lookupKey = this.CachedPipeLookupKey();
             var generatedPipeType = cachedPipes.GetOrAdd(lookupKey, key => TemporalEgressTemplate.Generate(this));

@@ -96,7 +96,7 @@ namespace Microsoft.StreamProcessing
         private static Tuple<Type, string> GenerateInternal<TOuterKey, TInnerKey, TInnerResult, TResult>(Expression<Func<TInnerKey, TInnerResult, TResult>> resultSelector, bool isFirstLevelGroup)
         {
             Contract.Ensures(Contract.Result<Tuple<Type, string>>() != null);
-            Contract.Ensures(typeof(Pipe<TOuterKey, TResult>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
+            Contract.Ensures(typeof(Pipe<TOuterKey, TResult>).IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
             string errorMessages = null;
             try
@@ -152,7 +152,7 @@ namespace Microsoft.StreamProcessing
                 expandedCode = template.TransformText();
 
                 assemblyReferences = Transformer.AssemblyReferencesNeededFor(typeOfTOuterKey, typeOfTInnerKey, typeofTInnerResult, typeofTResult);
-                assemblyReferences.Add(typeof(IStreamable<,>).GetTypeInfo().Assembly);
+                assemblyReferences.Add(typeof(IStreamable<,>).Assembly);
 
                 // input messages
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<CompoundGroupKey<TOuterKey, TInnerKey>, TInnerResult>());

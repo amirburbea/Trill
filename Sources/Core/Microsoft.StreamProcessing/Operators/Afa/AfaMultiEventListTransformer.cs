@@ -39,7 +39,7 @@ namespace Microsoft.StreamProcessing
             AfaStreamable<TKey, TPayload, TRegister, TAccumulator> stream)
         {
             ArgumentNullException.ThrowIfNull(stream);
-            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(UnaryPipe<TKey, TPayload, TRegister>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
+            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(UnaryPipe<TKey, TPayload, TRegister>).IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
             var className = string.Format("Generated{1}AfaMultiEventList_{0}", AFASequenceNumber++, typeof(TKey).Equals(typeof(Empty)) ? string.Empty : "Grouped");
             var template = new AfaMultiEventListTemplate(className, typeof(TKey), typeof(TPayload), typeof(TRegister), typeof(TAccumulator))

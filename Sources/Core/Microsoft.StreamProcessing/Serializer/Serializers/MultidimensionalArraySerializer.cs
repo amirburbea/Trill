@@ -33,7 +33,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
             if (currentRank == maxRank)
                 return this.ItemSchema.BuildSerializer(encoder, Expression.ArrayIndex(value, indexes));
 
-            var getLength = this.RuntimeType.GetTypeInfo().GetMethod("GetLength");
+            var getLength = this.RuntimeType.GetMethod("GetLength");
             var length = Expression.Variable(typeof(int), "length");
             body.Add(Expression.Assign(length, Expression.Call(value, getLength, new Expression[] { Expression.Constant(currentRank) })));
             body.Add(EncodeArrayChunkMethod.ReplaceParametersInBody(encoder, length));
@@ -130,12 +130,12 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
                                     Expression.Break(internalLoopLabel)),
                                 Expression.Call(
                                     result,
-                                    valueType.GetTypeInfo().GetMethod("Add"),
+                                    valueType.GetMethod("Add"),
                                     new[]
                                     {
                                         this.GenerateBuildJaggedDeserializer(
                                             decoder,
-                                            valueType.GetTypeInfo().GetGenericArguments()[0],
+                                            valueType.GetGenericArguments()[0],
                                             currentRank + 1,
                                             maxRank)
                                     }),

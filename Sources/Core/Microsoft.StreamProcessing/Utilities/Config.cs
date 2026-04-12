@@ -401,7 +401,7 @@ namespace Microsoft.StreamProcessing
             // Change to false to disable tracing Config values tracing.
             if (true)
             {
-                if (typeof(IInternalScheduler).GetTypeInfo().IsAssignableFrom(typeof(T)))
+                if (typeof(IInternalScheduler).IsAssignableFrom(typeof(T)))
                 {
                     var fromSch = (IInternalScheduler)from;
                     var toSch = (IInternalScheduler)to;

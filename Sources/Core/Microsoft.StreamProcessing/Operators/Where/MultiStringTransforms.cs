@@ -375,7 +375,7 @@ namespace Microsoft.StreamProcessing
                     this.multiStringTable.Add(field, wrapper);
                 }
 
-                var wrapperMethod = typeof(MultiString.MultiStringWrapper).GetTypeInfo().GetMethod(method.Name, node.Arguments.Select(a => a.Type).ToArray());
+                var wrapperMethod = typeof(MultiString.MultiStringWrapper).GetMethod(method.Name, node.Arguments.Select(a => a.Type).ToArray());
                 return Expression.Call(wrapper, wrapperMethod, node.Arguments);
 
             JustVisit:
@@ -403,7 +403,7 @@ namespace Microsoft.StreamProcessing
                     this.multiStringTable.Add(field, wrapper);
                 }
 
-                var wrapperMembers = typeof(MultiString.MultiStringWrapper).GetTypeInfo().GetMember(node.Member.Name);
+                var wrapperMembers = typeof(MultiString.MultiStringWrapper).GetMember(node.Member.Name);
                 Contract.Assume(wrapperMembers.Length > 0);
                 var wrapperMember = wrapperMembers[0];
                 return Expression.MakeMemberAccess(wrapper, wrapperMember);

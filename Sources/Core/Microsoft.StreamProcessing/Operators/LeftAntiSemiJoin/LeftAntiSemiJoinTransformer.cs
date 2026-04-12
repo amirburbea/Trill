@@ -39,7 +39,7 @@ namespace Microsoft.StreamProcessing
         internal static Tuple<Type, string> Generate<TKey, TLeft, TRight>(LeftAntiSemiJoinStreamable<TKey, TLeft, TRight> stream)
         {
             ArgumentNullException.ThrowIfNull(stream);
-            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(BinaryPipe<TKey, TLeft, TRight, TLeft>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
+            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(BinaryPipe<TKey, TLeft, TRight, TLeft>).IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
             var template = new LeftAntiSemiJoinTemplate($"GeneratedLeftAntiSemiJoin_{LASJSequenceNumber++}", typeof(TKey), typeof(TLeft), typeof(TRight));
 
@@ -57,7 +57,7 @@ namespace Microsoft.StreamProcessing
             #endregion
 
             #region Left Comparer
-            template.ActiveEventType = template.leftType.GetTypeInfo().IsValueType ? template.TLeft : "Active_Event";
+            template.ActiveEventType = template.leftType.IsValueType ? template.TLeft : "Active_Event";
             template.noLeftFields = leftMessageRepresentation.noFields;
 
             var leftComparer = stream.LeftComparer.GetEqualsExpr();

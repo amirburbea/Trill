@@ -4,6 +4,7 @@
 // *********************************************************************
 using System;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 
 namespace Microsoft.StreamProcessing.Internal.Collections
@@ -91,6 +92,13 @@ namespace Microsoft.StreamProcessing.Internal.Collections
 
     internal static class HashHelpers
     {
+        /// <summary>
+        /// Byte length of the occupancy bitvector for a table with <paramref name="primeSize"/> slots
+        /// (one bit per slot; see FastDictionary / FastDictionary3).
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int BitvectorByteLength(int primeSize) => 1 + (primeSize >> 3);
+
         public static readonly int[] primes =
         [
             3, 7, 11, 0x11, 0x17, 0x1d, 0x25, 0x2f, 0x3b, 0x47, 0x59, 0x6b, 0x83, 0xa3, 0xc5, 0xef,

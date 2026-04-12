@@ -198,7 +198,11 @@ namespace Microsoft.StreamProcessing
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override void DisposeState() => this.output.Free();
+        protected override void DisposeState()
+        {
+            this.partitionData.Dispose();
+            this.output.Free();
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ProcessPendingEntries()

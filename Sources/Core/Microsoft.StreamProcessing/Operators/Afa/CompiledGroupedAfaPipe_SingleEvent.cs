@@ -394,5 +394,11 @@ namespace Microsoft.StreamProcessing
             }
             batch.Free();
         }
+
+        protected override void DisposeState()
+        {
+            this.seenEvent?.Dispose();
+            base.DisposeState();
+        }
     }
 }

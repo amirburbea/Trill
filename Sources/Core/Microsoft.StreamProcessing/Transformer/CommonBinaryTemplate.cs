@@ -54,7 +54,7 @@ namespace Microsoft.StreamProcessing
                 var expandedCode = this.TransformText();
 
                 var assemblyReferences = Transformer.AssemblyReferencesNeededFor(this.keyType, this.leftType, this.rightType, this.resultType);
-                assemblyReferences.Add(typeof(IStreamable<,>).GetTypeInfo().Assembly);
+                assemblyReferences.Add(typeof(IStreamable<,>).Assembly);
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<TKey, TLeft>());
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<TKey, TRight>());
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<TKey, TResult>());
@@ -72,7 +72,7 @@ namespace Microsoft.StreamProcessing
                 if (numParameters == 4) types.Add(this.resultType);
                 var realClassName = this.className.AddNumberOfNecessaryGenericArguments(types.ToArray());
                 var t = a.GetType(realClassName);
-                if (t.GetTypeInfo().IsGenericType)
+                if (t.IsGenericType)
                 {
                     var list = this.keyType.GetAnonymousTypes();
                     list.AddRange(this.leftType.GetAnonymousTypes());

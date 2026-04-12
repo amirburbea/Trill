@@ -55,7 +55,7 @@ foreach (var t in new[] {string.Empty, "2", "3"})
 
                     temp = a.GetType(typeName + "`2");
                     temp = temp.MakeGenericType(typeof(TKey), typeof(TValue));
-                    MethodInfo init = temp.GetTypeInfo().GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
+                    MethodInfo init = temp.GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
                     init.Invoke(null, new object[] { equalsFunc, getHashCodeFunc, capacity });
                     generatorCache.Add(key, temp);
                 }

@@ -54,10 +54,10 @@ namespace Microsoft.StreamProcessing
         private object Serializer => this.container?.GetOrCreateSerializer(this.GetType());
 
         private MethodInfo GetSerializerMethod()
-            => this.Serializer.GetType().GetTypeInfo().GetMethod("Serialize", new Type[] { typeof(Stream), this.GetType() });
+            => this.Serializer.GetType().GetMethod("Serialize", new Type[] { typeof(Stream), this.GetType() });
 
         private MethodInfo GetDeserializerMethod()
-            => this.Serializer.GetType().GetTypeInfo().GetMethod("Deserialize", new Type[] { typeof(Stream) });
+            => this.Serializer.GetType().GetMethod("Deserialize", new Type[] { typeof(Stream) });
 
         private List<FieldInfo> GetSerializationFields()
             => this.GetType().GetAllFields().Where(f => f.IsDefined(typeof(DataMemberAttribute))).ToList();
@@ -115,11 +115,15 @@ namespace Microsoft.StreamProcessing
         [EditorBrowsable(EditorBrowsableState.Never)]
         protected void ValidateSchema(Stream stream)
         {
-            byte[] hashCodeBytes = new byte[sizeof(int)];
+            Span<byte> hashCodeBytes = stackalloc byte[sizeof(int)];
             try
             {
-                stream.ReadAllRequiredBytes(hashCodeBytes, 0, sizeof(int));
-                int hashCode = BitConverter.ToInt32(hashCodeBytes, 0);
+                if (stream.ReadAllRequiredBytes(hashCodeBytes) != sizeof(int))
+                {
+                    throw new EndOfStreamException();
+                }
+
+                int hashCode = BitConverter.ToInt32(hashCodeBytes);
                 if (this.schemaHashCode.Value != hashCode)
                 {
                     throw new StreamProcessingException("The input serialization state does not match the schema of the query.");

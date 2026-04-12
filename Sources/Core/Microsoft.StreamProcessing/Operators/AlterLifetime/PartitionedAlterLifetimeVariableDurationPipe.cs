@@ -152,6 +152,11 @@ namespace Microsoft.StreamProcessing
             this.Observer.OnNext(batch);
         }
 
+        protected override void DisposeState()
+        {
+            this.lastSync.Dispose();
+        }
+
         public override int CurrentlyBufferedOutputCount => 0;
 
         public override int CurrentlyBufferedInputCount => 0;

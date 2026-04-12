@@ -21,7 +21,7 @@ namespace Microsoft.StreamProcessing
         {
             ArgumentNullException.ThrowIfNull(stream);
             Contract.Ensures(Contract.Result<Tuple<Type, string>>() != null);
-            Contract.Ensures(typeof(UnaryPipe<TKey, TPayload, TPayload>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
+            Contract.Ensures(typeof(UnaryPipe<TKey, TPayload, TPayload>).IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
             var keyType = typeof(TKey);
             var payloadType = typeof(TPayload);
@@ -31,7 +31,7 @@ namespace Microsoft.StreamProcessing
             var expandedCode = template.TransformText();
 
             var assemblyReferences = Transformer.AssemblyReferencesNeededFor(keyType, payloadType);
-            assemblyReferences.Add(typeof(IStreamable<,>).GetTypeInfo().Assembly);
+            assemblyReferences.Add(typeof(IStreamable<,>).Assembly);
             assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<TKey, TPayload>());
             assemblyReferences.Add(Transformer.GeneratedMemoryPoolAssembly<TKey, TPayload>());
 

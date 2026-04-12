@@ -414,6 +414,8 @@ namespace Microsoft.StreamProcessing.Internal
             {
                 this.sorters.entries[index].value.Dispose();
             }
+
+            this.sorters.Dispose();
         }
     
         /// <summary>

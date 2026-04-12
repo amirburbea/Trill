@@ -140,7 +140,7 @@ namespace Microsoft.StreamProcessing
         {
             get
             {
-                var type = typeof(T).GetTypeInfo();
+                var type = typeof(T);
 
                 lock (sentinel)
                 {
@@ -172,7 +172,7 @@ namespace Microsoft.StreamProcessing
                         // (x) => o.IEqualityComparer<T>.GetHashCode(x)
                         // for an arbitrary o that is created of type T by calling its nullary ctor (if such a ctor exists)
                         var genericInstanceOfComparerExpressionForIEqualityComparer = typeof(ComparerExpressionForIEqualityComparer<>).MakeGenericType(type);
-                        var ctorForComparerExpressionForIEqualityComparer = genericInstanceOfComparerExpressionForIEqualityComparer.GetTypeInfo().GetConstructor(new Type[] { type });
+                        var ctorForComparerExpressionForIEqualityComparer = genericInstanceOfComparerExpressionForIEqualityComparer.GetConstructor(new Type[] { type });
                         if (ctorForComparerExpressionForIEqualityComparer != null)
                         {
                             var ctorForType = type.GetConstructor(Type.EmptyTypes);
@@ -196,7 +196,7 @@ namespace Microsoft.StreamProcessing
                         // (x,y) => x.IEquatable<T>.Equals(y)
                         // (x) => x.GetHashCode()
                         var genericInstanceOfComparerExpressionForIEquatable = typeof(ComparerExpressionForIEquatable<>).MakeGenericType(type);
-                        var ctorForComparerExpressionForIEquatable = genericInstanceOfComparerExpressionForIEquatable.GetTypeInfo().GetConstructor(Type.EmptyTypes);
+                        var ctorForComparerExpressionForIEquatable = genericInstanceOfComparerExpressionForIEquatable.GetConstructor(Type.EmptyTypes);
                         var comparerExpression = ctorForComparerExpressionForIEquatable.Invoke(Array.Empty<object>());
                         comparer = (IEqualityComparerExpression<T>)comparerExpression;
                         EqualityComparerExpressionCache.Add(comparer);
@@ -207,16 +207,16 @@ namespace Microsoft.StreamProcessing
                     {
                         // equivalent to: return new CompoundGroupKeyEqualityComparer<T1, T2>(EqualityComparerExpression<T1>.Default, EqualityComparerExpression<T2>.Default);
                         var equalityComparerExpressionOfT1 = typeof(EqualityComparerExpression<>).MakeGenericType(t1);
-                        var defaultPropertyForT1 = equalityComparerExpressionOfT1.GetTypeInfo().GetProperty("Default");
+                        var defaultPropertyForT1 = equalityComparerExpressionOfT1.GetProperty("Default");
                         var default1 = defaultPropertyForT1.GetValue(null);
 
                         var equalityComparerExpressionOfT2 = typeof(EqualityComparerExpression<>).MakeGenericType(t2);
-                        var defaultPropertyForT2 = equalityComparerExpressionOfT2.GetTypeInfo().GetProperty("Default");
+                        var defaultPropertyForT2 = equalityComparerExpressionOfT2.GetProperty("Default");
                         var default2 = defaultPropertyForT2.GetValue(null);
 
                         var cgkec = typeof(CompoundGroupKeyEqualityComparer<,>);
                         var genericInstance = cgkec.MakeGenericType(t1, t2);
-                        var ctor = genericInstance.GetTypeInfo().GetConstructor(new Type[] { equalityComparerExpressionOfT1, equalityComparerExpressionOfT2, });
+                        var ctor = genericInstance.GetConstructor(new Type[] { equalityComparerExpressionOfT1, equalityComparerExpressionOfT2, });
                         var result = ctor.Invoke(new object[] { default1, default2, });
                         comparer = (IEqualityComparerExpression<T>)result;
                         EqualityComparerExpressionCache.Add(comparer);
@@ -227,12 +227,12 @@ namespace Microsoft.StreamProcessing
                     {
                         var t = type.GenericTypeArguments[0];
                         var equalityComparerExpressionOfT = typeof(EqualityComparerExpression<>).MakeGenericType(t);
-                        var defaultPropertyForT = equalityComparerExpressionOfT.GetTypeInfo().GetProperty("Default");
+                        var defaultPropertyForT = equalityComparerExpressionOfT.GetProperty("Default");
                         var default1 = defaultPropertyForT.GetValue(null);
 
                         var pkec = typeof(ComparerExpressionForPartitionKey<>);
                         var genericInstance = pkec.MakeGenericType(t);
-                        var ctor = genericInstance.GetTypeInfo().GetConstructor(new Type[] { equalityComparerExpressionOfT, });
+                        var ctor = genericInstance.GetConstructor(new Type[] { equalityComparerExpressionOfT, });
                         var result = ctor.Invoke(new object[] { default1, });
                         comparer = (IEqualityComparerExpression<T>)result;
                         EqualityComparerExpressionCache.Add(comparer);
@@ -308,7 +308,7 @@ namespace Microsoft.StreamProcessing
         /// ToString, but not overrides for GetHashCode or Equals. It also may not have
         /// any properties at all.
         /// </summary>
-        private static bool IsSimpleStruct(TypeInfo type)
+        private static bool IsSimpleStruct(Type type)
             => type.IsValueType
             && !type.IsPrimitive
             && !Recursive(type)
@@ -317,18 +317,18 @@ namespace Microsoft.StreamProcessing
             && type.GetProperties().Length == 0
             && type.GetFields().All(f => f.IsPublic);
 
-        private static bool Recursive(TypeInfo type)
+        private static bool Recursive(Type type)
         {
-            var hashSet = new HashSet<TypeInfo> { type };
+            var hashSet = new HashSet<Type> { type };
             return RecursiveHelper(type, hashSet);
         }
 
-        private static bool RecursiveHelper(TypeInfo type, HashSet<TypeInfo> hashSet)
+        private static bool RecursiveHelper(Type type, HashSet<Type> hashSet)
         {
             var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
             foreach (var field in fields)
             {
-                var t = field.FieldType.GetTypeInfo();
+                var t = field.FieldType;
                 if (!t.IsValueType || t.IsPrimitive) continue;
                 if (hashSet.Contains(t)) return true;
                 hashSet.Add(t);
@@ -378,7 +378,7 @@ namespace Microsoft.StreamProcessing
         private static Tuple<Expression<Func<T, T, bool>>, Expression<Func<T, int>>> ExpressionsForAnonymousType(Type t)
         {
             if (t == null || !t.IsAnonymousTypeName()) return null;
-            var properties = t.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var properties = t.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var left = Expression.Parameter(t, "left");
             var right = Expression.Parameter(t, "right");
             var a = Expression.Parameter(t, "a");
@@ -394,7 +394,7 @@ namespace Microsoft.StreamProcessing
 
         private static Tuple<Expression<Func<T, T, bool>>, Expression<Func<T, int>>> ExpressionsForTypeByFields(Type t)
         {
-            var fields = t.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance);
+            var fields = t.GetFields(BindingFlags.Public | BindingFlags.Instance);
             var left = Expression.Parameter(t, "left");
             var right = Expression.Parameter(t, "right");
             var a = Expression.Parameter(t, "a");
@@ -421,13 +421,13 @@ namespace Microsoft.StreamProcessing
         private static Tuple<Expression, Expression> MakeEqualityAndHashCodeExpressions(ParameterExpression left, ParameterExpression right, ParameterExpression a, Type pType, string pName)
         {
             var equalityComparerTypeForPropertyType = typeof(EqualityComparerExpression<>).MakeGenericType(pType);
-            var equalityComparerDefaultProperty = equalityComparerTypeForPropertyType.GetTypeInfo().GetProperty("Default");
+            var equalityComparerDefaultProperty = equalityComparerTypeForPropertyType.GetProperty("Default");
             var getter = equalityComparerDefaultProperty.GetMethod;
             var equalityComparerExpressionObject = getter.Invoke(null, null);
             var equalityComparerExpressionObjectType = equalityComparerExpressionObject.GetType();
-            var equalityComparerExpression = (LambdaExpression)equalityComparerExpressionObjectType.GetTypeInfo()
+            var equalityComparerExpression = (LambdaExpression)equalityComparerExpressionObjectType
                 .GetMethod("GetEqualsExpr").Invoke(equalityComparerExpressionObject, null);
-            var hashCodeExpression = (LambdaExpression)equalityComparerExpressionObjectType.GetTypeInfo()
+            var hashCodeExpression = (LambdaExpression)equalityComparerExpressionObjectType
                 .GetMethod("GetGetHashCodeExpr").Invoke(equalityComparerExpressionObject, null);
             var inlinedEqualityExpression = equalityComparerExpression.ReplaceParametersInBody(Expression.PropertyOrField(left, pName), Expression.PropertyOrField(right, pName));
             var inlinedHashCodeExpression = hashCodeExpression.ReplaceParametersInBody(Expression.PropertyOrField(a, pName));
@@ -449,12 +449,12 @@ namespace Microsoft.StreamProcessing
         private static Expression<Func<T, int>> ComputeGetHashCodeExpr()
         {
             var type = typeof(T);
-            if (type.GetTypeInfo().IsGenericType)
+            if (type.IsGenericType)
             {
                 var def = type.GetGenericTypeDefinition();
                 if (def.Equals(typeof(Nullable<>)))
                 {
-                    var args = type.GetTypeInfo().GetGenericArguments();
+                    var args = type.GetGenericArguments();
                     Contract.Assume(args.Length == 1);
                     if (ShouldUseCastToInt(args[0]))
                     {
@@ -478,12 +478,12 @@ namespace Microsoft.StreamProcessing
             if (t == typeof(short)) return true;
             if (t == typeof(int)) return true;
             if (t == typeof(long)) return true;
-            if (t.GetTypeInfo().IsGenericType)
+            if (t.IsGenericType)
             {
                 var def = t.GetGenericTypeDefinition();
                 if (def.Equals(typeof(Nullable<>)))
                 {
-                    var args = t.GetTypeInfo().GetGenericArguments();
+                    var args = t.GetGenericArguments();
                     Contract.Assume(args.Length == 1);
                     return ShouldUseCastToInt(args[0]);
                 }

@@ -655,9 +655,9 @@ namespace Microsoft.StreamProcessing
 
             return new StreamProperties<CompoundGroupKey<TKey, TInnerKey>, TPayload>(
                 this.IsColumnar
-                    && (typeof(TInnerKey).GetTypeInfo().IsVisible || typeof(TInnerKey).IsAnonymousTypeName())
-                    && (typeof(TPayload).GetTypeInfo().IsVisible || typeof(TPayload).IsAnonymousTypeName())
-                    && (typeof(TKey).GetTypeInfo().IsVisible || typeof(TKey).IsAnonymousTypeName()), this.IsConstantDuration, this.ConstantDurationLength, this.IsConstantHop, this.ConstantHopLength, this.ConstantHopOffset, this.IsIntervalFree, this.IsSyncTimeSimultaneityFree, this.IsSnapshotSorted, this.IsEventOverlappingFree,
+                    && (typeof(TInnerKey).IsVisible || typeof(TInnerKey).IsAnonymousTypeName())
+                    && (typeof(TPayload).IsVisible || typeof(TPayload).IsAnonymousTypeName())
+                    && (typeof(TKey).IsVisible || typeof(TKey).IsAnonymousTypeName()), this.IsConstantDuration, this.ConstantDurationLength, this.IsConstantHop, this.ConstantHopLength, this.ConstantHopOffset, this.IsIntervalFree, this.IsSyncTimeSimultaneityFree, this.IsSnapshotSorted, this.IsEventOverlappingFree,
                 newKeyEqualityComparer, this.PayloadEqualityComparer, newKeyComparer, this.PayloadComparer, this.EqualityComparerSelectorMap.Clone(), this.SortSelectorMap.Clone(), this.QueryContainer);
         }
 

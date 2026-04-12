@@ -586,12 +586,12 @@ namespace Microsoft.StreamProcessing
                             }
                             else
                             {
-                                var enumerableType = typeof(IEnumerable<>).GetTypeInfo().MakeGenericType(profile.outputType);
-                                var enumeratorType = typeof(IEnumerator<>).GetTypeInfo().MakeGenericType(profile.outputType);
-                                var enumeratorMethod = enumerableType.GetTypeInfo().GetMethod("GetEnumerator");
+                                var enumerableType = typeof(IEnumerable<>).MakeGenericType(profile.outputType);
+                                var enumeratorType = typeof(IEnumerator<>).MakeGenericType(profile.outputType);
+                                var enumeratorMethod = enumerableType.GetMethod("GetEnumerator");
                                 var enumeratorParameter = Expression.Variable(enumeratorType, enumerableParameter.Name + "Enumerator");
-                                var moveNextMethod = typeof(IEnumerator).GetTypeInfo().GetMethod("MoveNext");
-                                var disposeMethod = typeof(IDisposable).GetTypeInfo().GetMethod("Dispose");
+                                var moveNextMethod = typeof(IEnumerator).GetMethod("MoveNext");
+                                var disposeMethod = typeof(IDisposable).GetMethod("Dispose");
 
                                 currentStatement = Expression.Block(
                                     new[] { enumerableParameter, enumeratorParameter },

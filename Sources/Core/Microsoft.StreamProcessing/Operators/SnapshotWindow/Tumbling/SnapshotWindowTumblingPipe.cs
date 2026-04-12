@@ -18,7 +18,7 @@ namespace Microsoft.StreamProcessing
     [DataContract]
     internal sealed class SnapshotWindowTumblingPipe<TKey, TInput, TState, TOutput> : UnaryPipe<TKey, TInput, TOutput>
     {
-        private static readonly bool hasDisposableState = typeof(IDisposable).GetTypeInfo().IsAssignableFrom(typeof(TState));
+        private static readonly bool hasDisposableState = typeof(IDisposable).IsAssignableFrom(typeof(TState));
         private readonly MemoryPool<TKey, TOutput> pool;
         private readonly string errorMessages;
         private readonly IAggregate<TInput, TState, TOutput> aggregate;
@@ -198,15 +198,16 @@ namespace Microsoft.StreamProcessing
 
         private void DisposeStateLocal()
         {
-            int index = FastDictionary2<TKey, TState>.IteratorStart;
+            int index = FastDictionary<TKey, TState>.IteratorStart;
             while (this.heldAggregates.Iterate(ref index))
                 (this.heldAggregates.entries[index].value as IDisposable).Dispose();
         }
 
         protected override void DisposeState()
         {
-            this.batch.Free();
             if (hasDisposableState) this.DisposeStateLocal();
+            this.heldAggregates.Dispose();
+            this.batch.Free();
         }
     }
 }

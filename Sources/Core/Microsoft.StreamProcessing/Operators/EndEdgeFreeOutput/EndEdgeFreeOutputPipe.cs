@@ -43,7 +43,7 @@ namespace Microsoft.StreamProcessing
             var getHashCode = compoundEqualityExpr.GetGetHashCodeExpr().Compile();
 
             var generator = compoundEqualityExpr.CreateFastDictionary2Generator<ActiveEvent, int>(1, equals, getHashCode, stream.Properties.QueryContainer);
-            this.dictPool = new DataStructurePool<FastDictionary2<ActiveEvent, int>>(() => generator.Invoke());
+            this.dictPool = new DataStructurePool<FastDictionary2<ActiveEvent, int>>(generator.Invoke);
 
             this.pool.Get(out this.output);
             this.output.Allocate();

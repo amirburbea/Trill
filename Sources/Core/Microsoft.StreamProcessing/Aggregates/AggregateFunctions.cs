@@ -177,7 +177,7 @@ namespace Microsoft.StreamProcessing.Aggregates
         {
             ArgumentNullException.ThrowIfNull(aggregate);
 
-            var inputType = typeof(TInput).GetTypeInfo();
+            var inputType = typeof(TInput);
             return inputType.IsClass
                 ? GeneratedAggregate.Create(
                     initialState: aggregate.InitialState(),

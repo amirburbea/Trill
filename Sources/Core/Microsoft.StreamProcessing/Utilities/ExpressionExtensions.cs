@@ -573,8 +573,7 @@ namespace Microsoft.StreamProcessing
                 this.writer.Write(string.Format(CultureInfo.InvariantCulture, "'{0}'", v));
                 return null;
             }
-            var typeInfo = t;
-            if (typeof(Type).IsAssignableFrom(typeInfo))
+            if (typeof(Type).IsAssignableFrom(t))
             {
                 this.writer.Write("typeof({0})", GetTypeName((Type)v));
                 return null;
@@ -591,7 +590,7 @@ namespace Microsoft.StreamProcessing
 
                 return null;
             }
-            if (!typeInfo.IsPrimitive && typeInfo.IsValueType && Nullable.GetUnderlyingType(t) == null && v.Equals(Activator.CreateInstance(t)))
+            if (!t.IsPrimitive && t.IsValueType && Nullable.GetUnderlyingType(t) == null && v.Equals(Activator.CreateInstance(t)))
             {
                 // A constant of a non-primitive struct type must be a default value for that type
                 // At least, that is what is assumed here.

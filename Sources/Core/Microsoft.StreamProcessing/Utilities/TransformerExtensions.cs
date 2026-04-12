@@ -48,7 +48,7 @@ namespace Microsoft.StreamProcessing
 
             // If T is a struct, then even if the user defined equality function calls a method on the struct,
             // it can still be used because the active events will have a field of type T.
-            if (typeofT.GetTypeInfo().IsValueType) return true;
+            if (typeofT.IsValueType) return true;
 
             // If T is a type for which the columnar representation is just a pseudo-field, e.g., string,
             // then the payload is not really represented as a set of its fields, but is an instance of T

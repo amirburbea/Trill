@@ -74,7 +74,7 @@ namespace Microsoft.StreamProcessing
 
                 var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
                 var t = a.GetType(this.className);
-                if (t.GetTypeInfo().IsGenericType)
+                if (t.IsGenericType)
                 {
                     var list = typeof(TKey).GetAnonymousTypes();
                     list.AddRange(this.payloadType.GetAnonymousTypes());

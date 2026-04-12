@@ -67,7 +67,7 @@ namespace Microsoft.StreamProcessing
                 var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
                 var realClassName = this.className.AddNumberOfNecessaryGenericArguments(this.keyType, this.payloadType);
                 var t = a.GetType(realClassName);
-                if (t.GetTypeInfo().IsGenericType)
+                if (t.IsGenericType)
                 {
                     var list = this.keyType.GetAnonymousTypes();
                     list.AddRange(this.payloadType.GetAnonymousTypes());
@@ -104,7 +104,7 @@ namespace Microsoft.StreamProcessing
                 var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
                 var realClassName = this.className.AddNumberOfNecessaryGenericArguments(this.keyType, this.payloadType);
                 var t = a.GetType(realClassName);
-                if (t.GetTypeInfo().IsGenericType)
+                if (t.IsGenericType)
                 {
                     var list = this.keyType.GetAnonymousTypes();
                     list.AddRange(this.payloadType.GetAnonymousTypes());

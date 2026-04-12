@@ -41,7 +41,7 @@ namespace Microsoft.StreamProcessing
             Expression<Func<TLeft, TRight, TResult>> selector)
         {
             ArgumentNullException.ThrowIfNull(stream);
-            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(BinaryPipe<TKey, TLeft, TRight, TResult>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
+            Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(BinaryPipe<TKey, TLeft, TRight, TResult>).IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
             string errorMessages = null;
             try
@@ -68,8 +68,8 @@ namespace Microsoft.StreamProcessing
                 template.rightFields = template.rightMessageRepresentation.AllFields;
                 template.resultFields = resultMessageRepresentation.AllFields;
 
-                template.ActiveEventTypeLeft = template.leftType.GetTypeInfo().IsValueType ? template.TLeft : "Active_Event_Left";
-                template.ActiveEventTypeRight = template.rightType.GetTypeInfo().IsValueType ? template.TRight : "Active_Event_Right";
+                template.ActiveEventTypeLeft = template.leftType.IsValueType ? template.TLeft : "Active_Event_Left";
+                template.ActiveEventTypeRight = template.rightType.IsValueType ? template.TRight : "Active_Event_Right";
 
                 #region Key Equals
                 var keyComparer = stream.Properties.KeyEqualityComparer.GetEqualsExpr();

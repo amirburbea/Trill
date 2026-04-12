@@ -31,7 +31,7 @@ namespace Microsoft.StreamProcessing
         private static readonly bool IsNetCore = !RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework");
 
         private static readonly Lazy<IEnumerable<MetadataReference>> baseAssemblyReferences
-            = new Lazy<IEnumerable<MetadataReference>>(() => IsNetCore ? GetNetCoreAssemblyReferences() : GetNetFrameworkAssemblyReferences());
+            = new(() => IsNetCore ? GetNetCoreAssemblyReferences() : GetNetFrameworkAssemblyReferences());
         private static readonly Func<MemoryStream, Assembly> AssemblyFromMemoryStream
             = IsNetCore ? (Func<MemoryStream, Assembly>)AssemblyFromMemoryStreamNetCore : AssemblyFromMemoryStreamNetFramework;
         private static readonly Func<string, Assembly> AssemblyFromFile
@@ -186,8 +186,8 @@ namespace Microsoft.StreamProcessing
             return assembly;
         }
 
-        public static ConcurrentDictionary<Assembly, MetadataReference> metadataReferenceCache = new ConcurrentDictionary<Assembly, MetadataReference>();
-        private static readonly InteractiveAssemblyLoader loader = new InteractiveAssemblyLoader();
+        public static ConcurrentDictionary<Assembly, MetadataReference> metadataReferenceCache = new();
+        private static readonly InteractiveAssemblyLoader loader = new();
 
         internal static Assembly EmitCompilationAndLoadAssembly(CSharpCompilation compilation, bool makeAssemblyDebuggable, out string errorMessages)
         {
@@ -413,7 +413,7 @@ namespace System.Runtime.CompilerServices
 
             internal static Assembly Assembly => lazySingleton.Value;
 
-            private static readonly Lazy<Assembly> lazySingleton = new Lazy<Assembly>(() => CreateIgnoreAccessChecksAssembly());
+            private static readonly Lazy<Assembly> lazySingleton = new(() => CreateIgnoreAccessChecksAssembly());
 
             private static Assembly CreateIgnoreAccessChecksAssembly()
             {
@@ -427,7 +427,7 @@ namespace System.Runtime.CompilerServices
         }
 
         private static int BatchClassSequenceNumber = 0;
-        private static readonly SafeConcurrentDictionary<string> batchType2Name = new SafeConcurrentDictionary<string>();
+        private static readonly SafeConcurrentDictionary<string> batchType2Name = new();
 
         internal static string GetBatchClassName(Type keyType, Type payloadType)
         {
@@ -551,7 +551,7 @@ namespace System.Runtime.CompilerServices
 
                 if (!t.GetTypeInfo().Assembly.IsDynamic && t.GetTypeInfo().IsGenericType)
                 {
-                    foreach (var gta in t.GenericTypeArguments) l.AddRange(GenericTypeVariables(gta));
+                    foreach (var gta in t.GenericTypeArguments) l.AddRange(this.GenericTypeVariables(gta));
                 }
             }
             return l.Distinct();
@@ -568,8 +568,8 @@ namespace System.Runtime.CompilerServices
 
         private static void TurnTypeIntoCSharpSourceHelper(Type t, Dictionary<Type, string> d, ref int anonymousTypeCount)
         {
-            Contract.Requires(t != null);
-            Contract.Requires(d != null);
+            ArgumentNullException.ThrowIfNull(t);
+            ArgumentNullException.ThrowIfNull(d);
             if (d.TryGetValue(t, out _)) return;
 
             var typeName = t.FullName.Replace('#', '_').Replace('+', '.');
@@ -801,7 +801,7 @@ namespace System.Runtime.CompilerServices
             this.generatedClassName = Transformer.GetMemoryPoolClassName(keyType, payloadType);
             this.className = this.generatedClassName.CleanUpIdentifierName();
             this.generatedClassName += "`2";
-            this.expandedCode = TransformText();
+            this.expandedCode = this.TransformText();
         }
     }
 }

@@ -153,9 +153,9 @@ namespace Microsoft.StreamProcessing
         [EditorBrowsable(EditorBrowsableState.Never)]
         public SortedMultiSet<T> AddAll(SortedMultiSet<T> set)
         {
-            Contract.Requires(set != null);
+            ArgumentNullException.ThrowIfNull(set);
             foreach (var keyAndCount in set.Elements)
-                Add(keyAndCount.Key, keyAndCount.Value);
+                this.Add(keyAndCount.Key, keyAndCount.Value);
 
             return this;
         }
@@ -214,9 +214,9 @@ namespace Microsoft.StreamProcessing
         [EditorBrowsable(EditorBrowsableState.Never)]
         public SortedMultiSet<T> RemoveAll(SortedMultiSet<T> set)
         {
-            Contract.Requires(set != null);
+            ArgumentNullException.ThrowIfNull(set);
             foreach (var keyAndCount in set.Elements)
-                Remove(keyAndCount.Key, keyAndCount.Value);
+                this.Remove(keyAndCount.Key, keyAndCount.Value);
 
             return this;
         }

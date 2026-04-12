@@ -11,10 +11,9 @@ using Microsoft.StreamProcessing.Internal.Collections;
 
 namespace Microsoft.StreamProcessing.Serializer
 {
-    internal sealed partial class BinaryEncoder : BinaryBase
+    internal sealed partial class BinaryEncoder(Stream stream)
+        : BinaryBase(stream)
     {
-        public BinaryEncoder(Stream stream) : base(stream) { }
-
         public void Encode(bool value) => this.stream.WriteByte(value ? (byte)1 : (byte)0);
 
         public void Encode(byte value) => this.stream.WriteByte(value);
@@ -105,16 +104,16 @@ namespace Microsoft.StreamProcessing.Serializer
 
         public void Encode(byte[] value)
         {
-            if (value == null) throw new ArgumentNullException(nameof(value));
+            ArgumentNullException.ThrowIfNull(value);
 
-            Encode(value.Length);
+            this.Encode(value.Length);
             if (value.Length > 0) this.stream.Write(value, 0, value.Length);
         }
 
         public void Encode(ReadOnlySpan<byte> span)
         {
             int count = span.Length;
-            Encode(count);
+            this.Encode(count);
             if (count > 0)
             {
                 this.stream.Write(span);
@@ -123,13 +122,13 @@ namespace Microsoft.StreamProcessing.Serializer
 
         public void Encode(string value)
         {
-            if (value == null) throw new ArgumentNullException(nameof(value));
+            ArgumentNullException.ThrowIfNull(value);
             int byteCount = Encoding.UTF8.GetByteCount(value);
             var rented = ArrayPool<byte>.Shared.Rent(byteCount);
             try
             {
                 int written = Encoding.UTF8.GetBytes(value, rented);
-                Encode(rented.AsSpan(0, written));
+                this.Encode(rented.AsSpan(0, written));
             }
             finally
             {
@@ -137,7 +136,7 @@ namespace Microsoft.StreamProcessing.Serializer
             }
         }
 
-        public void EncodeArrayChunk(int size) => Encode(size);
+        public void EncodeArrayChunk(int size) => this.Encode(size);
 
         public void Encode(Guid value)
         {
@@ -157,22 +156,22 @@ namespace Microsoft.StreamProcessing.Serializer
         public void Encode<T>(T[] value) where T : struct
         {
             long sizeInBytes = value.Length * typeof(T).GetSizeOf();
-            Encode(sizeInBytes);
+            this.Encode(sizeInBytes);
 
             var buffer = AllocateColumnBatch<byte>((int)sizeInBytes);
-            ToStream(value, value.Length, buffer.col);
+            this.ToStream(value, value.Length, buffer.col);
             buffer.Return();
         }
 
         public void Encode<T>(ColumnBatch<T> value) where T : struct
         {
             long sizeInBytes = value.UsedLength * typeof(T).GetSizeOf() + sizeof(int);
-            Encode(sizeInBytes);
+            this.Encode(sizeInBytes);
 
-            WriteIntFixed(value.col.Length);
+            this.WriteIntFixed(value.col.Length);
 
             var buffer = AllocateColumnBatch<byte>(value.UsedLength * typeof(T).GetSizeOf());
-            ToStream(value.col, value.UsedLength, buffer.col);
+            this.ToStream(value.col, value.UsedLength, buffer.col);
             buffer.Return();
         }
 
@@ -188,23 +187,23 @@ namespace Microsoft.StreamProcessing.Serializer
             this.stream.Write(buffer, 0, buffer.Length);
         }
 
-        private static readonly Lazy<DoublingArrayPool<byte>> bytePool = new Lazy<DoublingArrayPool<byte>>(MemoryManager.GetDoublingArrayPool<byte>);
+        private static readonly Lazy<DoublingArrayPool<byte>> bytePool = new(MemoryManager.GetDoublingArrayPool<byte>);
 
         public unsafe void Encode(CharArrayWrapper value)
         {
             if (Config.SerializationCompressionLevel.HasFlag(SerializationCompressionLevel.CharArrayToUTF8))
-                Encode(1);
+                this.Encode(1);
             else
-                Encode(0); // header for version number
+                this.Encode(0); // header for version number
 
-            Encode(value.UsedLength);
-            Encode(value.charArray.content.Length);
+            this.Encode(value.UsedLength);
+            this.Encode(value.charArray.content.Length);
 
             if (Config.SerializationCompressionLevel.HasFlag(SerializationCompressionLevel.CharArrayToUTF8))
             {
                 byte[] result;
                 int encodedSize = Encoding.UTF8.GetByteCount(value.charArray.content, 0, value.UsedLength);
-                Encode(encodedSize);
+                this.Encode(encodedSize);
 
                 if (encodedSize > 0)
                     bytePool.Value.Get(out result, encodedSize);
@@ -219,7 +218,7 @@ namespace Microsoft.StreamProcessing.Serializer
             else
             {
                 var buffer = AllocateColumnBatch<byte>(value.UsedLength * sizeof(char));
-                ToStream(value.charArray.content, value.UsedLength, buffer.col);
+                this.ToStream(value.charArray.content, value.UsedLength, buffer.col);
                 buffer.Return();
             }
         }
@@ -232,7 +231,7 @@ namespace Microsoft.StreamProcessing.Serializer
                 col = value
             };
 
-            Encode(temp);
+            this.Encode(temp);
         }
 
         private static CharArrayPool charPool;
@@ -250,7 +249,7 @@ namespace Microsoft.StreamProcessing.Serializer
                 batchSize = Config.DataBatchSize;
             }
 
-            WriteIntFixed(value.UsedLength);
+            this.WriteIntFixed(value.UsedLength);
             if (value.UsedLength == 0) return;
 
             int totalChars = 0;
@@ -264,7 +263,7 @@ namespace Microsoft.StreamProcessing.Serializer
                     if (length > maxLength) maxLength = length;
                 }
             }
-            WriteIntFixed(maxLength);
+            this.WriteIntFixed(maxLength);
 
             if (maxLength <= short.MaxValue)
             {
@@ -298,19 +297,19 @@ namespace Microsoft.StreamProcessing.Serializer
                     }
                 }
 
-                Encode(lengths);
+                this.Encode(lengths);
                 lengths.Return();
 
-                Encode(caw);
+                this.Encode(caw);
 
                 caw.Return();
             }
             else
             {
-                WriteIntFixed(value.UsedLength);
+                this.WriteIntFixed(value.UsedLength);
                 for (int i = 0; i < value.UsedLength; i++)
                 {
-                    Encode(value.col[i]);
+                    this.Encode(value.col[i]);
                 }
             }
         }

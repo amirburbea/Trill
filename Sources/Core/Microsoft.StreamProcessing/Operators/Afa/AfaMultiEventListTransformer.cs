@@ -38,7 +38,7 @@ namespace Microsoft.StreamProcessing
         internal static Tuple<Type, string> GenerateAFA<TKey, TPayload, TRegister, TAccumulator>(
             AfaStreamable<TKey, TPayload, TRegister, TAccumulator> stream)
         {
-            Contract.Requires(stream != null);
+            ArgumentNullException.ThrowIfNull(stream);
             Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(UnaryPipe<TKey, TPayload, TRegister>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
             var className = string.Format("Generated{1}AfaMultiEventList_{0}", AFASequenceNumber++, typeof(TKey).Equals(typeof(Empty)) ? string.Empty : "Grouped");

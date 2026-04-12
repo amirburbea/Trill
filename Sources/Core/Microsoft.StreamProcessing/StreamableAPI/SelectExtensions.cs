@@ -24,8 +24,8 @@ namespace Microsoft.StreamProcessing
             this IStreamable<TKey, TPayload> source,
             Expression<Func<TPayload, TResult>> selector)
         {
-            Invariant.IsNotNull(source, nameof(source));
-            Invariant.IsNotNull(selector, nameof(selector));
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(selector);
 
             return source is IFusibleStreamable<TKey, TPayload> s && s.CanFuseSelect(selector, false, false)
                 ? s.FuseSelect(selector)
@@ -41,8 +41,8 @@ namespace Microsoft.StreamProcessing
             this IStreamable<TKey, TPayload> source,
             Expression<Func<long, TPayload, TResult>> selector)
         {
-            Invariant.IsNotNull(source, nameof(source));
-            Invariant.IsNotNull(selector, nameof(selector));
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(selector);
 
             return source is IFusibleStreamable<TKey, TPayload> s && s.CanFuseSelect(selector, true, false)
                 ? s.FuseSelect(selector)
@@ -58,8 +58,8 @@ namespace Microsoft.StreamProcessing
             this IStreamable<TKey, TPayload> source,
             Expression<Func<TKey, TPayload, TResult>> selector)
         {
-            Invariant.IsNotNull(source, nameof(source));
-            Invariant.IsNotNull(selector, nameof(selector));
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(selector);
 
             return source is IFusibleStreamable<TKey, TPayload> s && s.CanFuseSelect(selector, false, true)
                 ? s.FuseSelectWithKey(selector)
@@ -75,8 +75,8 @@ namespace Microsoft.StreamProcessing
             this IStreamable<TKey, TPayload> source,
             Expression<Func<long, TKey, TPayload, TResult>> selector)
         {
-            Invariant.IsNotNull(source, nameof(source));
-            Invariant.IsNotNull(selector, nameof(selector));
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(selector);
 
             return source is IFusibleStreamable<TKey, TPayload> s && s.CanFuseSelect(selector, true, true)
                 ? s.FuseSelectWithKey(selector)
@@ -98,8 +98,8 @@ namespace Microsoft.StreamProcessing
             Expression<Func<TNew>> initializer,
             IDictionary<string, Expression<Func<TOld, object>>> newColumnFormulas = null) where TNew : new()
         {
-            Invariant.IsNotNull(source, nameof(source));
-            Invariant.IsNotNull(initializer, nameof(initializer));
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(initializer);
 
             // Validate that the dictionary parameter references proper fields
             if (newColumnFormulas == null) newColumnFormulas = new Dictionary<string, Expression<Func<TOld, object>>>();
@@ -134,8 +134,8 @@ namespace Microsoft.StreamProcessing
             Expression<Func<TNew, TField1>> fieldSelector1,
             Expression<Func<TOld, TField1>> fieldInitializer1) where TNew : new()
         {
-            Invariant.IsNotNull(source, nameof(source));
-            Invariant.IsNotNull(initializer, nameof(initializer));
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(initializer);
 
             // Validate that the field selector formulas are actually selector expressions
             if (fieldSelector1.Body.NodeType != ExpressionType.MemberAccess)
@@ -174,8 +174,8 @@ namespace Microsoft.StreamProcessing
             Expression<Func<TNew, TField2>> fieldSelector2,
             Expression<Func<TOld, TField2>> fieldInitializer2) where TNew : new()
         {
-            Invariant.IsNotNull(source, nameof(source));
-            Invariant.IsNotNull(initializer, nameof(initializer));
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(initializer);
 
             // Validate that the field selector formulas are actually selector expressions
             if (fieldSelector1.Body.NodeType != ExpressionType.MemberAccess)

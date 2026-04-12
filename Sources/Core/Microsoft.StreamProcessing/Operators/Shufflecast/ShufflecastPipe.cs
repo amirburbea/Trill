@@ -93,7 +93,7 @@ namespace Microsoft.StreamProcessing
                             {
                                 if (batch.vother.col[i] < 0)
                                 {
-                                    AddPunctuationOrLowWatermarkToAllBatches(
+                                    this.AddPunctuationOrLowWatermarkToAllBatches(
                                         batches,
                                         batch.vsync.col[i], batch.vother.col[i], batch.key.col[i], batch.hash.col[i]);
                                 }
@@ -114,7 +114,7 @@ namespace Microsoft.StreamProcessing
                             {
                                 if (batch.vother.col[i] < 0)
                                 {
-                                    AddPunctuationOrLowWatermarkToAllBatches(
+                                    this.AddPunctuationOrLowWatermarkToAllBatches(
                                         batches,
                                         batch.vsync.col[i], batch.vother.col[i], batch.key.col[i], batch.hash.col[i]);
                                 }
@@ -136,7 +136,7 @@ namespace Microsoft.StreamProcessing
                         {
                             if (batch.vother.col[i] < 0)
                             {
-                                AddPunctuationOrLowWatermarkToAllBatches(
+                                this.AddPunctuationOrLowWatermarkToAllBatches(
                                     batches,
                                     batch.vsync.col[i], batch.vother.col[i], batch.key.col[i], batch.hash.col[i]);
                             }

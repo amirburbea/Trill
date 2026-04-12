@@ -42,10 +42,10 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
         /// <returns>Expression, serializing an enumerable.</returns>
         protected override Expression BuildSerializerSafe(Expression encoder, Expression value)
             => typeof(IList<TItem>).GetTypeInfo().IsAssignableFrom(typeof(TCollection).GetTypeInfo())
-                ? BuildSerializerForList(encoder, value)
+                ? this.BuildSerializerForList(encoder, value)
                 : typeof(ICollection<TItem>).GetTypeInfo().IsAssignableFrom(typeof(TCollection).GetTypeInfo())
-                    ? BuildSerializerForCollection(encoder, value)
-                    : BuildSerializerForEnumerable(encoder, value);
+                    ? this.BuildSerializerForCollection(encoder, value)
+                    : this.BuildSerializerForEnumerable(encoder, value);
 
         private Expression BuildSerializerForEnumerable(Expression encoder, Expression value)
         {
@@ -152,12 +152,12 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
 
         protected override Expression BuildDeserializerSafe(Expression decoder)
             => typeof(ICollection<TItem>).GetTypeInfo().IsAssignableFrom(typeof(TCollection).GetTypeInfo())
-                ? BuildDeserializerForCollection(decoder)
-                : BuildDeserializerForEnumerable(decoder);
+                ? this.BuildDeserializerForCollection(decoder)
+                : this.BuildDeserializerForEnumerable(decoder);
 
         private Expression BuildDeserializerForEnumerable(Expression decoder)
         {
-            var addElement = GetAddMethod();
+            var addElement = this.GetAddMethod();
 
             var result = Expression.Variable(typeof(TCollection), "result");
             var index = Expression.Variable(typeof(int), "index");

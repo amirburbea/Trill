@@ -59,7 +59,7 @@ foreach (string ingressType in new string[] { "StreamEvent", "StartEdge", "Inter
             QueryContainer container,
             string identifier)
         {
-            Contract.Requires(source != null);
+            ArgumentNullException.ThrowIfNull(source);
 
             this.source = source;
 <#  if (ingressType == "StartEdge" || ingressType == "Interval")

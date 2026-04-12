@@ -32,7 +32,7 @@ namespace Microsoft.StreamProcessing
         internal static Tuple<Type, string> GenerateUnionPipeClass<TKey, TPayload>(
             UnionStreamable<TKey, TPayload> stream)
         {
-            Contract.Requires(stream != null);
+            ArgumentNullException.ThrowIfNull(stream);
             Contract.Ensures(Contract.Result<Tuple<Type, string>>() == null || typeof(BinaryPipe<TKey, TPayload, TPayload, TPayload>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 
 #if CODEGEN_TIMING

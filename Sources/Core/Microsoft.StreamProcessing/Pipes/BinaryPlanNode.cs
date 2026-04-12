@@ -87,7 +87,7 @@ namespace Microsoft.StreamProcessing
 
         internal override void PrintConciseSummary(System.Text.StringBuilder builder, int indentLevel)
         {
-            PrintConciseGeneralState(builder, indentLevel);
+            this.PrintConciseGeneralState(builder, indentLevel);
             builder.AppendLine(new string('\t', indentLevel + 1) + "Left input: ");
             this.LeftPlanNode.PrintConciseSummary(builder, indentLevel + 2);
             builder.AppendLine(new string('\t', indentLevel + 1) + "Right input: ");

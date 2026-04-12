@@ -19,7 +19,7 @@ namespace Microsoft.StreamProcessing.Aggregates
 
         public TumblingMinAggregate(IComparerExpression<T> comparer)
         {
-            Contract.Requires(comparer != null);
+            ArgumentNullException.ThrowIfNull(comparer);
 
             var stateExpression = Expression.Parameter(typeof(MinMaxState<T>), "state");
             var timestampExpression = Expression.Parameter(typeof(long), "timestamp");

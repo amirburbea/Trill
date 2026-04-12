@@ -20,7 +20,7 @@ namespace Microsoft.StreamProcessing
 
         internal static Tuple<Type, string> Generate<TKey, TPayload>(ColumnToRowStreamable<TKey, TPayload> stream)
         {
-            Contract.Requires(stream != null);
+            ArgumentNullException.ThrowIfNull(stream);
             Contract.Ensures(Contract.Result<Tuple<Type, string>>() != null);
             Contract.Ensures(typeof(UnaryPipe<TKey, TPayload, TPayload>).GetTypeInfo().IsAssignableFrom(Contract.Result<Tuple<Type, string>>().Item1));
 

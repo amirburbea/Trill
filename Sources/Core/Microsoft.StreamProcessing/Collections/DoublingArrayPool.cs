@@ -93,9 +93,8 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             {
                 if (queue != null)
                 {
-                    while (queue.TryDequeue(out T[] result))
+                    while (queue.TryDequeue(out _))
                     {
-                        result = null;
                         Interlocked.Decrement(ref this.createdObjects);
                     }
                 }

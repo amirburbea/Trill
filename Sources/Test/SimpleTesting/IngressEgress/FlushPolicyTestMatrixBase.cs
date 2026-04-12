@@ -150,16 +150,16 @@ namespace SimpleTesting.Flush
         private readonly PeriodicPunctuationPolicy punctuationPolicy;
         private readonly OnCompletedPolicy completedPolicy;
 
-        private readonly Queue<StreamEvent<int>> expectedOutput = new Queue<StreamEvent<int>>();
+        private readonly Queue<StreamEvent<int>> expectedOutput = new();
 
         // Events expected to be batched at ingress but not egressed
-        private readonly Queue<StreamEvent<int>> expectedBatch = new Queue<StreamEvent<int>>();
+        private readonly Queue<StreamEvent<int>> expectedBatch = new();
 
         // Events expected to be batched at the filtered operator but not egressed (only used for FlushPolicy.None)
-        private readonly Queue<StreamEvent<int>> filteredBatch = new Queue<StreamEvent<int>>();
+        private readonly Queue<StreamEvent<int>> filteredBatch = new();
         private int ingressCount = 0;
 
         // Events that have already been validated (kept around for debugging purposes)
-        private readonly List<StreamEvent<int>> validatedOutput = new List<StreamEvent<int>>();
+        private readonly List<StreamEvent<int>> validatedOutput = new();
     }
 }

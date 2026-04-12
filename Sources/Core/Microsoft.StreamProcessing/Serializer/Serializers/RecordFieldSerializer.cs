@@ -22,10 +22,10 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
 
         public Expression BuildSerializer(Expression encoder, Expression @object)
         {
-            if (encoder == null) throw new ArgumentNullException(nameof(encoder));
-            if (@object == null) throw new ArgumentNullException(nameof(@object));
+            ArgumentNullException.ThrowIfNull(encoder);
+            ArgumentNullException.ThrowIfNull(@object);
 
-            var member = GetMember(@object);
+            var member = this.GetMember(@object);
             if (this.Schema.RuntimeType.GetTypeInfo().IsValueType || this.MemberInfo.isField)
             {
                 return this.Schema.BuildSerializer(encoder, member);
@@ -39,11 +39,11 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
 
         public Expression BuildDeserializer(Expression decoder, Expression @object)
         {
-            if (decoder == null) throw new ArgumentNullException(nameof(decoder));
-            if (@object == null) throw new ArgumentNullException(nameof(@object));
+            ArgumentNullException.ThrowIfNull(decoder);
+            ArgumentNullException.ThrowIfNull(@object);
 
             var value = this.Schema.BuildDeserializer(decoder);
-            var member = GetMember(@object);
+            var member = this.GetMember(@object);
             if (@object.Type.GetTypeInfo().IsValueType)
             {
                 var tmp = Expression.Variable(value.Type);

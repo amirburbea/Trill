@@ -27,7 +27,7 @@ namespace Microsoft.StreamProcessing
 
     internal sealed class ComparerExpressionCache
     {
-        private static readonly ConcurrentDictionary<Type, object> typeComparerCache = new ConcurrentDictionary<Type, object>();
+        private static readonly ConcurrentDictionary<Type, object> typeComparerCache = new();
 
         static ComparerExpressionCache()
         {
@@ -65,7 +65,7 @@ namespace Microsoft.StreamProcessing
 
     internal class ComparerExpression<T> : IComparerExpression<T>
     {
-        private static readonly object sentinel = new object();
+        private static readonly object sentinel = new();
         private readonly Expression<Comparison<T>> CompareExpr;
 
         public ComparerExpression(Expression<Comparison<T>> compareExpr) => this.CompareExpr = compareExpr;

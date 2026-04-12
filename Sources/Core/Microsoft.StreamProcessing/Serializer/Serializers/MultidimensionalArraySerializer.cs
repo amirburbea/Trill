@@ -19,7 +19,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
         protected override Expression BuildSerializerSafe(Expression encoder, Expression value)
         {
             int rank = this.RuntimeType.GetArrayRank();
-            return BuildSerializerImpl([], encoder, value, 0, rank);
+            return this.BuildSerializerImpl([], encoder, value, 0, rank);
         }
 
         private Expression BuildSerializerImpl(
@@ -47,7 +47,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
                 Expression.Loop(
                     Expression.Block(
                         Expression.IfThen(Expression.GreaterThanOrEqual(counter, length), Expression.Break(label)),
-                        BuildSerializerImpl(indexes, encoder, value, currentRank + 1, maxRank),
+                        this.BuildSerializerImpl(indexes, encoder, value, currentRank + 1, maxRank),
                         Expression.PreIncrementAssign(counter)),
                     label));
 
@@ -66,7 +66,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
             var jaggedType = GenerateJaggedType(this.RuntimeType);
 
             var deserialized = Expression.Variable(jaggedType, "deserialized");
-            body.Add(Expression.Assign(deserialized, GenerateBuildJaggedDeserializer(decoder, jaggedType, 0, type.GetArrayRank())));
+            body.Add(Expression.Assign(deserialized, this.GenerateBuildJaggedDeserializer(decoder, jaggedType, 0, type.GetArrayRank())));
 
             var lengths = new List<Expression>();
             Expression currentObject = deserialized;
@@ -78,7 +78,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
 
             var result = Expression.Variable(type, "result");
             body.Add(Expression.Assign(result, Expression.NewArrayBounds(type.GetElementType(), lengths)));
-            body.Add(GenerateCopy([], result, deserialized, 0, type.GetArrayRank()));
+            body.Add(this.GenerateCopy([], result, deserialized, 0, type.GetArrayRank()));
             body.Add(result);
             return Expression.Block(new[] { deserialized, result }, body);
         }
@@ -133,7 +133,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
                                     valueType.GetTypeInfo().GetMethod("Add"),
                                     new[]
                                     {
-                                        GenerateBuildJaggedDeserializer(
+                                        this.GenerateBuildJaggedDeserializer(
                                             decoder,
                                             valueType.GetTypeInfo().GetGenericArguments()[0],
                                             currentRank + 1,
@@ -167,7 +167,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
                 Expression.Loop(
                     Expression.Block(
                         Expression.IfThen(Expression.GreaterThanOrEqual(counter, length), Expression.Break(label)),
-                        GenerateCopy(
+                        this.GenerateCopy(
                             indexes,
                             destination,
                             Expression.Property(source, "Item", new Expression[] { counter }),

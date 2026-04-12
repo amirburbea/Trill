@@ -204,12 +204,12 @@ namespace Microsoft.StreamProcessing
                         if (this.now < sync)
                         {
                             this.now = sync;
-                            Purge(sync);
+                            this.Purge(sync);
                         }
 
                         if (*vother == StreamEvent.InfinitySyncTime)
                         {
-                            ActOnStart(input[i], input.key.col[i], *hash, *vsync);
+                            this.ActOnStart(input[i], input.key.col[i], *hash, *vsync);
                         }
                         else if (*vother == StreamEvent.PunctuationOtherTime)
                         {
@@ -221,16 +221,16 @@ namespace Microsoft.StreamProcessing
                             this.batch.bitvector.col[this.outputCount >> 6] |= 1L << (this.outputCount & 0x3f);
                             this.outputCount++;
 
-                            if (this.outputCount == Config.DataBatchSize) FlushContents();
+                            if (this.outputCount == Config.DataBatchSize) this.FlushContents();
                         }
                         else if (*vsync < *vother)
                         {
-                            ActOnStart(input[i], input.key.col[i], *hash, *vsync);
-                            ActOnEnd(input[i], input.key.col[i], *hash, *vsync, *vother);
+                            this.ActOnStart(input[i], input.key.col[i], *hash, *vsync);
+                            this.ActOnEnd(input[i], input.key.col[i], *hash, *vsync, *vother);
                         }
                         else
                         {
-                            ActOnEnd(input[i], input.key.col[i], *hash, *vother, *vsync);
+                            this.ActOnEnd(input[i], input.key.col[i], *hash, *vother, *vsync);
                         }
                     }
 
@@ -309,7 +309,7 @@ namespace Microsoft.StreamProcessing
                     };
 
                     // brand new event! Issue a public version
-                    Emit(ActiveEvent.FromExt(activeEventExt));
+                    this.Emit(ActiveEvent.FromExt(activeEventExt));
 
                     InsertOrAppend(this.OpenEvents, lookupStart, activeEventExt);
                 }
@@ -353,7 +353,7 @@ namespace Microsoft.StreamProcessing
                     var e = this.CurrentTimeOpenEventBuffer.entries[it];
 
                     for (int i = 0; i < e.value; i++)
-                        ActOnStart(e.key.Payload, e.key.Key, e.key.Hash, this.CurrentTimeOpenEventBufferTime, true);
+                        this.ActOnStart(e.key.Payload, e.key.Key, e.key.Hash, this.CurrentTimeOpenEventBufferTime, true);
 
                 }
 
@@ -365,7 +365,7 @@ namespace Microsoft.StreamProcessing
                 var iterator = FastDictionary2<TPayload, ActiveEvent>.IteratorStart;
                 while (closed.Value.Iterate(ref iterator))
                 {
-                    foreach (var v in closed.Value.entries[iterator].value) Emit(v);
+                    foreach (var v in closed.Value.entries[iterator].value) this.Emit(v);
                 }
                 closed.Value.Initialize();
                 this.ClosedEvents.Remove(closed.Key);
@@ -402,7 +402,7 @@ namespace Microsoft.StreamProcessing
             this.outputCount++;
             tempOutputCount = this.outputCount;
 
-            if (tempOutputCount == Config.DataBatchSize) FlushContents();
+            if (tempOutputCount == Config.DataBatchSize) this.FlushContents();
         }
 
         public override int CurrentlyBufferedOutputCount => this.outputCount;

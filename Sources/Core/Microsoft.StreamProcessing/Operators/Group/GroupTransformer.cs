@@ -35,10 +35,10 @@ namespace Microsoft.StreamProcessing
             string inlinedHashCodeComputation,
             bool nested) : base(className)
         {
-            Contract.Requires(className != null);
-            Contract.Requires(outerKeyType != null);
-            Contract.Requires(sourceType != null);
-            Contract.Requires(innerKeyType != null);
+            ArgumentNullException.ThrowIfNull(className);
+            ArgumentNullException.ThrowIfNull(outerKeyType);
+            ArgumentNullException.ThrowIfNull(sourceType);
+            ArgumentNullException.ThrowIfNull(innerKeyType);
 
             this.outerKeyType = outerKeyType;
             this.sourceType = sourceType;

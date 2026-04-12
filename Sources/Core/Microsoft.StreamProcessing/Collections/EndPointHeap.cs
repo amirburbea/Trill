@@ -64,7 +64,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
         public unsafe void Insert(long time, int value)
         {
             // If out of space in the stack, then grow.
-            if (this.count == this.capacity) Grow();
+            if (this.count == this.capacity) this.Grow();
 
             fixed (long* timeArray = this.times)
             fixed (int* valueArray = this.values)
@@ -129,7 +129,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             // Return top element and remove top.
             time = this.times[0];
             value = this.values[0];
-            RemoveTop();
+            this.RemoveTop();
             return true;
         }
 
@@ -147,7 +147,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             // Return top element and remove top.
             time = this.times[0];
             value = this.values[0];
-            RemoveTop();
+            this.RemoveTop();
             return true;
         }
 
@@ -165,7 +165,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             // Return top element and remove top.
             time = this.times[0];
             value = this.values[0];
-            RemoveTop();
+            this.RemoveTop();
             return true;
         }
 

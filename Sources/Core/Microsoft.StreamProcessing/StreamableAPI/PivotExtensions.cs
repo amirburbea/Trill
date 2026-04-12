@@ -42,7 +42,7 @@ namespace Microsoft.StreamProcessing
             Func<Window<CompoundGroupKey<TKey, TGroupKey>, TValue>, IAggregate<TValue, TState, TAggValue>> aggregate) where TOutput : new()
         {
             bool sourceHasNullableValues = IsNullable(typeof(TValue));
-            if (initializer == null) throw new ArgumentNullException(nameof(initializer));
+            ArgumentNullException.ThrowIfNull(initializer);
 
             var window = new Window<CompoundGroupKey<TKey, TGroupKey>, TValue>(inputStreamable.Properties.GroupNested(keySelector).Select<TValue>(valueSelector, false, false));
             var agg = aggregate(window);
@@ -187,11 +187,11 @@ namespace Microsoft.StreamProcessing
             Expression<Func<TResult, string>> attributeSelector,
             Expression<Func<TResult, TValue>> valueSelector) where TResult : new()
         {
-            Invariant.IsNotNull(inputStreamable, nameof(inputStreamable));
-            Invariant.IsNotNull(initializer, nameof(initializer));
-            Invariant.IsNotNull(keySelector, nameof(keySelector));
-            Invariant.IsNotNull(attributeSelector, nameof(attributeSelector));
-            Invariant.IsNotNull(valueSelector, nameof(valueSelector));
+            ArgumentNullException.ThrowIfNull(inputStreamable);
+            ArgumentNullException.ThrowIfNull(initializer);
+            ArgumentNullException.ThrowIfNull(keySelector);
+            ArgumentNullException.ThrowIfNull(attributeSelector);
+            ArgumentNullException.ThrowIfNull(valueSelector);
 
             if (!(initializer.Body is NewExpression newExpression)) throw new ArgumentException("Initializer must return a constructor expression.", nameof(initializer));
             if (!(attributeSelector.Body is MemberExpression attributeField)) throw new ArgumentException("Attribute selector expression must refer to a single field in the return type.");

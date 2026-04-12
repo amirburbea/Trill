@@ -13,7 +13,7 @@ namespace Microsoft.StreamProcessing
     [DataContract]
     internal sealed class MonotonicSubscriptionWallClock<TPayload> : ObserverSubscriptionBase<TPayload, TPayload, TPayload>
     {
-        private readonly object sentinel = new object();
+        private readonly object sentinel = new();
         private IDisposable timer;
 
         public MonotonicSubscriptionWallClock() { }
@@ -39,7 +39,7 @@ namespace Microsoft.StreamProcessing
                 null)
         {
             if (timelinePolicy.punctuationInterval > default(TimeSpan))
-                this.timer = new Timer(EmitPunctuation, null, new TimeSpan(0), timelinePolicy.punctuationInterval);
+                this.timer = new Timer(this.EmitPunctuation, null, new TimeSpan(0), timelinePolicy.punctuationInterval);
         }
 
         public override void OnCompleted()
@@ -64,7 +64,7 @@ namespace Microsoft.StreamProcessing
                 this.currentTime = Math.Max(DateTimeOffset.UtcNow.Ticks, this.currentTime);
 
                 this.currentBatch.Add(this.currentTime, StreamEvent.InfinitySyncTime, Empty.Default, value);
-                if (this.currentBatch.Count == Config.DataBatchSize) FlushContents();
+                if (this.currentBatch.Count == Config.DataBatchSize) this.FlushContents();
             }
         }
 
@@ -76,7 +76,7 @@ namespace Microsoft.StreamProcessing
                 {
                     var time = DateTimeOffset.UtcNow.Ticks;
                     this.currentTime = Math.Max(time, this.currentTime);
-                    OnPunctuation(StreamEvent.CreatePunctuation<TPayload>(this.currentTime));
+                    this.OnPunctuation(StreamEvent.CreatePunctuation<TPayload>(this.currentTime));
                 }
             }
         }
@@ -97,10 +97,10 @@ namespace Microsoft.StreamProcessing
 
         protected override void OnCompleted(long punctuationTime)
         {
-            FlushContents();
-            OnPunctuation(StreamEvent.CreatePunctuation<TPayload>(punctuationTime));
+            this.FlushContents();
+            this.OnPunctuation(StreamEvent.CreatePunctuation<TPayload>(punctuationTime));
             if (this.flushPolicy != FlushPolicy.FlushOnPunctuation)
-                OnFlush();
+                this.OnFlush();
         }
     }
 
@@ -143,7 +143,7 @@ namespace Microsoft.StreamProcessing
             Contract.EnsuresOnThrow<IngressException>(true);
 
                 this.currentBatch.Add(this.currentTime, StreamEvent.InfinitySyncTime, Empty.Default, value);
-                if (this.currentBatch.Count == Config.DataBatchSize) FlushContents();
+                if (this.currentBatch.Count == Config.DataBatchSize) this.FlushContents();
                 this.eventCount++;
 
                 if (this.eventCount == this.eventsPerSample)
@@ -151,17 +151,17 @@ namespace Microsoft.StreamProcessing
                     this.eventCount = 0;
                     this.currentTime++;
 
-                    FlushContents();
-                    OnPunctuation(StreamEvent.CreatePunctuation<TPayload>(this.currentTime));
+                this.FlushContents();
+                this.OnPunctuation(StreamEvent.CreatePunctuation<TPayload>(this.currentTime));
                 }
         }
 
         protected override void OnCompleted(long punctuationTime)
         {
-            FlushContents();
-            OnPunctuation(StreamEvent.CreatePunctuation<TPayload>(punctuationTime));
+            this.FlushContents();
+            this.OnPunctuation(StreamEvent.CreatePunctuation<TPayload>(punctuationTime));
             if (this.flushPolicy != FlushPolicy.FlushOnPunctuation)
-                OnFlush();
+                this.OnFlush();
         }
     }
 

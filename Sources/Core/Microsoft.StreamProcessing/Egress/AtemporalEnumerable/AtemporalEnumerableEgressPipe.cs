@@ -35,7 +35,7 @@ namespace Microsoft.StreamProcessing
             for (int i = 0; i < batch.Count; i++)
             {
                 var currentSync = col_vsync[i];
-                Process(currentSync);
+                this.Process(currentSync);
 
                 if ((col_bv[i >> 6] & (1L << (i & 0x3f))) != 0) continue;
                 if (col_vother[i] == StreamEvent.InfinitySyncTime)
@@ -47,7 +47,7 @@ namespace Microsoft.StreamProcessing
                 {
                     // Interval: create an insertion event now, and a deletion later when time progresses
                     this.currentVersion.Add(ChangeListEvent.CreateInsertion(batch[i]));
-                    EnqueueDelete(col_vother[i], batch[i]);
+                    this.EnqueueDelete(col_vother[i], batch[i]);
                 }
                 else
                 {

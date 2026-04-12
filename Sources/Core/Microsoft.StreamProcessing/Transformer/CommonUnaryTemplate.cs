@@ -58,7 +58,7 @@ namespace Microsoft.StreamProcessing
             string errorMessages = null;
             try
             {
-                var expandedCode = TransformText();
+                var expandedCode = this.TransformText();
 
                 var assemblyReferences = Transformer.AssemblyReferencesNeededFor(this.keyType, this.payloadType, typeof(SortedDictionary<,>));
                 assemblyReferences.AddRange(Transformer.AssemblyReferencesNeededFor(types));
@@ -89,7 +89,7 @@ namespace Microsoft.StreamProcessing
             string errorMessages = null;
             try
             {
-                var expandedCode = TransformText();
+                var expandedCode = this.TransformText();
 
                 var assemblyReferences = Transformer.AssemblyReferencesNeededFor(this.keyType, this.payloadType, this.resultType, typeof(SortedDictionary<,>));
                 assemblyReferences.AddRange(Transformer.AssemblyReferencesNeededFor(types));

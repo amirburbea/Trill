@@ -47,7 +47,7 @@ namespace Microsoft.StreamProcessing
             for (int i = 0; i < batch.Count; i++)
             {
                 var currentSync = col_vsync[i];
-                ProcessDeletions(currentSync);
+                this.ProcessDeletions(currentSync);
 
                 if ((col_bv[i >> 6] & (1L << (i & 0x3f))) != 0) continue;
                 if (col_vother[i] == StreamEvent.InfinitySyncTime)
@@ -73,7 +73,7 @@ namespace Microsoft.StreamProcessing
                         this.array = this.generator();
                         this.arrayLength = this.array.Length;
                     }
-                    EnqueueDelete(col_vother[i], batch[i]);
+                    this.EnqueueDelete(col_vother[i], batch[i]);
                 }
                 else
                 {
@@ -93,7 +93,7 @@ namespace Microsoft.StreamProcessing
                 if (currentTime <= timestamp)
                 {
                     // End edge: throw, because we expect the data to be monotonic
-                    if (queue.Any())
+                    if (queue.Count != 0)
                         throw new StreamProcessingException("The query has encountered either an end edge or an interval, while the egress point expects only start edges.");
                     this.toDelete.Remove(currentTime);
                 }
@@ -113,7 +113,7 @@ namespace Microsoft.StreamProcessing
 
         public override void OnCompleted()
         {
-            OnFlush();
+            this.OnFlush();
             base.OnCompleted();
         }
 

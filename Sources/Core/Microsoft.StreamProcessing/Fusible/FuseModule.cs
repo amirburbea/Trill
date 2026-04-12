@@ -32,7 +32,7 @@ namespace Microsoft.StreamProcessing
 
         public bool Any => this.expressions.Count > 0;
 
-        public FuseModule Clone() => new FuseModule(this);
+        public FuseModule Clone() => new(this);
 
         public Expression[] GetCodeGenExpressions() => this.expressions.Select(profile => (Expression)profile.expression).ToArray();
 
@@ -648,7 +648,7 @@ namespace Microsoft.StreamProcessing
         public string Coalesce<TPayload, TResult, TKey>(string startText, string endText, string payloadText, string keyText, out string leadingText, out string trailingText)
         {
             Expression<Action<long, long, TResult, TKey>> placeholder = (generatedStartTimeVariable, generatedEndTimeVariable, transformedValue, generatedKeyVariable) => PlaceholderMethod.Foo();
-            var c = Coalesce<TPayload, TResult, TKey>(placeholder, false);
+            var c = this.Coalesce<TPayload, TResult, TKey>(placeholder, false);
             var strings = c.Body.ExpressionToCSharp().Split(new string[] { PlaceholderMethod.Text }, StringSplitOptions.None);
             var start = "var " + c.Parameters[0].Name + " = " + startText + ";";
             var end = "var " + c.Parameters[1].Name + " = " + endText + ";";

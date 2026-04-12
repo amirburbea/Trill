@@ -31,7 +31,7 @@ namespace Microsoft.StreamProcessing
 
         internal Streamable(StreamProperties<TKey, TPayload> properties)
         {
-            Contract.Requires(properties != null);
+            ArgumentNullException.ThrowIfNull(properties);
 
             this.properties = properties;
         }
@@ -69,7 +69,7 @@ namespace Microsoft.StreamProcessing
 
         public override IDisposable Subscribe(IStreamObserver<TKey, TPayload> observer)
         {
-            Contract.Requires(observer != null);
+            ArgumentNullException.ThrowIfNull(observer);
             return null; // Dummy return
         }
     }

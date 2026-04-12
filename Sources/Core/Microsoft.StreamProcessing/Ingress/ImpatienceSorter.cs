@@ -62,7 +62,7 @@ namespace Microsoft.StreamProcessing.Internal
             if (streamEvent.SyncTime >= this.Tails[0])
                 loc = 0;
             else
-                loc = BinarySearch(streamEvent.SyncTime);
+                loc = this.BinarySearch(streamEvent.SyncTime);
 
             // Add a new queue
             if (loc == this.NumFibers)
@@ -469,7 +469,7 @@ namespace Microsoft.StreamProcessing.Internal
                 if (streamEvent.SyncTime >= this.Tails[0])
                     loc = 0;
                 else
-                    loc = BinarySearch(streamEvent.SyncTime);
+                    loc = this.BinarySearch(streamEvent.SyncTime);
     
                 // Add a new queue
                 if (loc == this.NumFibers)

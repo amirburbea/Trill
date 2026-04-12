@@ -78,8 +78,8 @@ namespace Microsoft.StreamProcessing
                 {
                     case ExpressionType.AndAlso:
                     case ExpressionType.OrElse:
-                        Visit(node.Left);
-                        Visit(node.Right);
+                        this.Visit(node.Left);
+                        this.Visit(node.Right);
                         return node;
                     default:
                         this.IsVectorizable = false;
@@ -92,7 +92,7 @@ namespace Microsoft.StreamProcessing
                 switch (node.NodeType)
                 {
                     case ExpressionType.Not:
-                        Visit(node.Operand);
+                        this.Visit(node.Operand);
                         return node;
                     default:
                         this.IsVectorizable = false;
@@ -177,14 +177,14 @@ namespace Microsoft.StreamProcessing
                 {
                     case ExpressionType.OrElse:
                         this.inPlace = false;
-                        Visit(node.Left);
+                        this.Visit(node.Left);
                         left_result = this.resultBV;
                         var bv_i = "bv" + counter++;
 
                         // var bv_i = invert(left_result) | incomingBV;
                         this.vectorStatements.Add($"var {bv_i} = MultiString.InvertLeftThenOrWithRight({left_result}, {this.incomingBV}, this.pool.bitvectorPool);");
                         this.incomingBV = bv_i;
-                        Visit(node.Right);
+                        this.Visit(node.Right);
 
                         // free bv_i
                         this.vectorStatements.Add($"{bv_i}.ReturnClear();");
@@ -197,10 +197,10 @@ namespace Microsoft.StreamProcessing
 
                         break;
                     case ExpressionType.AndAlso:
-                        Visit(node.Left);
+                        this.Visit(node.Left);
                         left_result = this.resultBV;
                         this.incomingBV = this.resultBV;
-                        Visit(node.Right);
+                        this.Visit(node.Right);
 
                         // free left_result
                         this.vectorStatements.Add($"{left_result}.ReturnClear();");
@@ -296,7 +296,7 @@ namespace Microsoft.StreamProcessing
             protected override Expression VisitMethodCall(MethodCallExpression methodCall)
             {
                 if (methodCall.Method.DeclaringType != typeof(string)) goto JustVisit;
-                if (!IsCallToStringMethodOnBatchField(methodCall.Object as MemberExpression)) goto JustVisit;
+                if (!this.IsCallToStringMethodOnBatchField(methodCall.Object as MemberExpression)) goto JustVisit;
 
                 this.found = true;
                 return methodCall;
@@ -308,7 +308,7 @@ namespace Microsoft.StreamProcessing
             protected override Expression VisitMember(MemberExpression node)
             {
                 if (!node.Member.DeclaringType.Equals(typeof(string))) goto JustVisit;
-                if (!IsCallToStringMethodOnBatchField(node.Expression as MemberExpression)) goto JustVisit;
+                if (!this.IsCallToStringMethodOnBatchField(node.Expression as MemberExpression)) goto JustVisit;
 
                 this.found = true;
                 return node;

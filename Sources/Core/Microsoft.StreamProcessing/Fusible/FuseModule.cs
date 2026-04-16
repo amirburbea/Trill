@@ -502,6 +502,8 @@ namespace Microsoft.StreamProcessing
 
         public bool IsEmpty => this.expressions.Count == 0 && this.durationAdjustment == null;
 
+        public bool HasDurationAdjustment => this.durationAdjustment != null;
+
         public override string ToString()
         {
             string output = string.Empty;

@@ -223,6 +223,14 @@ namespace Microsoft.StreamProcessing
                     baseType == typeof(Tuple<,,,,,,,>)) return true;
             }
 
+            // Case 4: StreamEvent and PartitionedStreamEvent — readonly structs deserialized via constructor
+            if (type.IsGenericType)
+            {
+                var baseType = type.GetGenericTypeDefinition();
+                if (baseType == typeof(StreamEvent<>) ||
+                    baseType == typeof(PartitionedStreamEvent<,>)) return true;
+            }
+
             return false;
         }
 
@@ -728,16 +736,19 @@ namespace Microsoft.StreamProcessing
             Contract.EndContractBlock();
 
             if (type.IsPrimitive) return Enumerable.Empty<MyFieldInfo>();
-            else if (type.HasSupportedParameterizedConstructor())
-            {
-                return type.GetProperties().Where(p => p.GetIndexParameters().Length == 0).Select(o => new MyFieldInfo(o));
-            }
             else if (type.IsDefined(typeof(DataContractAttribute)))
             {
-                // In DataContract context, return all fields and properties marked with DataMember
+                // In DataContract context, return all fields and properties marked with DataMember.
+                // This takes priority over HasSupportedParameterizedConstructor so that types like
+                // StreamEvent<T> (readonly struct with [DataContract]) use their [DataMember] fields
+                // as constructor arguments rather than their unrelated public getter properties.
                 var fields = type.GetAllFields().Where(m => m.IsDefined(typeof(DataMemberAttribute))).Select(o => new MyFieldInfo(o));
                 var properties = type.GetAllProperties().Where(m => m.IsDefined(typeof(DataMemberAttribute))).Select(o => new MyFieldInfo(o));
                 return fields.Concat(properties);
+            }
+            else if (type.HasSupportedParameterizedConstructor())
+            {
+                return type.GetProperties().Where(p => p.GetIndexParameters().Length == 0).Select(o => new MyFieldInfo(o));
             }
             else
             {

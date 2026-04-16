@@ -46,11 +46,8 @@ namespace Microsoft.StreamProcessing
         {
             lock (this.sentinel)
             {
-                if (this.timer != null)
-                {
-                    this.timer.Dispose();
-                    this.timer = null;
-                }
+                this.timer?.Dispose();
+                this.timer = null;
 
                 base.OnCompleted();
             }
@@ -85,11 +82,8 @@ namespace Microsoft.StreamProcessing
         {
             lock (this.sentinel)
             {
-                if (this.timer != null)
-                {
-                    this.timer.Dispose();
-                    this.timer = null;
-                }
+                this.timer?.Dispose();
+                this.timer = null;
 
                 base.DisposeState();
             }

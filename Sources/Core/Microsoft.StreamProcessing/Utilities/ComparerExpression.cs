@@ -112,10 +112,10 @@ namespace Microsoft.StreamProcessing
                         // then fall back to using a lambda of the form:
                         // (x,y) => x.CompareTo(y)
                         var genericInstanceOfComparerExpressionForGenericIComparable = typeof(GenericComparableExpression<>).MakeGenericType(type);
-                        var ctorForComparerExpressionForGenericIComparer = genericInstanceOfComparerExpressionForGenericIComparable.GetConstructor(Array.Empty<Type>());
+                        var ctorForComparerExpressionForGenericIComparer = genericInstanceOfComparerExpressionForGenericIComparable.GetConstructor([]);
                         if (ctorForComparerExpressionForGenericIComparer != null)
                         {
-                            comparer = (IComparerExpression<T>)ctorForComparerExpressionForGenericIComparer.Invoke(Array.Empty<object>());
+                            comparer = (IComparerExpression<T>)ctorForComparerExpressionForGenericIComparer.Invoke([]);
                             ComparerExpressionCache.Add(comparer);
                             return comparer;
                         }
@@ -133,7 +133,7 @@ namespace Microsoft.StreamProcessing
                             var ctorForType = type.GetConstructor(Type.EmptyTypes);
                             if (ctorForType != null)
                             {
-                                var instanceOfType = ctorForType.Invoke(Array.Empty<object>());
+                                var instanceOfType = ctorForType.Invoke([]);
                                 if (instanceOfType != null)
                                 {
                                     comparer = (IComparerExpression<T>)ctorForComparerExpressionForGenericIComparer.Invoke(new object[] { instanceOfType, });
@@ -156,7 +156,7 @@ namespace Microsoft.StreamProcessing
                             var ctorForType = type.GetConstructor(Type.EmptyTypes);
                             if (ctorForType != null)
                             {
-                                var instanceOfType = ctorForType.Invoke(Array.Empty<object>());
+                                var instanceOfType = ctorForType.Invoke([]);
                                 if (instanceOfType != null)
                                 {
                                     comparer = (IComparerExpression<T>)ctorForComparerExpressionForNonGenericIComparer.Invoke(new object[] { instanceOfType, });

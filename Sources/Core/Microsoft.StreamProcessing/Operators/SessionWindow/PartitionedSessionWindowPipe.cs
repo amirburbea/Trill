@@ -293,7 +293,7 @@ namespace Microsoft.StreamProcessing
             [DataMember]
             public long Sync;
 
-            public override string ToString() => "Key='" + this.Key + "', Payload='" + this.Payload;
+            public override readonly string ToString() => "Key='" + this.Key + "', Payload='" + this.Payload;
         }
     }
 }

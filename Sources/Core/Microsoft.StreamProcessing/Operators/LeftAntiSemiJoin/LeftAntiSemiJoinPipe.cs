@@ -756,7 +756,7 @@ namespace Microsoft.StreamProcessing
                 this.Payload = payload;
             }
 
-            public override string ToString()
+            public override readonly string ToString()
                 => "[Start=" + this.Start + ", CurrentStart=" + this.CurrentStart + ", End=" + this.End + ", Key='" + this.Key + "', Payload='" + this.Payload + "']";
         }
 
@@ -775,7 +775,7 @@ namespace Microsoft.StreamProcessing
                 this.Count = 1;
             }
 
-            public override string ToString() => "[Key='" + this.Key + "', Count=" + this.Count + "]";
+            public override readonly string ToString() => "[Key='" + this.Key + "', Count=" + this.Count + "]";
         }
 
         [DataContract]
@@ -793,7 +793,7 @@ namespace Microsoft.StreamProcessing
                 this.Hash = hash;
             }
 
-            public override string ToString() => "[Key='" + this.Key + "', Hash=" + this.Hash + "]";
+            public override readonly string ToString() => "[Key='" + this.Key + "', Hash=" + this.Hash + "]";
         }
     }
 }

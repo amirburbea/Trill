@@ -40,7 +40,7 @@ namespace Microsoft.StreamProcessing
     {
         internal static StreamProperties<TKey, TPayload> Default
             => new(
-                Config.ForceRowBasedExecution ? false : true,
+                !Config.ForceRowBasedExecution,
                 false, null,
                 false, null, null,
                 false, false,
@@ -439,11 +439,11 @@ namespace Microsoft.StreamProcessing
 
         internal IEqualityComparerExpression<T2> FindEqualityComparer<T1, T2>(Expression<Func<T1, T2>> keySelector)
         {
-            foreach (var kvp in this.EqualityComparerSelectorMap)
+            foreach ((Expression key, object value) in this.EqualityComparerSelectorMap)
             {
-                if (kvp.Key.ExpressionEquals(keySelector))
+                if (key.ExpressionEquals(keySelector))
                 {
-                    return kvp.Value as IEqualityComparerExpression<T2>;
+                    return value as IEqualityComparerExpression<T2>;
                 }
             }
             return null;
@@ -451,9 +451,9 @@ namespace Microsoft.StreamProcessing
 
         internal IComparerExpression<T2> FindComparer<T1, T2>(Expression<Func<T1, T2>> keySelector)
         {
-            foreach (var kvp in this.SortSelectorMap)
+            foreach (Expression key in this.SortSelectorMap.Keys)
             {
-                if (kvp.Key.ExpressionEquals(keySelector))
+                if (key.ExpressionEquals(keySelector))
                 {
                     return ComparerExpression<T2>.Default;
                 }
@@ -464,11 +464,11 @@ namespace Microsoft.StreamProcessing
 
         internal IComparerExpression<TPayload> GetSprayComparerExpression<T1, T2>(Expression<Func<T1, T2>> keySelector)
         {
-            foreach (var kvp in this.SortSelectorMap)
+            foreach (Expression key in this.SortSelectorMap.Keys)
             {
-                if (kvp.Key.ExpressionEquals(keySelector))
+                if (key.ExpressionEquals(keySelector))
                 {
-                    var packSelector = kvp.Key as Expression<Func<TPayload, T2>>;
+                    var packSelector = key as Expression<Func<TPayload, T2>>;
                     return new ComparerExpression<TPayload>
                         (Utility.CreateCompoundComparer(packSelector, ComparerExpression<T2>.Default.GetCompareExpr()));
                 }
@@ -479,9 +479,9 @@ namespace Microsoft.StreamProcessing
 
         internal bool CanSpray<T1, T2>(Expression<Func<T1, T2>> keySelector)
         {
-            foreach (var kvp in this.SortSelectorMap)
+            foreach ((Expression key, Guid? value) in this.SortSelectorMap)
             {
-                if (kvp.Key.ExpressionEquals(keySelector) && (kvp.Value.HasValue))
+                if (key.ExpressionEquals(keySelector) && value.HasValue)
                 {
                     return true;
                 }

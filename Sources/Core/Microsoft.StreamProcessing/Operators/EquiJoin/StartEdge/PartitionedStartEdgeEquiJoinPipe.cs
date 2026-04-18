@@ -548,7 +548,7 @@ namespace Microsoft.StreamProcessing
                 this.Payload = payload;
             }
 
-            public override string ToString() => "[Key='" + this.Key + "', Payload='" + this.Payload + "']";
+            public override readonly string ToString() => "[Key='" + this.Key + "', Payload='" + this.Payload + "']";
         }
 
         public override bool LeftInputHasState

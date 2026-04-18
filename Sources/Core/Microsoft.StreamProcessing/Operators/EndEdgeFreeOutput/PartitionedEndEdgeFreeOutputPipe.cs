@@ -283,7 +283,7 @@ namespace Microsoft.StreamProcessing
             [DataMember]
             public int Hash;
 
-            public override string ToString()
+            public override readonly string ToString()
                 => "[End=" + this.End + ", Key='" + this.Key + "', Payload='" + this.Payload + "']";
         }
 

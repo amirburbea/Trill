@@ -61,12 +61,9 @@ namespace Microsoft.StreamProcessing
     }
 
     [ContractClassFor(typeof(Streamable<,>))]
-    internal abstract class StreamableContract<TKey, TPayload> : Streamable<TKey, TPayload>
+    internal abstract class StreamableContract<TKey, TPayload>(StreamProperties<TKey, TPayload> properties) 
+        : Streamable<TKey, TPayload>(properties)
     {
-        public StreamableContract(StreamProperties<TKey, TPayload> properties)
-            : base(properties)
-        { }
-
         public override IDisposable Subscribe(IStreamObserver<TKey, TPayload> observer)
         {
             ArgumentNullException.ThrowIfNull(observer);

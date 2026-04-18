@@ -682,14 +682,14 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public void Remove() => this.map.Remove(this.currIndex);
+            public readonly void Remove() => this.map.Remove(this.currIndex);
 
             /// <summary>
             /// Currently for internal use only - do not use directly.
             /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public void MakeInvisible() => this.map.MakeInvisible(this.currIndex);
+            public readonly void MakeInvisible() => this.map.MakeInvisible(this.currIndex);
         }
 
         /// <summary>

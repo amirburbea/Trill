@@ -172,7 +172,7 @@ namespace Microsoft.StreamProcessing
                 this.Other = other;
             }
 
-            public override string ToString() => "Key='" + this.Key + "', Payload='" + this.Payload;
+            public override readonly string ToString() => "Key='" + this.Key + "', Payload='" + this.Payload;
         }
 
     }

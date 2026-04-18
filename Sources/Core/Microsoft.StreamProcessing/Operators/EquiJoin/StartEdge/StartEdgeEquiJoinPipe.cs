@@ -414,7 +414,7 @@ namespace Microsoft.StreamProcessing
                 this.Payload = payload;
             }
 
-            public override string ToString()
+            public override readonly string ToString()
             {
                 return "[Key='" + this.Key + "', Payload='" + this.Payload + "']";
             }

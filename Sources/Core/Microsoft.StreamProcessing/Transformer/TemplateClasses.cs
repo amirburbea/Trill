@@ -12,7 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Security.Cryptography;
@@ -93,7 +92,7 @@ namespace Microsoft.StreamProcessing
 #if CODEGEN_TIMING
             sw.Stop();
             Console.WriteLine("Time to generate and instantiate a batch for {0},{1}: {2}ms",
-                keyType.GetCSharpSourceSyntax(), payload.GetCSharpSourceSyntax(), sw.ElapsedMilliseconds);
+                keyType.GetCSharpSourceSyntax(), payloadType.GetCSharpSourceSyntax(), sw.ElapsedMilliseconds);
 #endif
             return t;
         }
@@ -127,29 +126,6 @@ namespace Microsoft.StreamProcessing
             uniqueReferences = uniqueReferences.Where(r => !r.FullName.Contains("System.Private.CoreLib"));
 
             var assemblyName = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
-            SyntaxTree tree;
-
-            if (includeDebugInfo)
-            {
-                if (!Directory.Exists(Config.GeneratedCodePath))
-                {
-                    Directory.CreateDirectory(Config.GeneratedCodePath); // let any exceptions bleed through
-                }
-                var baseFile = Path.Combine(Config.GeneratedCodePath, assemblyName);
-                var sourceFile = Path.ChangeExtension(baseFile, ".cs");
-                tree = CSharpSyntaxTree.ParseText(
-                    sourceCode,
-                    path: Path.GetFullPath(sourceFile),
-                    encoding: Encoding.GetEncoding(0),
-                    options: new CSharpParseOptions(LanguageVersion.Latest));
-            }
-            else
-            {
-                tree = CSharpSyntaxTree.ParseText(
-                    sourceCode,
-                    encoding: Encoding.GetEncoding(0),
-                    options: new CSharpParseOptions(LanguageVersion.Latest));
-            }
 
             MetadataReference trill = MetadataReference.CreateFromFile(typeof(StreamMessage).Assembly.Location);
 
@@ -171,22 +147,52 @@ namespace Microsoft.StreamProcessing
             var ignoreAccessibility = binderFlagsType.GetField("IgnoreAccessibility", BindingFlags.Static | BindingFlags.Public);
             topLevelBinderFlagsProperty.SetValue(options, (uint)ignoreCorLibraryDuplicatedTypesMember.GetValue(null) | (uint)ignoreAccessibility.GetValue(null));
 
+            // Single parse; fingerprint uses this tree. For file-backed debug emit, attach a path via WithFilePath (no re-parse).
+            SyntaxTree treeForFingerprint = CSharpSyntaxTree.ParseText(
+                sourceCode,
+                encoding: Encoding.GetEncoding(0),
+                options: new CSharpParseOptions(LanguageVersion.Latest));
+
             string fingerprintHex = null;
-            if (!includeDebugInfo)
+            if (diskCacheRequested && TryComputeCodegenDiskCacheIdentity(
+                    treeForFingerprint,
+                    refs,
+                    options,
+                    includeIgnoreAccessChecksAssembly,
+                    includeDebugInfo,
+                    out string deterministicName,
+                    out fingerprintHex))
             {
-                if (diskCacheRequested && TryComputeCodegenDiskCacheIdentity(tree, refs, options, includeIgnoreAccessChecksAssembly, out string deterministicName, out fingerprintHex))
+                assemblyName = deterministicName;
+            }
+            else
+            {
+                assemblyName = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+                fingerprintHex = null;
+            }
+
+            SyntaxTree tree;
+            if (includeDebugInfo
+                && diskCacheRequested
+                && !string.IsNullOrWhiteSpace(Config.GeneratedCodePath))
+            {
+                if (!Directory.Exists(Config.GeneratedCodePath))
                 {
-                    assemblyName = deterministicName;
+                    Directory.CreateDirectory(Config.GeneratedCodePath); // let any exceptions bleed through
                 }
-                else
-                {
-                    assemblyName = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
-                    fingerprintHex = null;
-                }
+
+                var baseFile = Path.Combine(Config.GeneratedCodePath, assemblyName);
+                string sourcePath = Path.GetFullPath(Path.ChangeExtension(baseFile, ".cs"));
+                tree = treeForFingerprint.WithFilePath(sourcePath);
+            }
+            else
+            {
+                tree = treeForFingerprint;
             }
 
             var compilation = CSharpCompilation.Create(assemblyName, [tree], refs, options);
-            string cacheRoot = !includeDebugInfo && fingerprintHex != null ? Config.CodegenAssemblyCachePath : null;
+            // Disk codegen cache (read/write under CodegenAssemblyCachePath) only when configured and fingerprinting succeeded.
+            string cacheRoot = diskCacheRequested && fingerprintHex != null ? Config.CodegenAssemblyCachePath : null;
             var assembly = EmitCompilationAndLoadAssembly(compilation, includeDebugInfo, out errorMessages, cacheRoot, fingerprintHex);
 
 #if CODEGEN_TIMING
@@ -196,13 +202,13 @@ namespace Microsoft.StreamProcessing
             return assembly;
         }
 
-        public static ConcurrentDictionary<Assembly, MetadataReference> metadataReferenceCache = [];
+        public static ConcurrentDictionary<Assembly, MetadataReference> metadataReferenceCache = new();
 
         /// <summary>
         /// SHA256-based identity for each in-memory PE we expose as a Roslyn stream reference, so disk-cache
         /// fingerprints stay correct and we do not disable caching merely because a ref is stream-backed.
         /// </summary>
-        private static readonly ConcurrentDictionary<Assembly, string> codegenPeIdentityByAssembly = [];
+        private static readonly ConcurrentDictionary<Assembly, string> codegenPeIdentityByAssembly = new();
 
         private static readonly InteractiveAssemblyLoader loader = new();
 
@@ -219,11 +225,11 @@ namespace Microsoft.StreamProcessing
 
         private static bool TryFindAssemblyForPortableExecutableMetadata(PortableExecutableReference per, out Assembly assembly)
         {
-            foreach ((Assembly asm, MetadataReference mr) in metadataReferenceCache)
+            foreach (KeyValuePair<Assembly, MetadataReference> kv in metadataReferenceCache)
             {
-                if (ReferenceEquals(mr, per))
+                if (ReferenceEquals(kv.Value, per))
                 {
-                    assembly = asm;
+                    assembly = kv.Key;
                     return true;
                 }
             }
@@ -245,13 +251,15 @@ namespace Microsoft.StreamProcessing
 
         /// <summary>
         /// Builds a fingerprint of Roslyn inputs and a deterministic assembly name so the same logical compilation
-        /// produces the same PE across processes when disk caching is enabled.
+        /// produces the same PE across processes when disk caching is enabled. Includes whether portable PDB emit is
+        /// used so debug and release codegen paths do not share a cache entry when they differ.
         /// </summary>
         private static bool TryComputeCodegenDiskCacheIdentity(
             SyntaxTree tree,
             List<MetadataReference> refs,
             CSharpCompilationOptions options,
             bool includeIgnoreAccessChecksAssembly,
+            bool emitPortablePdb,
             out string assemblyName,
             out string fingerprintHex)
         {
@@ -263,8 +271,9 @@ namespace Microsoft.StreamProcessing
             var langVer = parseOpts?.LanguageVersion.ToString() ?? string.Empty;
 
             var sb = new StringBuilder(Math.Max(1024, sourceFull.Length + refs.Count * 128));
-            sb.AppendLine("v1");
+            sb.AppendLine("v3");
             sb.Append("includeIgnoreAccessChecks:").Append(includeIgnoreAccessChecksAssembly).AppendLine();
+            sb.Append("emitPortablePdb:").Append(emitPortablePdb).AppendLine();
             sb.Append("optimization:").Append(options.OptimizationLevel).AppendLine();
             sb.Append("allowUnsafe:").Append(options.AllowUnsafe).AppendLine();
             sb.Append("language:").Append(langVer).AppendLine();
@@ -288,8 +297,29 @@ namespace Microsoft.StreamProcessing
 
                 if (!string.IsNullOrEmpty(per.FilePath) && File.Exists(per.FilePath))
                 {
-                    var fi = new FileInfo(per.FilePath);
-                    sb.Append("F|").Append(per.FilePath).Append('|').Append(fi.Length).Append('|').Append(fi.LastWriteTimeUtc.Ticks).AppendLine();
+                    AssemblyName refIdentity;
+                    try
+                    {
+                        refIdentity = AssemblyName.GetAssemblyName(per.FilePath);
+                    }
+                    catch (BadImageFormatException)
+                    {
+                        return false;
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        return false;
+                    }
+                    catch (ArgumentException)
+                    {
+                        return false;
+                    }
+                    catch (IOException)
+                    {
+                        return false;
+                    }
+
+                    sb.Append("F|").Append(per.FilePath).Append('|').Append(refIdentity.FullName).AppendLine();
                 }
                 else
                 {
@@ -393,11 +423,28 @@ namespace Microsoft.StreamProcessing
         {
             Contract.Requires(compilation.SyntaxTrees.Length == 1);
 
-            if (!makeAssemblyDebuggable
-                && !string.IsNullOrEmpty(codegenCacheRoot)
+            if (!string.IsNullOrEmpty(codegenCacheRoot)
                 && !string.IsNullOrEmpty(fingerprintHex)
                 && TryLoadAssemblyFromCodegenCache(codegenCacheRoot, fingerprintHex, out Assembly cached))
             {
+                if (makeAssemblyDebuggable)
+                {
+                    // Optional: sync .cs next to the debug output path when loading from CodegenAssemblyCachePath (already non-empty here).
+                    SyntaxTree tree = compilation.SyntaxTrees.Single();
+                    string baseFile = tree.FilePath;
+                    if (!string.IsNullOrEmpty(baseFile))
+                    {
+                        string dir = Path.GetDirectoryName(baseFile);
+                        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                        {
+                            Directory.CreateDirectory(dir);
+                        }
+
+                        string sourceFile = Path.ChangeExtension(baseFile, ".cs");
+                        File.WriteAllText(sourceFile, tree.GetRoot().ToFullString());
+                    }
+                }
+
                 errorMessages = string.Empty;
                 return cached;
             }
@@ -408,41 +455,103 @@ namespace Microsoft.StreamProcessing
             if (makeAssemblyDebuggable)
             {
                 var tree = compilation.SyntaxTrees.Single();
-                var baseFile = tree.FilePath;
-                var sourceFile = Path.ChangeExtension(baseFile, ".cs");
-                File.WriteAllText(sourceFile, tree.GetRoot().ToFullString());
-                var assemblyFile = Path.ChangeExtension(baseFile, ".dll");
-                using (var assemblyStream = File.Open(assemblyFile, FileMode.Create, FileAccess.Write))
-                using (var pdbStream = File.Open(Path.ChangeExtension(baseFile, ".pdb"), FileMode.Create, FileAccess.Write))
+                string baseFile = tree.FilePath;
+                if (!string.IsNullOrEmpty(baseFile))
                 {
-                    emitResult = compilation.Emit(assemblyStream, pdbStream, options: new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb));
-                }
+                    var sourceFile = Path.ChangeExtension(baseFile, ".cs");
+                    File.WriteAllText(sourceFile, tree.GetRoot().ToFullString());
+                    var assemblyFile = Path.ChangeExtension(baseFile, ".dll");
+                    using (var assemblyStream = File.Open(assemblyFile, FileMode.Create, FileAccess.Write))
+                    using (var pdbStream = File.Open(Path.ChangeExtension(baseFile, ".pdb"), FileMode.Create, FileAccess.Write))
+                    {
+                        emitResult = compilation.Emit(assemblyStream, pdbStream, options: new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb));
+                    }
 
-                if (emitResult.Success)
+                    if (emitResult.Success)
+                    {
+                        if (!string.IsNullOrEmpty(codegenCacheRoot))
+                        {
+                            CodegenAssemblyCacheMisses++;
+                        }
+
+                        assembly = AssemblyFromFile(assemblyFile);
+                        if (!string.IsNullOrEmpty(codegenCacheRoot) && !string.IsNullOrEmpty(fingerprintHex))
+                        {
+                            try
+                            {
+                                byte[] peImage = File.ReadAllBytes(assemblyFile);
+                                TryWriteCodegenCacheFile(codegenCacheRoot, fingerprintHex, peImage);
+                                var aref = MetadataReference.CreateFromStream(new MemoryStream(peImage));
+                                if (metadataReferenceCache.TryAdd(assembly, aref))
+                                {
+                                    RegisterCodegenPeIdentity(assembly, peImage);
+                                }
+                            }
+                            catch (IOException)
+                            {
+                            }
+                            catch (UnauthorizedAccessException)
+                            {
+                            }
+                        }
+                    }
+                }
+                else
                 {
-                    assembly = AssemblyFromFile(assemblyFile);
+                    using (var peStream = new MemoryStream())
+                    using (var pdbStream = new MemoryStream())
+                    {
+                        emitResult = compilation.Emit(peStream, pdbStream, options: new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb));
+                        if (emitResult.Success)
+                        {
+                            if (!string.IsNullOrEmpty(codegenCacheRoot))
+                            {
+                                CodegenAssemblyCacheMisses++;
+                            }
+
+                            byte[] peImage = peStream.ToArray();
+                            if (!string.IsNullOrEmpty(codegenCacheRoot) && !string.IsNullOrEmpty(fingerprintHex))
+                            {
+                                TryWriteCodegenCacheFile(codegenCacheRoot, fingerprintHex, peImage);
+                            }
+
+                            assembly = AssemblyFromMemoryStream(new MemoryStream(peImage));
+                            loader.RegisterDependency(assembly);
+                            var aref = MetadataReference.CreateFromStream(new MemoryStream(peImage));
+                            if (metadataReferenceCache.TryAdd(assembly, aref))
+                            {
+                                RegisterCodegenPeIdentity(assembly, peImage);
+                            }
+                        }
+                    }
                 }
             }
             else
             {
-                using var stream = new MemoryStream();
-                emitResult = compilation.Emit(stream);
-                if (emitResult.Success)
+                using (var stream = new MemoryStream())
                 {
-                    CodegenAssemblyCacheMisses++;
-                    byte[] peImage = stream.ToArray();
-                    if (!string.IsNullOrEmpty(codegenCacheRoot) && !string.IsNullOrEmpty(fingerprintHex))
+                    emitResult = compilation.Emit(stream);
+                    if (emitResult.Success)
                     {
-                        TryWriteCodegenCacheFile(codegenCacheRoot, fingerprintHex, peImage);
-                    }
+                        if (!string.IsNullOrEmpty(codegenCacheRoot))
+                        {
+                            CodegenAssemblyCacheMisses++;
+                        }
 
-                    assembly = AssemblyFromMemoryStream(new MemoryStream(peImage));
+                        byte[] peImage = stream.ToArray();
+                        if (!string.IsNullOrEmpty(codegenCacheRoot) && !string.IsNullOrEmpty(fingerprintHex))
+                        {
+                            TryWriteCodegenCacheFile(codegenCacheRoot, fingerprintHex, peImage);
+                        }
 
-                    loader.RegisterDependency(assembly);
-                    var aref = MetadataReference.CreateFromStream(new MemoryStream(peImage));
-                    if (metadataReferenceCache.TryAdd(assembly, aref))
-                    {
-                        RegisterCodegenPeIdentity(assembly, peImage);
+                        assembly = AssemblyFromMemoryStream(new MemoryStream(peImage));
+
+                        loader.RegisterDependency(assembly);
+                        var aref = MetadataReference.CreateFromStream(new MemoryStream(peImage));
+                        if (metadataReferenceCache.TryAdd(assembly, aref))
+                        {
+                            RegisterCodegenPeIdentity(assembly, peImage);
+                        }
                     }
                 }
             }
@@ -539,9 +648,7 @@ namespace Microsoft.StreamProcessing
             => AssemblyLocationFinder.GetAssemblyLocationsFor(expression);
 
         public static IEnumerable<Assembly> AssemblyReferencesNeededFor(params Expression[] expressions)
-        {
-            return expressions.SelectMany(AssemblyLocationFinder.GetAssemblyLocationsFor).Distinct();
-        }
+            => expressions.SelectMany(AssemblyLocationFinder.GetAssemblyLocationsFor).Distinct();
 
         private sealed class AssemblyLocationFinder : ExpressionVisitor
         {
@@ -597,7 +704,7 @@ namespace System.Runtime.CompilerServices
 
             private static Assembly CreateIgnoreAccessChecksAssembly()
             {
-                var assembly = CompileSourceCode(IgnoreAccessChecksSourceCode, [], out _, false);
+                var assembly = CompileSourceCode(IgnoreAccessChecksSourceCode, Array.Empty<Assembly>(), out _, false);
                 if (assembly == null)
                 {
                     throw new InvalidOperationException("Code Generation failed for IgnoresAccessChecksToAttribute!");
@@ -635,7 +742,10 @@ namespace System.Runtime.CompilerServices
 
         internal static List<Assembly> AssemblyReferencesNeededFor(params Type[] ts)
         {
-            return [.. ts.SelectMany(AssemblyReferencesNeededForType)];
+            var result = new List<Assembly>();
+            foreach (var t in ts)
+                result.AddRange(AssemblyReferencesNeededForType(t));
+            return result;
         }
 
         internal static string GenericParameterList(params string[] ps)
@@ -669,7 +779,7 @@ namespace System.Runtime.CompilerServices
             var a = CompileSourceCode(expandedCode, assemblyReferences, out string errorMessages);
 
             var t = a.GetType(generatedClassName);
-            var instantiatedType = t.MakeGenericType([keyType, payloadType]);
+            var instantiatedType = t.MakeGenericType(new Type[] { keyType, payloadType });
 #if CODEGEN_TIMING
             sw.Stop();
             Console.WriteLine("Time to generate and instantiate a memory pool for {0},{1}: {2}ms",
@@ -707,9 +817,11 @@ namespace System.Runtime.CompilerServices
             => MemoryManager.GetMemoryPool<TKey, TPayload>().GetType().Assembly;
     }
 
-    internal sealed class TypeMapper(params Type[] types)
+    internal sealed class TypeMapper
     {
-        private readonly Dictionary<Type, string> typeMap = GetCSharpTypeNames(types);
+        private readonly Dictionary<Type, string> typeMap;
+
+        public TypeMapper(params Type[] types) => this.typeMap = GetCSharpTypeNames(types);
 
         public string CSharpNameFor(Type t) => this.typeMap[t];
 
@@ -758,7 +870,7 @@ namespace System.Runtime.CompilerServices
             if (!t.IsGenericType) // need to test after anonymous because deserialized anonymous types are *not* generic (but unserialized anonymous types *are* generic)
             { d.Add(t, typeName); return; }
             var sb = new StringBuilder();
-            typeName = typeName[..t.FullName.IndexOf('`')];
+            typeName = typeName.Substring(0, t.FullName.IndexOf('`'));
             sb.AppendFormat("{0}<", typeName);
             var first = true;
             if (!t.Assembly.IsDynamic)
@@ -772,7 +884,7 @@ namespace System.Runtime.CompilerServices
                     first = false;
                 }
             }
-            sb.Append('>');
+            sb.Append(">");
             typeName = sb.ToString();
             d.Add(t, typeName);
             return;
@@ -796,19 +908,19 @@ namespace System.Runtime.CompilerServices
             var d = new Dictionary<string, MyFieldInfo>();
             this.Fields = d;
             foreach (var f in t.GetFields(BindingFlags.Instance | BindingFlags.Public))
-                d.Add(f.Name, new(f/*, prefix*/));
+                d.Add(f.Name, new MyFieldInfo(f/*, prefix*/));
 
             // Any autoprops should be treated just as if they were a field
             foreach (var p in t.GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
                 var getMethod = p.GetMethod;
                 if (getMethod == null) continue;
-                if (!getMethod.IsDefined(typeof(CompilerGeneratedAttribute))) continue;
+                if (!getMethod.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute))) continue;
                 var setMethod = p.SetMethod;
                 if (setMethod == null) continue;
-                if (!setMethod.IsDefined(typeof(CompilerGeneratedAttribute))) continue;
+                if (!setMethod.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute))) continue;
 
-                d.Add(p.Name, new(p/*, prefix*/));
+                d.Add(p.Name, new MyFieldInfo(p/*, prefix*/));
             }
 
             if (!this.Fields.Any())
@@ -817,13 +929,13 @@ namespace System.Runtime.CompilerServices
                 {
                     foreach (var p in t.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                     {
-                        d.Add(p.Name, new(p/*, prefix*/));
+                        d.Add(p.Name, new MyFieldInfo(p/*, prefix*/));
                     }
                 }
                 else
                 {
                     this.noFields = true;
-                    this.PseudoField = new(t, "payload");
+                    this.PseudoField = new MyFieldInfo(t, "payload");
                 }
             }
         }
@@ -832,7 +944,7 @@ namespace System.Runtime.CompilerServices
         {
             this.RepresentationFor = t;
             this.noFields = true;
-            this.PseudoField = new(t, pseudoFieldName);
+            this.PseudoField = new MyFieldInfo(t, pseudoFieldName);
         }
     }
 
@@ -955,21 +1067,23 @@ namespace System.Runtime.CompilerServices
         {
             this.assemblyReferences = [];
 
-            var keyType = keyRepresentation?.RepresentationFor ?? typeof(Empty);
+            var keyType = keyRepresentation == null ? typeof(Empty) : keyRepresentation.RepresentationFor;
 
             Contract.Assume(Transformer.IsValidKeyType(keyType));
 
             this.assemblyReferences.AddRange(Transformer.AssemblyReferencesNeededFor(keyType));
             this.keyType = keyType;
 
-            #region Decompose TPayload into columns
+#region Decompose TPayload into columns
             var payloadType = payloadRepresentation.RepresentationFor;
             this.assemblyReferences.AddRange(Transformer.AssemblyReferencesNeededFor(payloadType));
             this.payloadType = payloadType;
-            this.types = [.. payloadRepresentation.AllFields.Select(f => f.Type).Where(t => !t.MemoryPoolHasGetMethodFor())];
+            var payloadTypes = payloadRepresentation.AllFields.Select(f => f.Type).Where(t => !t.MemoryPoolHasGetMethodFor());
+
+            this.types = new HashSet<Type>(payloadTypes.Distinct());
 
             this.assemblyReferences.AddRange(this.types.SelectMany(t => Transformer.AssemblyReferencesNeededFor(t)));
-            #endregion
+#endregion
 
             this.generatedClassName = Transformer.GetMemoryPoolClassName(keyType, payloadType);
             this.className = this.generatedClassName.CleanUpIdentifierName();

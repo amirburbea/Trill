@@ -114,7 +114,7 @@ namespace Microsoft.StreamProcessing
             string returnValue = string.Empty;
             if (this.IndentLengths.Count > 0)
             {
-                int indentLength = this.IndentLengths[this.IndentLengths.Count - 1];
+                int indentLength = this.IndentLengths[^1];
                 this.IndentLengths.RemoveAt(this.IndentLengths.Count - 1);
                 if (indentLength > 0)
                 {

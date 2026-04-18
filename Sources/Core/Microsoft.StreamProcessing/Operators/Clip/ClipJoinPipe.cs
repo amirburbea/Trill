@@ -444,7 +444,7 @@ namespace Microsoft.StreamProcessing
                 this.HeapIndex = heapIndex;
             }
 
-            public override string ToString()
+            public override readonly string ToString()
                 => "[Start=" + this.Start + ", Key='" + this.Key + "', Payload='" + this.Payload + "', HeapIndex=" + this.HeapIndex + "]";
         }
 
@@ -466,7 +466,7 @@ namespace Microsoft.StreamProcessing
                 this.Payload = payload;
             }
 
-            public override string ToString()
+            public override readonly string ToString()
                 => "[Start=" + this.Start + ", Key='" + this.Key + "', Payload='" + this.Payload + "]";
         }
     }

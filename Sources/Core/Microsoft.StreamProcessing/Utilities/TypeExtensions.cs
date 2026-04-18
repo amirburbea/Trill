@@ -76,7 +76,7 @@ namespace Microsoft.StreamProcessing
             var args = type.GetGenericArguments();
             var typeDefinition = instanceType.GetGenericTypeDefinition();
             var args2 = typeDefinition.GetGenericArguments();
-            return args.Any() && args.Length == args2.Length && type.IsAssignableFrom(typeDefinition.MakeGenericType(args));
+            return args.Length != 0 && args.Length == args2.Length && type.IsAssignableFrom(typeDefinition.MakeGenericType(args));
         }
 
         public static IEnumerable<Type> GetAllKnownTypes(this Type t)
@@ -86,7 +86,7 @@ namespace Microsoft.StreamProcessing
                 .SelectMany(a =>
                     a.Type != null
                     ? new Type[] { a.Type }
-                    : (IEnumerable<Type>)t.GetMethod(a.MethodName, BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, Array.Empty<object>()));
+                    : (IEnumerable<Type>)t.GetMethod(a.MethodName, BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, []));
             if (t.BaseType != null) types = types.Concat(GetAllKnownTypes(t.BaseType));
             return types;
         }
@@ -241,7 +241,7 @@ namespace Microsoft.StreamProcessing
         /// <returns>Collection of fields.</returns>
         public static IEnumerable<FieldInfo> GetAllFields(this Type t)
         {
-            if (t == null) return Enumerable.Empty<FieldInfo>();
+            if (t == null) return [];
 
             const BindingFlags Flags =
                 BindingFlags.Public |
@@ -264,7 +264,7 @@ namespace Microsoft.StreamProcessing
         /// <returns>Collection of properties.</returns>
         public static IEnumerable<PropertyInfo> GetAllProperties(this Type t)
         {
-            if (t == null) return Enumerable.Empty<PropertyInfo>();
+            if (t == null) return [];
 
             const BindingFlags Flags =
                 BindingFlags.Public |
@@ -735,7 +735,7 @@ namespace Microsoft.StreamProcessing
             ArgumentNullException.ThrowIfNull(type);
             Contract.EndContractBlock();
 
-            if (type.IsPrimitive) return Enumerable.Empty<MyFieldInfo>();
+            if (type.IsPrimitive) return [];
             else if (type.IsDefined(typeof(DataContractAttribute)))
             {
                 // In DataContract context, return all fields and properties marked with DataMember.

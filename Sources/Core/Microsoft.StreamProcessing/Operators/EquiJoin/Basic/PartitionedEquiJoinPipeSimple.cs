@@ -1017,7 +1017,7 @@ namespace Microsoft.StreamProcessing
                 this.Payload = payload;
             }
 
-            public override string ToString() => "[Start=" + this.Start + ", End=" + this.End + ", Payload='" + this.Payload + "']";
+            public override readonly string ToString() => "[Start=" + this.Start + ", End=" + this.End + ", Payload='" + this.Payload + "']";
         }
 
         [DataContract]
@@ -1035,7 +1035,7 @@ namespace Microsoft.StreamProcessing
                 this.Payload = payload;
             }
 
-            public override string ToString() => "[Start=" + this.Start + ", Payload='" + this.Payload + "']";
+            public override readonly string ToString() => "[Start=" + this.Start + ", Payload='" + this.Payload + "']";
         }
 
         public override bool LeftInputHasState

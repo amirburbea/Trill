@@ -21,7 +21,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int FindIndexOfPrimeGreaterOrEqualTo(int min)
         {
-            Contract.Requires(min >= 0 && min < Primes[Primes.Length - 1]);
+            Contract.Requires(min >= 0 && min < Primes[^1]);
 
             int index = Array.BinarySearch(Primes, min);
             if (index < 0)

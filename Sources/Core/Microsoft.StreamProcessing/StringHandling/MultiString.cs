@@ -1731,14 +1731,14 @@ namespace Microsoft.StreamProcessing.Internal.Collections
                 this.theActualMultiString = m;
                 this.rowIndex = 0;
             }
-            private int StartIndex => this.theActualMultiString.starts.col[this.rowIndex] + 2;
+            private readonly int StartIndex => this.theActualMultiString.starts.col[this.rowIndex] + 2;
 
             /// <summary>
             /// Used internally, but also is the wrapper implementation for String.Length
             /// </summary>
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int Length => this.theActualMultiString.lengths.col[this.rowIndex];
-            private string String => this.theActualMultiString.col.charArray.contentString;
+            public readonly int Length => this.theActualMultiString.lengths.col[this.rowIndex];
+            private readonly string String => this.theActualMultiString.col.charArray.contentString;
 
             #region IndexOf
 

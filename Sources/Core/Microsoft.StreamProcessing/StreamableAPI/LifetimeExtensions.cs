@@ -230,7 +230,7 @@ namespace Microsoft.StreamProcessing
 
             return source is IFusibleStreamable<TKey, TPayload> s
                 ? s.FuseSetDurationConstant(duration)
-                : (IStreamable<TKey, TPayload>)new AlterLifetimeStreamable<TKey, TPayload>(source, null, Expression.Lambda<Func<long>>(Expression.Constant(duration)));
+                : new AlterLifetimeStreamable<TKey, TPayload>(source, null, Expression.Lambda<Func<long>>(Expression.Constant(duration)));
         }
 
         /// <summary>

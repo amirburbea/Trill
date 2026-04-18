@@ -172,7 +172,7 @@ namespace Microsoft.StreamProcessing
                 return rv;
             }
 
-            public override string ToString()
+            public override readonly string ToString()
                 => "[Start=" + this.Start + ", End=" + this.End + ", Key='" + this.Key + "', Payload='" + this.Payload + "']";
         }
 
@@ -185,7 +185,7 @@ namespace Microsoft.StreamProcessing
             public TKey Key;
             public int Hash;
 
-            public override string ToString()
+            public override readonly string ToString()
                 => "[OriginalStart=" + this.OriginalStart + ", Start=" + this.Start + ", End=" + this.End + ", Key='" + this.Key + "', Payload='" + this.Payload + "']";
         }
 
@@ -195,7 +195,7 @@ namespace Microsoft.StreamProcessing
             public TKey Key;
             public int Hash;
 
-            public override string ToString()
+            public override readonly string ToString()
                 => "[Key='" + this.Key + "', Payload='" + this.Payload + "']";
         }
 

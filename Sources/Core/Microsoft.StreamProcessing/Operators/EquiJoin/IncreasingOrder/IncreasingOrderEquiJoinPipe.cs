@@ -726,7 +726,7 @@ namespace Microsoft.StreamProcessing
                 this.Payload = payload;
             }
 
-            public override string ToString() => "[Timestamp='" + this.Timestamp + "', Payload='" + this.Payload + "']";
+            public override readonly string ToString() => "[Timestamp='" + this.Timestamp + "', Payload='" + this.Payload + "']";
         }
     }
 }

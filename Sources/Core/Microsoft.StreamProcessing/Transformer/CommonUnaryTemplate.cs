@@ -64,14 +64,16 @@ namespace Microsoft.StreamProcessing
                 assemblyReferences.AddRange(Transformer.AssemblyReferencesNeededFor(types));
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<TKey, TPayload>());
 
-                var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
-                var realClassName = this.className.AddNumberOfNecessaryGenericArguments(this.keyType, this.payloadType);
-                var t = a.GetType(realClassName);
+                var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a =>
+                {
+                    var realClassName = this.className.AddNumberOfNecessaryGenericArguments(this.keyType, this.payloadType);
+                    return a.GetType(realClassName);
+                }, out errorMessages);
                 if (t.IsGenericType)
                 {
                     var list = this.keyType.GetAnonymousTypes();
                     list.AddRange(this.payloadType.GetAnonymousTypes());
-                    return Tuple.Create(t.MakeGenericType(list.ToArray()), errorMessages);
+                    return Tuple.Create(t.MakeGenericType([.. list]), errorMessages);
                 }
                 else return Tuple.Create(t, errorMessages);
             }
@@ -101,14 +103,16 @@ namespace Microsoft.StreamProcessing
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<TKey, TPayload>());
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<TKey, TResult>());
 
-                var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
-                var realClassName = this.className.AddNumberOfNecessaryGenericArguments(this.keyType, this.payloadType);
-                var t = a.GetType(realClassName);
+                var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences,a=>
+                {
+                    var realClassName = this.className.AddNumberOfNecessaryGenericArguments(this.keyType, this.payloadType);
+                    return a.GetType(realClassName);
+                }, out errorMessages);
                 if (t.IsGenericType)
                 {
                     var list = this.keyType.GetAnonymousTypes();
                     list.AddRange(this.payloadType.GetAnonymousTypes());
-                    return Tuple.Create(t.MakeGenericType(list.ToArray()), errorMessages);
+                    return Tuple.Create(t.MakeGenericType([.. list]), errorMessages);
                 }
                 else return Tuple.Create(t, errorMessages);
             }

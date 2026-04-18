@@ -247,13 +247,12 @@ namespace Microsoft.StreamProcessing
                 assemblyReferences.Add(Transformer.GeneratedMemoryPoolAssembly<TKey, TOutput>());
                 if (container != null) assemblyReferences.AddRange(container.CollectedGeneratedTypes.Select(o => o.Assembly));
 
-                var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
+                var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a => a.GetType(generatedClassName), out errorMessages);
                 if (keyType.IsAnonymousType())
                 {
-                    if (errorMessages == null) errorMessages = string.Empty;
+                    errorMessages ??= string.Empty;
                     errorMessages += "\nCodegen Warning: The key type for an aggregate is an anonymous type (or contains an anonymous type), preventing the inlining of the key equality and hashcode functions. This may lead to poor performance.\n";
                 }
-                var t = a.GetType(generatedClassName);
                 if (t.IsGenericType)
                 {
                     var list = typeof(TKey).GetAnonymousTypes();

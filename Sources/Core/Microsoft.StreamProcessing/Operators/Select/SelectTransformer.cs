@@ -156,8 +156,7 @@ namespace Microsoft.StreamProcessing
                 assemblyReferences.Add(Transformer.GeneratedMemoryPoolAssembly<TKey, TResult>());
                 assemblyReferences.AddRange(Transformer.AssemblyReferencesNeededFor(stream.Selector));
 
-                var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
-                var t = a.GetType(generatedClassName);
+                var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a => a.GetType(generatedClassName), out errorMessages);
                 t = t.InstantiateAsNecessary(typeof(TKey), typeof(TPayload), typeof(TResult));
                 return Tuple.Create(t, errorMessages);
             }

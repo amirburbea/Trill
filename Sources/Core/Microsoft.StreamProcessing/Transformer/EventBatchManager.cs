@@ -22,7 +22,14 @@ namespace Microsoft.StreamProcessing
         public static IEnumerable<Type> GeneratedTypes()
         {
             var enumerator = cachedObjects.GetEnumerator();
-            while (enumerator.MoveNext()) yield return enumerator.Current.Value;
+            while (enumerator.MoveNext())
+            {
+                var t = enumerator.Current.Value;
+                if (t is not null)
+                {
+                    yield return t;
+                }
+            }
         }
 
         public static Type GetStreamMessageType<TKey, TPayload>()
@@ -35,7 +42,8 @@ namespace Microsoft.StreamProcessing
 
             var lookupKey = CacheKey.Create(typeOfTKey, typeOfTPayload);
 
-            return cachedObjects.GetOrAdd(lookupKey, key => Transformer.GenerateBatchClass<TKey, TPayload>());
+            var generated = cachedObjects.GetOrAddUnlessNull(lookupKey, key => Transformer.GenerateBatchClass<TKey, TPayload>());
+            return generated ?? typeof(StreamMessage<TKey, TPayload>);
         }
 
         public static StreamMessage<TKey, TPayload> GetStreamMessage<TKey, TPayload>(MemoryPool<TKey, TPayload> pool)

@@ -48,7 +48,7 @@ namespace Microsoft.StreamProcessing
             if (Config.ForceRowBasedExecution)
             {
                 // then need to use the field "payload" that is defined on the generic StreamMessage
-                this.sourceFields = new MyFieldInfo[] { new(payloadType, "payload") };
+                this.sourceFields = [new(payloadType, "payload")];
             }
             else
             {
@@ -72,14 +72,13 @@ namespace Microsoft.StreamProcessing
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<TKey, TRegister>());
                 assemblyReferences.Add(Transformer.GeneratedMemoryPoolAssembly<TKey, TRegister>());
 
-                var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
-                var t = a.GetType(this.className);
+                var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a => a.GetType(this.className), out errorMessages);
                 if (t.IsGenericType)
                 {
                     var list = typeof(TKey).GetAnonymousTypes();
                     list.AddRange(this.payloadType.GetAnonymousTypes());
                     list.AddRange(this.registerType.GetAnonymousTypes());
-                    t = t.MakeGenericType(list.ToArray());
+                    t = t.MakeGenericType([.. list]);
                 }
                 return Tuple.Create(t, errorMessages);
             }

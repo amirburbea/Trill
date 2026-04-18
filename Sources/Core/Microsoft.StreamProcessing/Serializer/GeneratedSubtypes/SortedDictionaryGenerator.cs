@@ -48,9 +48,8 @@ namespace Microsoft.StreamProcessing.Internal
                     typeName = typeName.Replace("-", "_");
                     var builderCode = new GeneratedSortedDictionary(typeName).TransformText();
                     var assemblyReferences = Transformer.AssemblyReferencesNeededFor(typeof(SortedDictionary<,>));
-                    var a = Transformer.CompileSourceCode(builderCode, assemblyReferences, out string errorMessages);
 
-                    temp = a.GetType(typeName + "`2");
+                    temp = Transformer.CompileSourceCode(builderCode, assemblyReferences, a => a.GetType(typeName + "`2"), out string errorMessages);
                     temp = temp.MakeGenericType(typeof(TKey), typeof(TValue));
                     var init = temp.GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
                     init.Invoke(null, [Comparer<TKey>.Create(expr.Compile())]);

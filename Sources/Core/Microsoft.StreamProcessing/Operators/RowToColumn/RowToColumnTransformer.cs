@@ -37,9 +37,7 @@ namespace Microsoft.StreamProcessing
 
             generatedClassName = generatedClassName.AddNumberOfNecessaryGenericArguments(keyType, payloadType);
 
-            var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out string errorMessages);
-
-            var t = a.GetType(generatedClassName);
+            var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a=> a.GetType(generatedClassName), out string errorMessages);
             return Tuple.Create(t.InstantiateAsNecessary(typeof(TKey), typeof(TPayload)), errorMessages);
         }
     }

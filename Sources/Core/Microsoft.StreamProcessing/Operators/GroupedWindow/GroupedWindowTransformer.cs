@@ -287,15 +287,14 @@ namespace Microsoft.StreamProcessing
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<Empty, TResult>());
                 assemblyReferences.Add(Transformer.GeneratedMemoryPoolAssembly<Empty, TResult>());
 
-                var assembly = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
-                var t = assembly.GetType(template.className);
+                var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a => a.GetType(template.className), out errorMessages);
                 if (t.IsGenericType)
                 {
                     var list = typeof(TKey).GetAnonymousTypes();
                     list.AddRange(typeof(TInput).GetAnonymousTypes());
                     list.AddRange(typeof(TState).GetAnonymousTypes());
                     list.AddRange(typeof(TOutput).GetAnonymousTypes());
-                    return Tuple.Create(t.MakeGenericType(list.ToArray()), errorMessages);
+                    return Tuple.Create(t.MakeGenericType([.. list]), errorMessages);
                 }
                 else
                 {

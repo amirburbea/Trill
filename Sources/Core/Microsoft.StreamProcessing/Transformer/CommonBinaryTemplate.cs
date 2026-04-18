@@ -60,25 +60,27 @@ namespace Microsoft.StreamProcessing
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<TKey, TResult>());
                 if (expression != null) assemblyReferences.AddRange(Transformer.AssemblyReferencesNeededFor(expression));
 
-                var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
+                var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a =>
+                {
+                    var types = new List<Type> { this.keyType, this.leftType };
+                    if (numParameters > 2) types.Add(this.rightType);
+                    if (numParameters == 4) types.Add(this.resultType);
+                    return a.GetType(this.className.AddNumberOfNecessaryGenericArguments([.. types]));
+                }, out errorMessages);
                 if (this.keyType.IsAnonymousType())
                 {
-                    if (errorMessages == null) errorMessages = string.Empty;
+                    errorMessages ??= string.Empty;
                     errorMessages += "\nCodegen Warning: The key type for a binary operator is an anonymous type (or contains an anonymous type), preventing the inlining of the key equality and hashcode functions. This may lead to poor performance.\n";
                 }
 
-                var types = new List<Type> { this.keyType, this.leftType };
-                if (numParameters > 2) types.Add(this.rightType);
-                if (numParameters == 4) types.Add(this.resultType);
-                var realClassName = this.className.AddNumberOfNecessaryGenericArguments(types.ToArray());
-                var t = a.GetType(realClassName);
+                
                 if (t.IsGenericType)
                 {
                     var list = this.keyType.GetAnonymousTypes();
                     list.AddRange(this.leftType.GetAnonymousTypes());
                     if (numParameters > 2) list.AddRange(this.rightType.GetAnonymousTypes());
                     if (numParameters == 4) list.AddRange(this.resultType.GetAnonymousTypes());
-                    t = t.MakeGenericType(list.ToArray());
+                    t = t.MakeGenericType([.. list]);
                 }
                 return Tuple.Create(t, errorMessages);
             }

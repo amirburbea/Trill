@@ -85,8 +85,7 @@ namespace Microsoft.StreamProcessing
                 assemblyReferences.Add(typeof(IStreamable<,>).Assembly);
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<Empty, TPayload>());
 
-                var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
-                var t = a.GetType(template.className);
+                var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a => a.GetType(template.className), out errorMessages);
 #if CODEGEN_TIMING
               sw.Stop();
               Console.WriteLine("Time to generate and instantiate a IOOEJ operator: {0}ms", sw.ElapsedMilliseconds);
@@ -133,8 +132,7 @@ namespace Microsoft.StreamProcessing
                 assemblyReferences.Add(typeof(IStreamable<,>).Assembly);
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<Empty, TPayload>());
 
-                var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
-                var t = a.GetType(template.className);
+                var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a => a.GetType(template.className), out errorMessages);
 #if CODEGEN_TIMING
               sw.Stop();
               Console.WriteLine("Time to generate and instantiate a IOOEJ operator: {0}ms", sw.ElapsedMilliseconds);
@@ -182,8 +180,7 @@ namespace Microsoft.StreamProcessing
                 assemblyReferences.Add(typeof(IStreamable<,>).Assembly);
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<Empty, TPayload>());
 
-                var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
-                var t = a.GetType(template.className);
+                var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a => a.GetType(template.className), out errorMessages);
 #if CODEGEN_TIMING
               sw.Stop();
               Console.WriteLine("Time to generate and instantiate a IOOEJ operator: {0}ms", sw.ElapsedMilliseconds);
@@ -221,8 +218,7 @@ namespace Microsoft.StreamProcessing
                 assemblyReferences.Add(typeof(IStreamable<,>).Assembly);
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<PartitionKey<TKey>, TPayload>());
 
-                var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
-                var t = a.GetType(template.className);
+                var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a => a.GetType(template.className), out errorMessages);
 #if CODEGEN_TIMING
               sw.Stop();
               Console.WriteLine("Time to generate and instantiate a IOOEJ operator: {0}ms", sw.ElapsedMilliseconds);
@@ -270,8 +266,7 @@ namespace Microsoft.StreamProcessing
                 assemblyReferences.Add(typeof(IStreamable<,>).Assembly);
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<PartitionKey<TKey>, TPayload>());
 
-                var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
-                var t = a.GetType(template.className);
+                var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a => a.GetType(template.className), out errorMessages);
 #if CODEGEN_TIMING
               sw.Stop();
               Console.WriteLine("Time to generate and instantiate a IOOEJ operator: {0}ms", sw.ElapsedMilliseconds);
@@ -320,8 +315,7 @@ namespace Microsoft.StreamProcessing
                 assemblyReferences.Add(typeof(IStreamable<,>).Assembly);
                 assemblyReferences.Add(Transformer.GeneratedStreamMessageAssembly<PartitionKey<TKey>, TPayload>());
 
-                var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
-                var t = a.GetType(template.className);
+                var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a => a.GetType(template.className), out errorMessages);
 #if CODEGEN_TIMING
               sw.Stop();
               Console.WriteLine("Time to generate and instantiate a IOOEJ operator: {0}ms", sw.ElapsedMilliseconds);

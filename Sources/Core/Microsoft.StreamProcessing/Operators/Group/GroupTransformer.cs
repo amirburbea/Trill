@@ -152,15 +152,13 @@ namespace Microsoft.StreamProcessing
                 }
                 assemblyReferences.AddRange(Transformer.AssemblyReferencesNeededFor(keySelector));
 
-                var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
+                generatedClassName = generatedClassName.AddNumberOfNecessaryGenericArguments(typeOfTOuterKey, typeOfTSource, typeOfTInnerKey);
+                var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a => a.GetType(generatedClassName), out errorMessages);
                 if (typeOfTInnerKey.IsAnonymousTypeName())
                 {
-                    if (errorMessages == null) errorMessages = string.Empty;
+                    errorMessages ??= string.Empty;
                     errorMessages += "\nCodegen Warning: The inner key type for Group is anonymous, causing the use of Activator.CreateInstance in an inner loop. This will lead to poor performance.\n";
                 }
-
-                generatedClassName = generatedClassName.AddNumberOfNecessaryGenericArguments(typeOfTOuterKey, typeOfTSource, typeOfTInnerKey);
-                var t = a.GetType(generatedClassName);
                 t = t.InstantiateAsNecessary(typeOfTOuterKey, typeOfTSource, typeOfTInnerKey);
 
                 return Tuple.Create(t, errorMessages);

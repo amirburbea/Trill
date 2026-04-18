@@ -19,6 +19,8 @@ namespace Microsoft.StreamProcessing.Internal.Collections
     /// <typeparam name="TValue">Type of values in the dictionary</typeparam>
     internal sealed class SafeConcurrentDictionary<TValue> : IReadOnlyCollection<KeyValuePair<CacheKey, TValue>>
     {
+        private static readonly bool isNullable = !typeof(TValue).IsValueType || Nullable.GetUnderlyingType(typeof(TValue)) != null;
+
         private readonly ConcurrentDictionary<CacheKey, TValue> dictionary = [];
         private readonly ConcurrentDictionary<CacheKey, Lock> keyLocks = [];
 
@@ -40,6 +42,45 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             using (this.GetLock(key).EnterScope())
             {
                 return this.dictionary.GetOrAdd(key, valueFactory);
+            }
+        }
+
+        /// <summary>
+        /// Like <see cref="GetOrAdd"/>, but when <typeparamref name="TValue"/> is nullable (reference type or <see cref="Nullable{T}"/>),
+        /// a <see langword="null"/> result from <paramref name="valueFactory"/> is not inserted. An existing entry equal to default
+        /// (e.g. a poisoned <see langword="null"/>) is removed under the per-key lock so the factory can run again.
+        /// For non-nullable value types, default is a valid cached value and is treated like any other value.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TValue GetOrAddUnlessNull(CacheKey key, Func<CacheKey, TValue> valueFactory)
+        {
+            if (this.dictionary.TryGetValue(key, out var value))
+            {
+                if (!isNullable || !EqualityComparer<TValue>.Default.Equals(value, default))
+                {
+                    return value;
+                }
+            }
+
+            using (this.GetLock(key).EnterScope())
+            {
+                if (this.dictionary.TryGetValue(key, out value))
+                {
+                    if (!isNullable || !EqualityComparer<TValue>.Default.Equals(value, default))
+                    {
+                        return value;
+                    }
+
+                    this.dictionary.TryRemove(key, out _);
+                }
+
+                var created = valueFactory(key);
+                if (isNullable && EqualityComparer<TValue>.Default.Equals(created, default))
+                {
+                    return default;
+                }
+
+                return this.dictionary.GetOrAdd(key, _ => created);
             }
         }
 

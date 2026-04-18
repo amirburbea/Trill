@@ -166,11 +166,9 @@ namespace Microsoft.StreamProcessing
 
                 numberOfGenericParameters = template.numberOfGenericParameters;
 
-                var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out errorMessages);
-
                 if (numberOfGenericParameters > 0)
                     generatedClassName = generatedClassName + "`" + numberOfGenericParameters.ToString(CultureInfo.InvariantCulture);
-                var t = a.GetType(generatedClassName);
+                var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a => a.GetType(generatedClassName), out errorMessages);
                 t = t.InstantiateAsNecessary(typeOfTOuterKey, typeOfTInnerKey, typeofTInnerResult, typeofTResult);
 
                 return Tuple.Create(t, errorMessages);

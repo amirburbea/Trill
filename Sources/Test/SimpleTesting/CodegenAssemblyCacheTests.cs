@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.StreamProcessing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -16,6 +20,17 @@ namespace SimpleTesting
     {
         private const string ValidSource =
             "namespace Microsoft.StreamProcessing { public static class CodegenCacheProbe { public static int F() => 42; } }";
+
+        private static string UniqueProbeSource(string tag)
+            => $"namespace Microsoft.StreamProcessing {{ public static class CodegenCacheProbe_{tag} {{ public static int F() => 42; }} }}";
+
+        private static string UniqueProbeTypeName(string tag) => $"Microsoft.StreamProcessing.CodegenCacheProbe_{tag}";
+
+        private static Assembly CompileForTest(string source, string typeFullName, out string errorMessages)
+        {
+            Type resolved = Transformer.CompileSourceCode(source, Array.Empty<Assembly>(), a => a.GetType(typeFullName), out errorMessages);
+            return resolved?.Assembly;
+        }
 
         [TestCleanup]
         public void TestCleanup()
@@ -61,13 +76,13 @@ namespace SimpleTesting
                     Transformer.CodegenAssemblyCacheHits = 0;
                     Transformer.CodegenAssemblyCacheMisses = 0;
 
-                    Assembly a1 = Transformer.CompileSourceCode(ValidSource, Array.Empty<Assembly>(), out string err1);
+                    Assembly a1 = CompileForTest(ValidSource, "Microsoft.StreamProcessing.CodegenCacheProbe", out string err1);
                     Assert.IsNotNull(a1, err1);
                     Assert.IsTrue(string.IsNullOrEmpty(err1), err1);
                     Assert.IsTrue(Transformer.CodegenAssemblyCacheMisses >= 1, "first compile should emit");
                     long hitsAfterFirst = Transformer.CodegenAssemblyCacheHits;
 
-                    Assembly a2 = Transformer.CompileSourceCode(ValidSource, Array.Empty<Assembly>(), out string err2);
+                    Assembly a2 = CompileForTest(ValidSource, "Microsoft.StreamProcessing.CodegenCacheProbe", out string err2);
                     Assert.IsNotNull(a2, err2);
                     Assert.IsTrue(string.IsNullOrEmpty(err2), err2);
                     Assert.IsTrue(Transformer.CodegenAssemblyCacheHits > hitsAfterFirst, "second compile should load from disk");
@@ -91,16 +106,112 @@ namespace SimpleTesting
                     Transformer.CodegenAssemblyCacheHits = 0;
                     Transformer.CodegenAssemblyCacheMisses = 0;
 
-                    Assembly a1 = Transformer.CompileSourceCode(ValidSource, Array.Empty<Assembly>(), out string err1);
+                    Assembly a1 = CompileForTest(ValidSource, "Microsoft.StreamProcessing.CodegenCacheProbe", out string err1);
                     Assert.IsNotNull(a1, err1);
                     Assert.IsTrue(string.IsNullOrEmpty(err1), err1);
                     Assert.IsTrue(Transformer.CodegenAssemblyCacheMisses >= 1, "first compile should emit");
                     long hitsAfterFirst = Transformer.CodegenAssemblyCacheHits;
 
-                    Assembly a2 = Transformer.CompileSourceCode(ValidSource, Array.Empty<Assembly>(), out string err2);
+                    Assembly a2 = CompileForTest(ValidSource, "Microsoft.StreamProcessing.CodegenCacheProbe", out string err2);
                     Assert.IsNotNull(a2, err2);
                     Assert.IsTrue(string.IsNullOrEmpty(err2), err2);
                     Assert.IsTrue(Transformer.CodegenAssemblyCacheHits > hitsAfterFirst, "second compile should load from disk");
+                }
+            }
+            finally
+            {
+                TryDeleteDirectory(dir);
+            }
+        }
+
+        [TestMethod]
+        public void Corrupt_preseeded_disk_cache_entry_is_replaced_by_fresh_emit()
+        {
+            string tag = Guid.NewGuid().ToString("N");
+            string source = UniqueProbeSource(tag);
+            string typeName = UniqueProbeTypeName(tag);
+
+            string dir = Path.Combine(Path.GetTempPath(), "TrillCodegenCorrupt_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            try
+            {
+                using (new ConfigModifier().CodegenAssemblyCachePath(dir).GenerateDebugInfo(false).Modify())
+                {
+                    Transformer.PrepareCompileSourceCodeFingerprintInputs(
+                        source,
+                        Array.Empty<Assembly>(),
+                        includeIgnoreAccessChecksAssembly: true,
+                        includeDebugInfo: false,
+                        out List<MetadataReference> refs,
+                        out CSharpCompilationOptions options,
+                        out SyntaxTree tree);
+                    Assert.IsTrue(
+                        Transformer.TryComputeFingerprint(
+                            tree.GetRoot().ToFullString(),
+                            tree.Options,
+                            refs,
+                            options,
+                            includeIgnoreAccessChecksAssembly: true,
+                            emitPortablePdb: false,
+                            out _,
+                            out string fingerprint),
+                        "fingerprint inputs should match CompileSourceCode (debug off)");
+
+                    string cacheDll = Path.Combine(dir, fingerprint + ".dll");
+                    File.WriteAllBytes(cacheDll, Encoding.UTF8.GetBytes("not a PE – corrupt cache seed"));
+
+                    Assembly asm = CompileForTest(source, typeName, out string err);
+                    Assert.IsNotNull(asm, err);
+                    Assert.IsTrue(string.IsNullOrEmpty(err), err);
+
+                    byte[] pe = File.ReadAllBytes(cacheDll);
+                    Assert.IsTrue(pe.Length > 64, "emit should overwrite corrupt file with a real assembly");
+                    Assert.AreEqual((byte)'M', pe[0]);
+                    Assert.AreEqual((byte)'Z', pe[1]);
+                }
+            }
+            finally
+            {
+                TryDeleteDirectory(dir);
+            }
+        }
+
+        [TestMethod]
+        public void TypeLoadException_from_resolveType_on_cached_assembly_triggers_retry_emit()
+        {
+            string tag = Guid.NewGuid().ToString("N");
+            string source = UniqueProbeSource(tag);
+            string typeName = UniqueProbeTypeName(tag);
+
+            string dir = Path.Combine(Path.GetTempPath(), "TrillCodegenRetry_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            try
+            {
+                using (new ConfigModifier().CodegenAssemblyCachePath(dir).GenerateDebugInfo(false).Modify())
+                {
+                    Assembly seed = CompileForTest(source, typeName, out string seedErr);
+                    Assert.IsNotNull(seed, seedErr);
+                    Assert.IsTrue(string.IsNullOrEmpty(seedErr), seedErr);
+
+                    int resolveInvocations = 0;
+                    Type resolved = Transformer.CompileSourceCode(
+                        source,
+                        Array.Empty<Assembly>(),
+                        a =>
+                        {
+                            resolveInvocations++;
+                            if (resolveInvocations == 1)
+                            {
+                                throw new TypeLoadException("simulated: resolveType fails on assembly loaded from disk cache");
+                            }
+
+                            return a.GetType(typeName);
+                        },
+                        out string err,
+                        includeIgnoreAccessChecksAssembly: true);
+
+                    Assert.IsNotNull(resolved, err);
+                    Assert.AreEqual(2, resolveInvocations, "resolveType should run once for cached load and again after cache discard + emit");
                 }
             }
             finally
@@ -123,11 +234,11 @@ namespace SimpleTesting
                     const string srcB =
                         "namespace Microsoft.StreamProcessing { public static class B { public static int F() => 2; } }";
 
-                    Transformer.CompileSourceCode(srcA, Array.Empty<Assembly>(), out string errA);
+                    CompileForTest(srcA, "Microsoft.StreamProcessing.A", out string errA);
                     Assert.IsTrue(string.IsNullOrEmpty(errA), errA);
                     int countAfterA = Directory.GetFiles(dir, "*.dll").Length;
 
-                    Transformer.CompileSourceCode(srcB, Array.Empty<Assembly>(), out string errB);
+                    CompileForTest(srcB, "Microsoft.StreamProcessing.B", out string errB);
                     Assert.IsTrue(string.IsNullOrEmpty(errB), errB);
                     int countAfterB = Directory.GetFiles(dir, "*.dll").Length;
 

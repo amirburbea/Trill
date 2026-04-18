@@ -10,13 +10,11 @@ using System.Reflection;
 
 namespace Microsoft.StreamProcessing
 {
-    internal partial class ColumnToRowTemplate
+    internal partial class ColumnToRowTemplate(string className, Type keyType, Type payloadType)
+        : CommonUnaryTemplate(className, keyType, payloadType, payloadType)
     {
         private static int ColumnToRowSequenceNumber = 0;
         private bool rowMajor = true;
-
-        public ColumnToRowTemplate(string className, Type keyType, Type payloadType)
-            : base(className, keyType, payloadType, payloadType) { }
 
         internal static Tuple<Type, string> Generate<TKey, TPayload>(ColumnToRowStreamable<TKey, TPayload> stream)
         {
@@ -41,19 +39,17 @@ namespace Microsoft.StreamProcessing
 
             generatedClassName = generatedClassName.AddNumberOfNecessaryGenericArguments(keyType, payloadType);
 
-            var a = Transformer.CompileSourceCode(expandedCode, assemblyReferences, out string errorMessages);
+            var t = Transformer.CompileSourceCode(expandedCode, assemblyReferences, a => a.GetType(generatedClassName), out var errorMessages);
             if (payloadType.IsAnonymousTypeName())
             {
-                if (errorMessages == null) errorMessages = string.Empty;
+                errorMessages ??= string.Empty;
                 errorMessages += "\nCodegen Warning: The payload type for ColumnToRow is anonymous, causing the use of Activator.CreateInstance in an inner loop. This will lead to poor performance.\n";
             }
-
-            var t = a.GetType(generatedClassName);
             if (t.IsGenericType)
             {
                 var list = keyType.GetAnonymousTypes();
                 list.AddRange(payloadType.GetAnonymousTypes());
-                return Tuple.Create(t.MakeGenericType(list.ToArray()), errorMessages);
+                return Tuple.Create(t.MakeGenericType([.. list]), errorMessages);
             }
             else
             {

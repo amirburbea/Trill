@@ -85,7 +85,11 @@ namespace Microsoft.StreamProcessing
             }
             var lookupKey = CacheKey.Create(typeOfTKey, typeOfTPayload);
 
-            var generatedMemoryPool = cachedMemoryPools.GetOrAdd(lookupKey, key => Transformer.GenerateMemoryPoolClass<TKey, TPayload>());
+            var generatedMemoryPool = cachedMemoryPools.GetOrAddUnlessNull(lookupKey, static key => Transformer.GenerateMemoryPoolClass<TKey, TPayload>());
+            if (generatedMemoryPool is null)
+            {
+                return (MemoryPool<TKey, TPayload>)memoryPools.GetOrAdd(cacheKey, key => new MemoryPool<TKey, TPayload>(isColumnar));
+            }
 
             return (MemoryPool<TKey, TPayload>)memoryPools.GetOrAdd(cacheKey, t => Activator.CreateInstance(generatedMemoryPool));
         }
@@ -96,29 +100,29 @@ namespace Microsoft.StreamProcessing
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Free(bool reset = false)
         {
-            foreach (var kvp in doublingArrayPools)
+            foreach (var (_, pool) in doublingArrayPools)
             {
-                kvp.Value.Free(reset);
+                pool.Free(reset);
             }
 
-            foreach (var kvp in columnPools)
+            foreach (var (_, pool) in columnPools)
             {
-                kvp.Value.Free(reset);
+                pool.Free(reset);
             }
 
-            foreach (var kvp in bitvectorPools)
+            foreach (var (_, pool) in bitvectorPools)
             {
-                kvp.Value.Free(reset);
+                pool.Free(reset);
             }
 
-            foreach (var kvp in eventBatchPools)
+            foreach (var (_, pool) in eventBatchPools)
             {
-                kvp.Value.Free(reset);
+                pool.Free(reset);
             }
 
-            foreach (var kvp in charArrayPools)
+            foreach (var (_, pool) in charArrayPools)
             {
-                kvp.Value.Free(reset);
+                pool.Free(reset);
             }
         }
 

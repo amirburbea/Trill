@@ -158,7 +158,7 @@ namespace Microsoft.StreamProcessing
                         (a, i) => Expression.Bind(
                             a.Item3,
                             a.Item4
-                                ? (Expression)Expression.New(typeof(Nullable<>).MakeGenericType(typeof(TValue)).GetConstructor(new[] { typeof(TValue) }), Expression.ArrayIndex(aggvalues, Expression.Constant(i)))
+                                ? (Expression)Expression.New(typeof(Nullable<>).MakeGenericType(typeof(TValue)).GetConstructor([typeof(TValue)]), Expression.ArrayIndex(aggvalues, Expression.Constant(i)))
                                 : Expression.ArrayIndex(aggvalues, Expression.Constant(i))))));
             var resultConstructor = Expression.Lambda<Func<GroupSelectorInput<TGroupKey>, TAggValue[], TOutput>>(
                 constructor, groupkey, aggvalues);
@@ -311,7 +311,7 @@ namespace Microsoft.StreamProcessing
                         this.isNull.Add(
                             field.Name, Expression.Lambda<Func<TInput, bool>>(
                                 Expression.IsTrue(Expression.PropertyOrField(Expression.PropertyOrField(input, field.Name), "HasValue")),
-                                new[] { input }).Compile());
+                                [input]).Compile());
                     }
                     else if (valueField.Type.IsClass)
                     {
@@ -319,7 +319,7 @@ namespace Microsoft.StreamProcessing
                         this.isNull.Add(
                             field.Name, Expression.Lambda<Func<TInput, bool>>(
                                 Expression.Equal(Expression.PropertyOrField(input, field.Name), Expression.Constant(null)),
-                                new[] { input }).Compile());
+                                [input]).Compile());
                     }
                     else
                     {
@@ -347,7 +347,7 @@ namespace Microsoft.StreamProcessing
                         this.isNull.Add(
                             field.Name, Expression.Lambda<Func<TInput, bool>>(
                                 Expression.IsFalse(Expression.PropertyOrField(Expression.PropertyOrField(input, field.Name), "HasValue")),
-                                new[] { input }).Compile());
+                                [input]).Compile());
                     }
                     else if (valueField.Type.IsClass)
                     {
@@ -355,7 +355,7 @@ namespace Microsoft.StreamProcessing
                         this.isNull.Add(
                             field.Name, Expression.Lambda<Func<TInput, bool>>(
                                 Expression.Equal(Expression.PropertyOrField(input, field.Name), Expression.Constant(null)),
-                                new[] { input }).Compile());
+                                [input]).Compile());
                     }
                     else
                     {

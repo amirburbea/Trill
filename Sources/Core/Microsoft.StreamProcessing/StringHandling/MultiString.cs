@@ -1748,7 +1748,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             /// <param name="value"></param>
             /// <returns></returns>
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int IndexOf(char value)
+            public readonly int IndexOf(char value)
             {
                 var realResult = this.String.IndexOf(value, this.StartIndex, this.Length);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1763,7 +1763,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
                 MessageId = "System.String.IndexOf(System.String,System.Int32,System.Int32)",
                 Justification = "This is CLR API substitution, additional intent should not be added on behalf of the user of the API.")]
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int IndexOf(string value)
+            public readonly int IndexOf(string value)
             {
                 var realResult = this.String.IndexOf(value, this.StartIndex, this.Length);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1776,7 +1776,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             /// <param name="startIndex"></param>
             /// <returns></returns>
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int IndexOf(char value, int startIndex)
+            public readonly int IndexOf(char value, int startIndex)
             {
                 var realResult = this.String.IndexOf(value, this.StartIndex + startIndex, this.Length - startIndex);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1792,7 +1792,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
                 MessageId = "System.String.IndexOf(System.String,System.Int32,System.Int32)",
                 Justification = "This is CLR API substitution, additional intent should not be added on behalf of the user of the API.")]
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int IndexOf(string value, int startIndex)
+            public readonly int IndexOf(string value, int startIndex)
             {
                 var realResult = this.String.IndexOf(value, this.StartIndex + startIndex, this.Length - startIndex);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1805,7 +1805,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             /// <param name="comparisonType"></param>
             /// <returns></returns>
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int IndexOf(string value, StringComparison comparisonType)
+            public readonly int IndexOf(string value, StringComparison comparisonType)
             {
                 var realResult = this.String.IndexOf(value, this.StartIndex, this.Length, comparisonType);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1819,7 +1819,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             /// <param name="count"></param>
             /// <returns></returns>
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int IndexOf(char value, int startIndex, int count)
+            public readonly int IndexOf(char value, int startIndex, int count)
             {
                 var realResult = this.String.IndexOf(value, this.StartIndex + startIndex, count);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1836,7 +1836,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
                 MessageId = "System.String.IndexOf(System.String,System.Int32,System.Int32)",
                 Justification = "This is CLR API substitution, additional intent should not be added on behalf of the user of the API.")]
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int IndexOf(string value, int startIndex, int count)
+            public readonly int IndexOf(string value, int startIndex, int count)
             {
                 var realResult = this.String.IndexOf(value, this.StartIndex + startIndex, count);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1850,7 +1850,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             /// <param name="comparisonType"></param>
             /// <returns></returns>
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int IndexOf(string value, int startIndex, StringComparison comparisonType)
+            public readonly int IndexOf(string value, int startIndex, StringComparison comparisonType)
             {
                 var realResult = this.String.IndexOf(value, this.StartIndex + startIndex, this.Length - startIndex, comparisonType);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1865,7 +1865,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             /// <param name="comparisonType"></param>
             /// <returns></returns>
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int IndexOf(string value, int startIndex, int count, StringComparison comparisonType)
+            public readonly int IndexOf(string value, int startIndex, int count, StringComparison comparisonType)
             {
                 var realResult = this.String.IndexOf(value, this.StartIndex + startIndex, count, comparisonType);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1880,7 +1880,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             /// <param name="value"></param>
             /// <returns></returns>
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int LastIndexOf(char value)
+            public readonly int LastIndexOf(char value)
             {
                 var realResult = this.String.LastIndexOf(value, this.StartIndex + this.Length - 1, this.Length);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1895,7 +1895,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
                 MessageId = "System.String.LastIndexOf(System.String,System.Int32,System.Int32)",
                 Justification = "This is CLR API substitution, additional intent should not be added on behalf of the user of the API.")]
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int LastIndexOf(string value)
+            public readonly int LastIndexOf(string value)
             {
                 var realResult = this.String.LastIndexOf(value, this.StartIndex + this.Length - 1, this.Length);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1908,7 +1908,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             /// <param name="startIndex"></param>
             /// <returns></returns>
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int LastIndexOf(char value, int startIndex)
+            public readonly int LastIndexOf(char value, int startIndex)
             {
                 var realResult = this.String.LastIndexOf(value, this.StartIndex + startIndex, this.Length - startIndex);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1924,7 +1924,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
                 MessageId = "System.String.LastIndexOf(System.String,System.Int32,System.Int32)",
                 Justification = "This is CLR API substitution, additional intent should not be added on behalf of the user of the API.")]
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int LastIndexOf(string value, int startIndex)
+            public readonly int LastIndexOf(string value, int startIndex)
             {
                 var realResult = this.String.LastIndexOf(value, this.StartIndex + startIndex, this.Length - startIndex);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1937,7 +1937,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             /// <param name="comparisonType"></param>
             /// <returns></returns>
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int LastIndexOf(string value, StringComparison comparisonType)
+            public readonly int LastIndexOf(string value, StringComparison comparisonType)
             {
                 var realResult = this.String.LastIndexOf(value, this.StartIndex + this.Length - 1, this.Length, comparisonType);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1951,7 +1951,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             /// <param name="count"></param>
             /// <returns></returns>
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int LastIndexOf(char value, int startIndex, int count)
+            public readonly int LastIndexOf(char value, int startIndex, int count)
             {
                 var realResult = this.String.LastIndexOf(value, this.StartIndex + startIndex, count);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1968,7 +1968,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
                 MessageId = "System.String.LastIndexOf(System.String,System.Int32,System.Int32)",
                 Justification = "This is CLR API substitution, additional intent should not be added on behalf of the user of the API.")]
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int LastIndexOf(string value, int startIndex, int count)
+            public readonly int LastIndexOf(string value, int startIndex, int count)
             {
                 var realResult = this.String.LastIndexOf(value, this.StartIndex + startIndex, count);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1982,7 +1982,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             /// <param name="comparisonType"></param>
             /// <returns></returns>
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int LastIndexOf(string value, int startIndex, StringComparison comparisonType)
+            public readonly int LastIndexOf(string value, int startIndex, StringComparison comparisonType)
             {
                 var realResult = this.String.LastIndexOf(value, this.StartIndex + startIndex, this.Length - startIndex, comparisonType);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;
@@ -1997,7 +1997,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
             /// <param name="comparisonType"></param>
             /// <returns></returns>
             [EditorBrowsable(EditorBrowsableState.Never)]
-            public int LastIndexOf(string value, int startIndex, int count, StringComparison comparisonType)
+            public readonly int LastIndexOf(string value, int startIndex, int count, StringComparison comparisonType)
             {
                 var realResult = this.String.LastIndexOf(value, this.StartIndex + startIndex, count, comparisonType);
                 return realResult == -1 ? -1 : realResult - this.StartIndex;

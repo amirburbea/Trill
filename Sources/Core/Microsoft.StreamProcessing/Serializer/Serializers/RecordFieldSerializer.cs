@@ -34,7 +34,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
             var tmp = Expression.Variable(this.Schema.RuntimeType, Guid.NewGuid().ToString());
             var assignment = Expression.Assign(tmp, member);
             var serialized = this.Schema.BuildSerializer(encoder, tmp);
-            return Expression.Block(new[] { tmp }, new[] { assignment, serialized });
+            return Expression.Block(new[] { tmp }, [assignment, serialized]);
         }
 
         public Expression BuildDeserializer(Expression decoder, Expression @object)

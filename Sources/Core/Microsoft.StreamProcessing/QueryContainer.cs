@@ -109,7 +109,7 @@ namespace Microsoft.StreamProcessing
                 KnownTypes = this.CollectedGeneratedTypes,
                 Surrogate = this.Surrogate,
             };
-            serializer = method.Invoke(/* static */ null, new object[] { settings });
+            serializer = method.Invoke(/* static */ null, [settings]);
             this.serializers[type] = serializer;
             return serializer;
         }

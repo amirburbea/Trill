@@ -90,7 +90,7 @@ namespace Microsoft.StreamProcessing.Aggregates
             ArgumentNullException.ThrowIfNull(transform);
             var result = func.ReplaceParametersInBody(func.Parameters[0], func.Parameters[1], transform.Body);
             var transformParam = transform.Parameters[0];
-            return Expression.Lambda<Func<T1, T2, TInput, TOutput>>(result, new[] { func.Parameters[0], func.Parameters[1], transformParam });
+            return Expression.Lambda<Func<T1, T2, TInput, TOutput>>(result, [func.Parameters[0], func.Parameters[1], transformParam]);
         }
 
         internal static IAggregate<TInput, TState, TResult> TransformOutput<TInput, TState, TAggregateResult, TResult>(

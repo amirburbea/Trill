@@ -92,8 +92,8 @@ namespace Microsoft.StreamProcessing
 
                         var cgkc = typeof(CompoundGroupKeyComparer<,>);
                         var genericInstance = cgkc.MakeGenericType(t1, t2);
-                        var ctor = genericInstance.GetConstructor(new Type[] { comparerExpressionOfT1, comparerExpressionOfT2, });
-                        var result = ctor.Invoke(new object[] { default1, default2, });
+                        var ctor = genericInstance.GetConstructor([comparerExpressionOfT1, comparerExpressionOfT2,]);
+                        var result = ctor.Invoke([default1, default2,]);
                         comparer = (IComparerExpression<T>)result;
                         ComparerExpressionCache.Add(comparer);
                         return comparer;
@@ -127,7 +127,7 @@ namespace Microsoft.StreamProcessing
                         // (x,y) => o.IComparer<T>.Compare(x,y)
                         // for an arbitrary o that is created of type T by calling its nullary ctor (if such a ctor exists)
                         var genericInstanceOfComparerExpressionForGenericIComparer = typeof(ComparerExpressionForGenericIComparer<>).MakeGenericType(type);
-                        var ctorForComparerExpressionForGenericIComparer = genericInstanceOfComparerExpressionForGenericIComparer.GetConstructor(new Type[] { type, });
+                        var ctorForComparerExpressionForGenericIComparer = genericInstanceOfComparerExpressionForGenericIComparer.GetConstructor([type,]);
                         if (ctorForComparerExpressionForGenericIComparer != null)
                         {
                             var ctorForType = type.GetConstructor(Type.EmptyTypes);
@@ -136,7 +136,7 @@ namespace Microsoft.StreamProcessing
                                 var instanceOfType = ctorForType.Invoke([]);
                                 if (instanceOfType != null)
                                 {
-                                    comparer = (IComparerExpression<T>)ctorForComparerExpressionForGenericIComparer.Invoke(new object[] { instanceOfType, });
+                                    comparer = (IComparerExpression<T>)ctorForComparerExpressionForGenericIComparer.Invoke([instanceOfType,]);
                                     ComparerExpressionCache.Add(comparer);
                                     return comparer;
                                 }
@@ -150,7 +150,7 @@ namespace Microsoft.StreamProcessing
                         // (x,y) => o.IComparer.Compare(x,y)
                         // for an arbitrary o that is created of type T by calling its nullary ctor (if such a ctor exists)
                         var genericInstanceOfComparerExpressionForNonGenericIComparer = typeof(ComparerExpressionForNonGenericIComparer<>).MakeGenericType(type);
-                        var ctorForComparerExpressionForNonGenericIComparer = genericInstanceOfComparerExpressionForNonGenericIComparer.GetConstructor(new Type[] { type, });
+                        var ctorForComparerExpressionForNonGenericIComparer = genericInstanceOfComparerExpressionForNonGenericIComparer.GetConstructor([type,]);
                         if (ctorForComparerExpressionForNonGenericIComparer != null)
                         {
                             var ctorForType = type.GetConstructor(Type.EmptyTypes);
@@ -159,7 +159,7 @@ namespace Microsoft.StreamProcessing
                                 var instanceOfType = ctorForType.Invoke([]);
                                 if (instanceOfType != null)
                                 {
-                                    comparer = (IComparerExpression<T>)ctorForComparerExpressionForNonGenericIComparer.Invoke(new object[] { instanceOfType, });
+                                    comparer = (IComparerExpression<T>)ctorForComparerExpressionForNonGenericIComparer.Invoke([instanceOfType,]);
                                     ComparerExpressionCache.Add(comparer);
                                     return comparer;
                                 }

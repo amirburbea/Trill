@@ -54,10 +54,10 @@ namespace Microsoft.StreamProcessing
         private object Serializer => this.container?.GetOrCreateSerializer(this.GetType());
 
         private MethodInfo GetSerializerMethod()
-            => this.Serializer.GetType().GetMethod("Serialize", new Type[] { typeof(Stream), this.GetType() });
+            => this.Serializer.GetType().GetMethod("Serialize", [typeof(Stream), this.GetType()]);
 
         private MethodInfo GetDeserializerMethod()
-            => this.Serializer.GetType().GetMethod("Deserialize", new Type[] { typeof(Stream) });
+            => this.Serializer.GetType().GetMethod("Deserialize", [typeof(Stream)]);
 
         private List<FieldInfo> GetSerializationFields()
             => this.GetType().GetAllFields().Where(f => f.IsDefined(typeof(DataMemberAttribute))).ToList();
@@ -66,11 +66,11 @@ namespace Microsoft.StreamProcessing
             => this.GetType().GetAllFields().Where(f => f.IsDefined(typeof(SchemaSerializationAttribute))).ToList();
 
         private void Serialize(Stream stream)
-            => this.serializerMethod.Value.Invoke(this.Serializer, new object[] { stream, this });
+            => this.serializerMethod.Value.Invoke(this.Serializer, [stream, this]);
 
         private void Deserialize(Stream stream)
         {
-            object newObject = this.deserializerMethod.Value.Invoke(this.Serializer, new object[] { stream });
+            object newObject = this.deserializerMethod.Value.Invoke(this.Serializer, [stream]);
 
             foreach (var field in this.serializationFields.Value) field.SetValue(this, field.GetValue(newObject));
 

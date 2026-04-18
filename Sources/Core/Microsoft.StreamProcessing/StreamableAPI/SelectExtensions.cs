@@ -222,7 +222,7 @@ namespace Microsoft.StreamProcessing
                 o => Expression.Bind(newType.GetMember(o.Key).Single(), o.Value.RemoveCastToObject().ReplaceParametersInBody(inputParameter)));
 
             var member = Expression.MemberInit(newExpression, commonFieldAssignments.Concat(newFieldAssignments).ToArray());
-            var lambda = Expression.Lambda<Func<TOld, TNew>>(member, new ParameterExpression[] { inputParameter });
+            var lambda = Expression.Lambda<Func<TOld, TNew>>(member, [inputParameter]);
             return lambda;
         }
     }

@@ -35,7 +35,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
 
             var getLength = this.RuntimeType.GetMethod("GetLength");
             var length = Expression.Variable(typeof(int), "length");
-            body.Add(Expression.Assign(length, Expression.Call(value, getLength, new Expression[] { Expression.Constant(currentRank) })));
+            body.Add(Expression.Assign(length, Expression.Call(value, getLength, [Expression.Constant(currentRank)])));
             body.Add(EncodeArrayChunkMethod.ReplaceParametersInBody(encoder, length));
 
             var label = Expression.Label();
@@ -73,7 +73,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
             for (int i = 0; i < type.GetArrayRank(); i++)
             {
                 lengths.Add(Expression.Property(currentObject, "Count"));
-                currentObject = Expression.Property(currentObject, "Item", new Expression[] { ConstantZero });
+                currentObject = Expression.Property(currentObject, "Item", [ConstantZero]);
             }
 
             var result = Expression.Variable(type, "result");
@@ -131,14 +131,13 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
                                 Expression.Call(
                                     result,
                                     valueType.GetMethod("Add"),
-                                    new[]
-                                    {
+                                    [
                                         this.GenerateBuildJaggedDeserializer(
                                             decoder,
                                             valueType.GetGenericArguments()[0],
                                             currentRank + 1,
                                             maxRank)
-                                    }),
+                                    ]),
                                 Expression.PreIncrementAssign(index),
                                 Expression.PreIncrementAssign(counter)),
                             internalLoopLabel)),
@@ -170,7 +169,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
                         this.GenerateCopy(
                             indexes,
                             destination,
-                            Expression.Property(source, "Item", new Expression[] { counter }),
+                            Expression.Property(source, "Item", [counter]),
                             currentRank + 1,
                             maxRank),
                         Expression.PreIncrementAssign(counter)),

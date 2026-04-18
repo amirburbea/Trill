@@ -180,7 +180,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
                             Expression.Block(
                                 Expression.IfThen(
                                     Expression.GreaterThanOrEqual(counter, chunkSize), Expression.Break(chunkLoop)),
-                                Expression.Call(result, addElement, new[] { this.itemSchema.BuildDeserializer(decoder) }),
+                                Expression.Call(result, addElement, [this.itemSchema.BuildDeserializer(decoder)]),
                                 Expression.PreIncrementAssign(index),
                                 Expression.PreIncrementAssign(counter)),
                             chunkLoop)),

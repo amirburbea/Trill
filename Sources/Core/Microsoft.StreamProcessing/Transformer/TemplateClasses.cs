@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Security.Cryptography;
@@ -86,7 +87,7 @@ namespace Microsoft.StreamProcessing
             {
                 var list = keyType.GetAnonymousTypes();
                 list.AddRange(payloadType.GetAnonymousTypes());
-                t = t.MakeGenericType(list.ToArray());
+                t = t.MakeGenericType([.. list]);
             }
 
 #if CODEGEN_TIMING
@@ -153,7 +154,6 @@ namespace Microsoft.StreamProcessing
                 encoding: Encoding.GetEncoding(0),
                 options: new CSharpParseOptions(LanguageVersion.Latest));
 
-            string fingerprintHex = null;
             if (diskCacheRequested && TryComputeCodegenDiskCacheIdentity(
                     treeForFingerprint,
                     refs,
@@ -161,7 +161,7 @@ namespace Microsoft.StreamProcessing
                     includeIgnoreAccessChecksAssembly,
                     includeDebugInfo,
                     out string deterministicName,
-                    out fingerprintHex))
+                    out string fingerprintHex))
             {
                 assemblyName = deterministicName;
             }
@@ -498,39 +498,9 @@ namespace Microsoft.StreamProcessing
                 }
                 else
                 {
-                    using (var peStream = new MemoryStream())
-                    using (var pdbStream = new MemoryStream())
-                    {
-                        emitResult = compilation.Emit(peStream, pdbStream, options: new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb));
-                        if (emitResult.Success)
-                        {
-                            if (!string.IsNullOrEmpty(codegenCacheRoot))
-                            {
-                                CodegenAssemblyCacheMisses++;
-                            }
-
-                            byte[] peImage = peStream.ToArray();
-                            if (!string.IsNullOrEmpty(codegenCacheRoot) && !string.IsNullOrEmpty(fingerprintHex))
-                            {
-                                TryWriteCodegenCacheFile(codegenCacheRoot, fingerprintHex, peImage);
-                            }
-
-                            assembly = AssemblyFromMemoryStream(new MemoryStream(peImage));
-                            loader.RegisterDependency(assembly);
-                            var aref = MetadataReference.CreateFromStream(new MemoryStream(peImage));
-                            if (metadataReferenceCache.TryAdd(assembly, aref))
-                            {
-                                RegisterCodegenPeIdentity(assembly, peImage);
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                using (var stream = new MemoryStream())
-                {
-                    emitResult = compilation.Emit(stream);
+                    using var peStream = new MemoryStream();
+                    using var pdbStream = new MemoryStream();
+                    emitResult = compilation.Emit(peStream, pdbStream, options: new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb));
                     if (emitResult.Success)
                     {
                         if (!string.IsNullOrEmpty(codegenCacheRoot))
@@ -538,20 +508,46 @@ namespace Microsoft.StreamProcessing
                             CodegenAssemblyCacheMisses++;
                         }
 
-                        byte[] peImage = stream.ToArray();
+                        byte[] peImage = peStream.ToArray();
                         if (!string.IsNullOrEmpty(codegenCacheRoot) && !string.IsNullOrEmpty(fingerprintHex))
                         {
                             TryWriteCodegenCacheFile(codegenCacheRoot, fingerprintHex, peImage);
                         }
 
                         assembly = AssemblyFromMemoryStream(new MemoryStream(peImage));
-
                         loader.RegisterDependency(assembly);
                         var aref = MetadataReference.CreateFromStream(new MemoryStream(peImage));
                         if (metadataReferenceCache.TryAdd(assembly, aref))
                         {
                             RegisterCodegenPeIdentity(assembly, peImage);
                         }
+                    }
+                }
+            }
+            else
+            {
+                using var stream = new MemoryStream();
+                emitResult = compilation.Emit(stream);
+                if (emitResult.Success)
+                {
+                    if (!string.IsNullOrEmpty(codegenCacheRoot))
+                    {
+                        CodegenAssemblyCacheMisses++;
+                    }
+
+                    byte[] peImage = stream.ToArray();
+                    if (!string.IsNullOrEmpty(codegenCacheRoot) && !string.IsNullOrEmpty(fingerprintHex))
+                    {
+                        TryWriteCodegenCacheFile(codegenCacheRoot, fingerprintHex, peImage);
+                    }
+
+                    assembly = AssemblyFromMemoryStream(new MemoryStream(peImage));
+
+                    loader.RegisterDependency(assembly);
+                    var aref = MetadataReference.CreateFromStream(new MemoryStream(peImage));
+                    if (metadataReferenceCache.TryAdd(assembly, aref))
+                    {
+                        RegisterCodegenPeIdentity(assembly, peImage);
                     }
                 }
             }
@@ -704,7 +700,7 @@ namespace System.Runtime.CompilerServices
 
             private static Assembly CreateIgnoreAccessChecksAssembly()
             {
-                var assembly = CompileSourceCode(IgnoreAccessChecksSourceCode, Array.Empty<Assembly>(), out _, false);
+                var assembly = CompileSourceCode(IgnoreAccessChecksSourceCode, [], out _, false);
                 if (assembly == null)
                 {
                     throw new InvalidOperationException("Code Generation failed for IgnoresAccessChecksToAttribute!");
@@ -752,7 +748,7 @@ namespace System.Runtime.CompilerServices
         {
             var validStrings = ps.Where(x => !string.IsNullOrWhiteSpace(x));
             var commaSeparatedList = string.Join(",", validStrings);
-            return string.IsNullOrWhiteSpace(commaSeparatedList) ? string.Empty : "<" + commaSeparatedList + ">";
+            return string.IsNullOrWhiteSpace(commaSeparatedList) ? string.Empty : $"<{commaSeparatedList}>";
         }
 
         internal static Type GenerateMemoryPoolClass<TKey, TPayload>()
@@ -779,7 +775,7 @@ namespace System.Runtime.CompilerServices
             var a = CompileSourceCode(expandedCode, assemblyReferences, out string errorMessages);
 
             var t = a.GetType(generatedClassName);
-            var instantiatedType = t.MakeGenericType(new Type[] { keyType, payloadType });
+            var instantiatedType = t.MakeGenericType([keyType, payloadType]);
 #if CODEGEN_TIMING
             sw.Stop();
             Console.WriteLine("Time to generate and instantiate a memory pool for {0},{1}: {2}ms",
@@ -870,7 +866,7 @@ namespace System.Runtime.CompilerServices
             if (!t.IsGenericType) // need to test after anonymous because deserialized anonymous types are *not* generic (but unserialized anonymous types *are* generic)
             { d.Add(t, typeName); return; }
             var sb = new StringBuilder();
-            typeName = typeName.Substring(0, t.FullName.IndexOf('`'));
+            typeName = typeName[..t.FullName.IndexOf('`')];
             sb.AppendFormat("{0}<", typeName);
             var first = true;
             if (!t.Assembly.IsDynamic)
@@ -884,7 +880,7 @@ namespace System.Runtime.CompilerServices
                     first = false;
                 }
             }
-            sb.Append(">");
+            sb.Append('>');
             typeName = sb.ToString();
             d.Add(t, typeName);
             return;
@@ -915,12 +911,12 @@ namespace System.Runtime.CompilerServices
             {
                 var getMethod = p.GetMethod;
                 if (getMethod == null) continue;
-                if (!getMethod.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute))) continue;
+                if (!getMethod.IsDefined(typeof(CompilerGeneratedAttribute))) continue;
                 var setMethod = p.SetMethod;
                 if (setMethod == null) continue;
-                if (!setMethod.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute))) continue;
+                if (!setMethod.IsDefined(typeof(CompilerGeneratedAttribute))) continue;
 
-                d.Add(p.Name, new MyFieldInfo(p/*, prefix*/));
+                d.Add(p.Name, new(p/*, prefix*/));
             }
 
             if (!this.Fields.Any())
@@ -929,13 +925,13 @@ namespace System.Runtime.CompilerServices
                 {
                     foreach (var p in t.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                     {
-                        d.Add(p.Name, new MyFieldInfo(p/*, prefix*/));
+                        d.Add(p.Name, new(p/*, prefix*/));
                     }
                 }
                 else
                 {
                     this.noFields = true;
-                    this.PseudoField = new MyFieldInfo(t, "payload");
+                    this.PseudoField = new(t, "payload");
                 }
             }
         }
@@ -944,7 +940,7 @@ namespace System.Runtime.CompilerServices
         {
             this.RepresentationFor = t;
             this.noFields = true;
-            this.PseudoField = new MyFieldInfo(t, pseudoFieldName);
+            this.PseudoField = new(t, pseudoFieldName);
         }
     }
 
@@ -996,7 +992,7 @@ namespace System.Runtime.CompilerServices
             this.DeclaringType = t.DeclaringType;
         }
 
-        public override string ToString() => "|" + this.TypeName + ", " + this.Name + "|";
+        public override readonly string ToString() => "|" + this.TypeName + ", " + this.Name + "|";
     }
 
     internal partial class SafeBatchTemplate
@@ -1067,7 +1063,7 @@ namespace System.Runtime.CompilerServices
         {
             this.assemblyReferences = [];
 
-            var keyType = keyRepresentation == null ? typeof(Empty) : keyRepresentation.RepresentationFor;
+            var keyType = keyRepresentation?.RepresentationFor ?? typeof(Empty);
 
             Contract.Assume(Transformer.IsValidKeyType(keyType));
 
@@ -1078,9 +1074,8 @@ namespace System.Runtime.CompilerServices
             var payloadType = payloadRepresentation.RepresentationFor;
             this.assemblyReferences.AddRange(Transformer.AssemblyReferencesNeededFor(payloadType));
             this.payloadType = payloadType;
-            var payloadTypes = payloadRepresentation.AllFields.Select(f => f.Type).Where(t => !t.MemoryPoolHasGetMethodFor());
 
-            this.types = new HashSet<Type>(payloadTypes.Distinct());
+            this.types = [.. payloadRepresentation.AllFields.Select(f => f.Type).Where(t => !t.MemoryPoolHasGetMethodFor())];
 
             this.assemblyReferences.AddRange(this.types.SelectMany(t => Transformer.AssemblyReferencesNeededFor(t)));
 #endregion

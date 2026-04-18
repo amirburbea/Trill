@@ -41,12 +41,12 @@ namespace Microsoft.StreamProcessing.Internal
             {
                 string typeName = Prefix + classCounter++;
                 var builderCode = new GeneratedFastDictionary(typeName, string.Empty).TransformText();
-                var a = Transformer.CompileSourceCode(builderCode, Array.Empty<Assembly>(), out string errorMessages);
+                var a = Transformer.CompileSourceCode(builderCode, [], out string errorMessages);
 
                 temp = a.GetType(typeName + "`2");
                 temp = temp.MakeGenericType(typeof(TKey), typeof(TValue));
                 MethodInfo init = temp.GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
-                init.Invoke(null, new object[] { equalsFunc, getHashCodeFunc, capacity });
+                init.Invoke(null, [equalsFunc, getHashCodeFunc, capacity]);
                 generatorCache.Add(key, temp);
             }
             if (!container.TryGetFastDictionaryType(key, out Type other))
@@ -87,12 +87,12 @@ namespace Microsoft.StreamProcessing.Internal
             {
                 string typeName = Prefix + classCounter++;
                 var builderCode = new GeneratedFastDictionary(typeName, "2").TransformText();
-                var a = Transformer.CompileSourceCode(builderCode, Array.Empty<Assembly>(), out string errorMessages);
+                var a = Transformer.CompileSourceCode(builderCode, [], out string errorMessages);
 
                 temp = a.GetType(typeName + "`2");
                 temp = temp.MakeGenericType(typeof(TKey), typeof(TValue));
                 MethodInfo init = temp.GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
-                init.Invoke(null, new object[] { equalsFunc, getHashCodeFunc, capacity });
+                init.Invoke(null, [equalsFunc, getHashCodeFunc, capacity]);
                 generatorCache.Add(key, temp);
             }
             if (!container.TryGetFastDictionary2Type(key, out Type other))
@@ -133,12 +133,12 @@ namespace Microsoft.StreamProcessing.Internal
             {
                 string typeName = Prefix + classCounter++;
                 var builderCode = new GeneratedFastDictionary(typeName, "3").TransformText();
-                var a = Transformer.CompileSourceCode(builderCode, Array.Empty<Assembly>(), out string errorMessages);
+                var a = Transformer.CompileSourceCode(builderCode, [], out string errorMessages);
 
                 temp = a.GetType(typeName + "`2");
                 temp = temp.MakeGenericType(typeof(TKey), typeof(TValue));
                 MethodInfo init = temp.GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
-                init.Invoke(null, new object[] { equalsFunc, getHashCodeFunc, capacity });
+                init.Invoke(null, [equalsFunc, getHashCodeFunc, capacity]);
                 generatorCache.Add(key, temp);
             }
             if (!container.TryGetFastDictionary3Type(key, out Type other))

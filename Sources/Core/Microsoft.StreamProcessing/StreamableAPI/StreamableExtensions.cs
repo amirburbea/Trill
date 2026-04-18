@@ -1033,7 +1033,7 @@ namespace Microsoft.StreamProcessing
             var postPredicateTransformed = Expression.Lambda<Func<StructTuple<TLeft, TRight>, bool>>
                 (
                     Expression.Invoke(postPredicate, Expression.Field(e1, "Item1"), Expression.Field(e1, "Item2")),
-                    new ParameterExpression[] { e1 });
+                    [e1]);
 
             var leftMC = left.Multicast(2);
 

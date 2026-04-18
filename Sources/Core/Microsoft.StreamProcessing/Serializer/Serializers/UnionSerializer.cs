@@ -89,7 +89,7 @@ namespace Microsoft.StreamProcessing.Serializer.Serializers
                     elseBranch);
                 elseBranch = conditions;
             }
-            return Expression.Block(new[] { resultParameter, unionTypeParameter }, new Expression[] { assignUnionType, conditions, resultParameter });
+            return Expression.Block(new[] { resultParameter, unionTypeParameter }, [assignUnionType, conditions, resultParameter]);
         }
 
         private static int MoreSpecializedTypesFirst(Tuple<ObjectSerializerBase, int> s1, Tuple<ObjectSerializerBase, int> s2)

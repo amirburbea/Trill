@@ -56,7 +56,7 @@ namespace Microsoft.StreamProcessing
         /// </summary>
         /// <returns>A string representation of the compound grouping key.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => new { this.OuterGroup, this.InnerGroup }.ToString();
+        public override readonly string ToString() => new { this.OuterGroup, this.InnerGroup }.ToString();
 
         /// <summary>
         /// Provides a hashcode of the compound grouping key.

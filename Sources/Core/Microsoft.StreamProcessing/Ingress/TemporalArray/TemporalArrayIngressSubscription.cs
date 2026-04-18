@@ -177,7 +177,7 @@ namespace Microsoft.StreamProcessing
 
         protected override void OnCompleted(long punctuationTime)
         {
-            this.OnNext(new ArraySegment<StreamEvent<TPayload>>(new[] { StreamEvent.CreatePunctuation<TPayload>(punctuationTime) }));
+            this.OnNext(new ArraySegment<StreamEvent<TPayload>>([StreamEvent.CreatePunctuation<TPayload>(punctuationTime)]));
         }
     }
 
@@ -327,7 +327,7 @@ namespace Microsoft.StreamProcessing
 
         protected override void OnCompleted(long punctuationTime)
         {
-            this.OnNext(new ArraySegment<PartitionedStreamEvent<TKey, TPayload>>(new[] { PartitionedStreamEvent.CreateLowWatermark<TKey, TPayload>(punctuationTime) }));
+            this.OnNext(new ArraySegment<PartitionedStreamEvent<TKey, TPayload>>([PartitionedStreamEvent.CreateLowWatermark<TKey, TPayload>(punctuationTime)]));
         }
     }
 

@@ -118,8 +118,8 @@ namespace Microsoft.StreamProcessing
                 this.IndentLengths.RemoveAt(this.IndentLengths.Count - 1);
                 if (indentLength > 0)
                 {
-                    returnValue = this.CurrentIndent.Substring(this.CurrentIndent.Length - indentLength);
-                    this.CurrentIndent = this.CurrentIndent.Remove(this.CurrentIndent.Length - indentLength);
+                    returnValue = this.CurrentIndent[^indentLength..];
+                    this.CurrentIndent = this.CurrentIndent[..^indentLength];
                 }
             }
             return returnValue;

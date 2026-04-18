@@ -658,7 +658,7 @@ namespace Microsoft.StreamProcessing
             var key = "var " + c.Parameters[3].Name + " = " + keyText + ";";
             leadingText = string.Join(Environment.NewLine, start, end, payload, key, strings[0]);
             trailingText = strings[1];
-            if (trailingText[0] == ';') trailingText = trailingText.Substring(1).Trim();
+            if (trailingText[0] == ';') trailingText = trailingText[1..].Trim();
             return placeholder.Parameters[2].Name;
         }
     }

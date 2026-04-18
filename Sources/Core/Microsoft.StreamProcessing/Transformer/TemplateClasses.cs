@@ -6,10 +6,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-
-#if CODEGEN_TIMING
-using System.Diagnostics;
-#endif
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
@@ -123,16 +119,12 @@ namespace Microsoft.StreamProcessing
             bool includeDebugInfo = Config.CodegenOptions.GenerateDebugInfo;
             var uniqueReferences = references.Distinct();
 
-            // Stream-backed metadata refs disable disk cache; only check when disk cache is requested (avoids dictionary lookups on every compile).
             bool diskCacheRequested = !string.IsNullOrWhiteSpace(Config.CodegenAssemblyCachePath);
-            bool hasStreamBackedRef = diskCacheRequested
-                && uniqueReferences.Any(reference => metadataReferenceCache.ContainsKey(reference));
 
             if (includeIgnoreAccessChecksAssembly)
                 uniqueReferences = uniqueReferences.Concat([IgnoreAccessChecks.Assembly]);
 
             uniqueReferences = uniqueReferences.Where(r => !r.FullName.Contains("System.Private.CoreLib"));
-
 
             var assemblyName = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
             SyntaxTree tree;
@@ -182,8 +174,7 @@ namespace Microsoft.StreamProcessing
             string fingerprintHex = null;
             if (!includeDebugInfo)
             {
-                bool wantDiskCache = diskCacheRequested && !hasStreamBackedRef;
-                if (wantDiskCache && TryComputeCodegenDiskCacheIdentity(tree, refs, options, includeIgnoreAccessChecksAssembly, out string deterministicName, out fingerprintHex))
+                if (diskCacheRequested && TryComputeCodegenDiskCacheIdentity(tree, refs, options, includeIgnoreAccessChecksAssembly, out string deterministicName, out fingerprintHex))
                 {
                     assemblyName = deterministicName;
                 }
@@ -205,8 +196,41 @@ namespace Microsoft.StreamProcessing
             return assembly;
         }
 
-        public static ConcurrentDictionary<Assembly, MetadataReference> metadataReferenceCache = new();
+        public static ConcurrentDictionary<Assembly, MetadataReference> metadataReferenceCache = [];
+
+        /// <summary>
+        /// SHA256-based identity for each in-memory PE we expose as a Roslyn stream reference, so disk-cache
+        /// fingerprints stay correct and we do not disable caching merely because a ref is stream-backed.
+        /// </summary>
+        private static readonly ConcurrentDictionary<Assembly, string> codegenPeIdentityByAssembly = [];
+
         private static readonly InteractiveAssemblyLoader loader = new();
+
+        private static void RegisterCodegenPeIdentity(Assembly assembly, ReadOnlySpan<byte> peImage)
+        {
+            if (assembly is null)
+            {
+                return;
+            }
+
+            string id = "pe|" + Convert.ToHexString(SHA256.HashData(peImage)).ToLowerInvariant();
+            _ = codegenPeIdentityByAssembly.TryAdd(assembly, id);
+        }
+
+        private static bool TryFindAssemblyForPortableExecutableMetadata(PortableExecutableReference per, out Assembly assembly)
+        {
+            foreach ((Assembly asm, MetadataReference mr) in metadataReferenceCache)
+            {
+                if (ReferenceEquals(mr, per))
+                {
+                    assembly = asm;
+                    return true;
+                }
+            }
+
+            assembly = null;
+            return false;
+        }
 
         private static string GetAssemblyFingerprint(Assembly asm)
         {
@@ -257,19 +281,25 @@ namespace Microsoft.StreamProcessing
             sb.AppendLine("refs:");
             foreach (var mr in refs.OrderBy(r => r.Display ?? string.Empty, StringComparer.Ordinal))
             {
-                if (mr is not PortableExecutableReference { FilePath: { } fp })
+                if (mr is not PortableExecutableReference per)
                 {
                     return false;
                 }
 
-                if (!string.IsNullOrEmpty(fp) && File.Exists(fp))
+                if (!string.IsNullOrEmpty(per.FilePath) && File.Exists(per.FilePath))
                 {
-                    var fi = new FileInfo(fp);
-                    sb.Append("F|").Append(fp).Append('|').Append(fi.Length).Append('|').Append(fi.LastWriteTimeUtc.Ticks).AppendLine();
+                    var fi = new FileInfo(per.FilePath);
+                    sb.Append("F|").Append(per.FilePath).Append('|').Append(fi.Length).Append('|').Append(fi.LastWriteTimeUtc.Ticks).AppendLine();
                 }
                 else
                 {
-                    sb.Append("S|ignoreaccesschecks|").Append(IgnoreAccessChecks.GetFingerprintToken()).AppendLine();
+                    if (!TryFindAssemblyForPortableExecutableMetadata(per, out Assembly dynAsm)
+                        || !codegenPeIdentityByAssembly.TryGetValue(dynAsm, out string peId))
+                    {
+                        return false;
+                    }
+
+                    sb.Append("S|").Append(peId).AppendLine();
                 }
             }
 
@@ -312,7 +342,11 @@ namespace Microsoft.StreamProcessing
                 assembly = AssemblyFromMemoryStream(new MemoryStream(bytes));
                 loader.RegisterDependency(assembly);
                 var aref = MetadataReference.CreateFromStream(new MemoryStream(bytes));
-                metadataReferenceCache.TryAdd(assembly, aref);
+                if (metadataReferenceCache.TryAdd(assembly, aref))
+                {
+                    RegisterCodegenPeIdentity(assembly, bytes);
+                }
+
                 CodegenAssemblyCacheHits++;
                 return true;
             }
@@ -391,23 +425,24 @@ namespace Microsoft.StreamProcessing
             }
             else
             {
-                using (var stream = new MemoryStream())
+                using var stream = new MemoryStream();
+                emitResult = compilation.Emit(stream);
+                if (emitResult.Success)
                 {
-                    emitResult = compilation.Emit(stream);
-                    if (emitResult.Success)
+                    CodegenAssemblyCacheMisses++;
+                    byte[] peImage = stream.ToArray();
+                    if (!string.IsNullOrEmpty(codegenCacheRoot) && !string.IsNullOrEmpty(fingerprintHex))
                     {
-                        CodegenAssemblyCacheMisses++;
-                        if (!string.IsNullOrEmpty(codegenCacheRoot) && !string.IsNullOrEmpty(fingerprintHex))
-                        {
-                            TryWriteCodegenCacheFile(codegenCacheRoot, fingerprintHex, stream.ToArray());
-                        }
+                        TryWriteCodegenCacheFile(codegenCacheRoot, fingerprintHex, peImage);
+                    }
 
-                        stream.Position = 0;
-                        assembly = AssemblyFromMemoryStream(stream);
+                    assembly = AssemblyFromMemoryStream(new MemoryStream(peImage));
 
-                        loader.RegisterDependency(assembly);
-                        var aref = MetadataReference.CreateFromStream(stream);
-                        metadataReferenceCache.TryAdd(assembly, aref);
+                    loader.RegisterDependency(assembly);
+                    var aref = MetadataReference.CreateFromStream(new MemoryStream(peImage));
+                    if (metadataReferenceCache.TryAdd(assembly, aref))
+                    {
+                        RegisterCodegenPeIdentity(assembly, peImage);
                     }
                 }
             }
@@ -460,7 +495,6 @@ namespace Microsoft.StreamProcessing
             return filteredPaths.Select(path => MetadataReference.CreateFromFile(path));
         }
 
-        // Important - System.Runtime.Loader should not be referenced by any function that can run in a net framework environment!
         internal static Assembly AssemblyFromMemoryStream(MemoryStream stream)
         {
             var assembly = AssemblyLoadContext.Default.LoadFromStream(stream);
@@ -559,15 +593,11 @@ namespace System.Runtime.CompilerServices
 
             internal static Assembly Assembly => lazySingleton.Value;
 
-            /// <summary>Stable across processes for Roslyn fingerprinting of the stream-backed metadata reference.</summary>
-            internal static string GetFingerprintToken() =>
-                Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(IgnoreAccessChecksSourceCode))).ToLowerInvariant();
-
             private static readonly Lazy<Assembly> lazySingleton = new(CreateIgnoreAccessChecksAssembly);
 
             private static Assembly CreateIgnoreAccessChecksAssembly()
             {
-                var assembly = CompileSourceCode(IgnoreAccessChecksSourceCode, Array.Empty<Assembly>(), out _, false);
+                var assembly = CompileSourceCode(IgnoreAccessChecksSourceCode, [], out _, false);
                 if (assembly == null)
                 {
                     throw new InvalidOperationException("Code Generation failed for IgnoresAccessChecksToAttribute!");
@@ -677,11 +707,9 @@ namespace System.Runtime.CompilerServices
             => MemoryManager.GetMemoryPool<TKey, TPayload>().GetType().Assembly;
     }
 
-    internal sealed class TypeMapper
+    internal sealed class TypeMapper(params Type[] types)
     {
-        private readonly Dictionary<Type, string> typeMap;
-
-        public TypeMapper(params Type[] types) => this.typeMap = GetCSharpTypeNames(types);
+        private readonly Dictionary<Type, string> typeMap = GetCSharpTypeNames(types);
 
         public string CSharpNameFor(Type t) => this.typeMap[t];
 
@@ -744,7 +772,7 @@ namespace System.Runtime.CompilerServices
                     first = false;
                 }
             }
-            sb.Append(">");
+            sb.Append('>');
             typeName = sb.ToString();
             d.Add(t, typeName);
             return;

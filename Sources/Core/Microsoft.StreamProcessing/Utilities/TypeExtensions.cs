@@ -467,7 +467,7 @@ namespace Microsoft.StreamProcessing
             if (!string.IsNullOrWhiteSpace(t.Namespace))
             {
                 sb.Append(t.Namespace);
-                sb.Append(".");
+                sb.Append('.');
             }
             var genericArgs = new List<string>();
             foreach (var genericArgument in t.GenericTypeArguments)
@@ -494,14 +494,14 @@ namespace Microsoft.StreamProcessing
                 var currentName = currentType.Name;
                 var indexOfBackTick = currentType.Name.IndexOf('`');
 
-                if (typeIndex > 0) sb.Append(".");
-                sb.Append(indexOfBackTick > 0 ? currentName.Substring(0, indexOfBackTick) : currentName);
+                if (typeIndex > 0) sb.Append('.');
+                sb.Append(indexOfBackTick > 0 ? currentName[..indexOfBackTick] : currentName);
                 if (indexOfBackTick > 0)
                 {
                     var j = indexOfBackTick + 1;
                     while (j < currentName.Length && char.IsDigit(currentName[j])) j++;
-                    var numberOfGenerics = int.Parse(currentName.Substring(indexOfBackTick + 1, j - (indexOfBackTick + 1)));
-                    sb.Append("<");
+                    var numberOfGenerics = int.Parse(currentName[(indexOfBackTick + 1)..j]);
+                    sb.Append('<');
                     if (!isDynamic)
                     {
                         for (int i = 0; i < numberOfGenerics; i++)
@@ -512,7 +512,7 @@ namespace Microsoft.StreamProcessing
                         }
                     }
                     else indexIntoGenericArguments += numberOfGenerics;
-                    sb.Append(">");
+                    sb.Append('>');
                 }
             }
 

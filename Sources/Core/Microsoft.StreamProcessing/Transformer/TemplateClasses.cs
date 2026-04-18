@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
@@ -28,6 +29,15 @@ namespace Microsoft.StreamProcessing
     internal static class Transformer
     {
         private static readonly Lazy<IEnumerable<MetadataReference>> baseAssemblyReferences = new(GetAssemblyReferences);
+
+
+        private static readonly SortedDictionary<string, Assembly> fingerprintReferenceAssemblies = new()
+        {
+            ["corlib"] = typeof(object).Assembly,
+            ["roslynFeatures"] = typeof(Compilation).Assembly,
+            ["roslynCSharp"] = typeof(CSharpCompilation).Assembly,
+            ["trill"] = typeof(StreamMessage).Assembly,
+        };
 
         // used so the compiler has access to the Microsoft.StramProcessing types it needs.
         // Fix this when there is a static location so we don't have to use Reflection to get it each time
@@ -87,7 +97,7 @@ namespace Microsoft.StreamProcessing
             {
                 var list = keyType.GetAnonymousTypes();
                 list.AddRange(payloadType.GetAnonymousTypes());
-                t = t.MakeGenericType([.. list]);
+                t = t.MakeGenericType(list.ToArray());
             }
 
 #if CODEGEN_TIMING
@@ -109,7 +119,12 @@ namespace Microsoft.StreamProcessing
         /// the IgnoreAccessChecksTo attribute for access to Microsoft.StreamProcessing.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom", Justification = "There is no better way to load dynamically generated assembly.")]
-        public static Assembly CompileSourceCode(string sourceCode, IEnumerable<Assembly> references, out string errorMessages, bool includeIgnoreAccessChecksAssembly = true)
+        public static Assembly CompileSourceCode(
+            string sourceCode,
+            IEnumerable<Assembly> references,
+            out string errorMessages,
+            bool includeIgnoreAccessChecksAssembly = true
+        )
         {
 #if CODEGEN_TIMING
             Stopwatch sw = new Stopwatch();
@@ -266,75 +281,91 @@ namespace Microsoft.StreamProcessing
             assemblyName = null;
             fingerprintHex = null;
 
-            var sourceFull = tree.GetRoot().ToFullString();
+            var source = tree.GetRoot().ToFullString();
             var parseOpts = tree.Options as CSharpParseOptions;
             var langVer = parseOpts?.LanguageVersion.ToString() ?? string.Empty;
-
-            var sb = new StringBuilder(Math.Max(1024, sourceFull.Length + refs.Count * 128));
-            sb.AppendLine("v3");
-            sb.Append("includeIgnoreAccessChecks:").Append(includeIgnoreAccessChecksAssembly).AppendLine();
-            sb.Append("emitPortablePdb:").Append(emitPortablePdb).AppendLine();
-            sb.Append("optimization:").Append(options.OptimizationLevel).AppendLine();
-            sb.Append("allowUnsafe:").Append(options.AllowUnsafe).AppendLine();
-            sb.Append("language:").Append(langVer).AppendLine();
-            sb.Append("framework:").Append(RuntimeInformation.FrameworkDescription).AppendLine();
-            sb.Append("processArch:").Append(RuntimeInformation.ProcessArchitecture).AppendLine();
-            sb.Append("runtimeVersion:").Append(Environment.Version).AppendLine();
-            sb.Append("tfm:").Append(AppContext.GetData("TARGETFRAMEWORKNAME")?.ToString() ?? string.Empty).AppendLine();
-            sb.Append("corelib:").Append(GetAssemblyFingerprint(typeof(object).Assembly)).AppendLine();
-            sb.Append("roslynFeatures:").Append(GetAssemblyFingerprint(typeof(Compilation).Assembly)).AppendLine();
-            sb.Append("roslynCSharp:").Append(GetAssemblyFingerprint(typeof(CSharpCompilation).Assembly)).AppendLine();
-            sb.Append("trill:").Append(GetAssemblyFingerprint(typeof(StreamMessage).Assembly)).AppendLine();
-            sb.AppendLine("source:");
-            sb.AppendLine(sourceFull);
-            sb.AppendLine("refs:");
-            foreach (var mr in refs.OrderBy(r => r.Display ?? string.Empty, StringComparer.Ordinal))
+            using MemoryStream ms = new(Math.Max(1024, source.Length + refs.Count * 128));
+            using (StreamWriter writer = new(ms, leaveOpen: true))
             {
-                if (mr is not PortableExecutableReference per)
+                writer.WriteLine("v3");
+                WriteBoolean(includeIgnoreAccessChecksAssembly);
+                WriteBoolean(emitPortablePdb);
+                Write(options.OptimizationLevel, "optimization");
+                WriteBoolean(options.AllowUnsafe, "allowUnsafe");
+                Write(langVer);
+                Write(RuntimeInformation.FrameworkDescription, "framework");
+                Write(RuntimeInformation.ProcessArchitecture, "architecture");
+                Write(Environment.Version, "runtimeVersion");
+                Write(AppContext.GetData("TARGETFRAMEWORKNAME")?.ToString() ?? string.Empty, "tfm");
+                foreach ((string key, Assembly assembly) in fingerprintReferenceAssemblies)
                 {
-                    return false;
+                    Write(GetAssemblyFingerprint(assembly), key);
+                }
+                Write(source);
+                WriteKey("refs");
+                writer.WriteLine();
+                foreach (var mr in refs.OrderBy(r => r.Display ?? string.Empty, StringComparer.Ordinal))
+                {
+                    if (mr is not PortableExecutableReference per)
+                    {
+                        return false;
+                    }
+
+                    if (!string.IsNullOrEmpty(per.FilePath) && File.Exists(per.FilePath))
+                    {
+                        AssemblyName refIdentity;
+                        try
+                        {
+                            refIdentity = AssemblyName.GetAssemblyName(per.FilePath);
+                        }
+                        catch (BadImageFormatException)
+                        {
+                            return false;
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            return false;
+                        }
+                        catch (ArgumentException)
+                        {
+                            return false;
+                        }
+                        catch (IOException)
+                        {
+                            return false;
+                        }
+                        writer.WriteLine($"F|{per.FilePath}|{refIdentity.FullName}");
+                    }
+                    else
+                    {
+                        if (!TryFindAssemblyForPortableExecutableMetadata(per, out Assembly dynAsm)
+                            || !codegenPeIdentityByAssembly.TryGetValue(dynAsm, out string peId))
+                        {
+                            return false;
+                        }
+                        writer.WriteLine($"S|{peId}");
+                    }
                 }
 
-                if (!string.IsNullOrEmpty(per.FilePath) && File.Exists(per.FilePath))
+                void WriteKey(string key)
                 {
-                    AssemblyName refIdentity;
-                    try
-                    {
-                        refIdentity = AssemblyName.GetAssemblyName(per.FilePath);
-                    }
-                    catch (BadImageFormatException)
-                    {
-                        return false;
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        return false;
-                    }
-                    catch (ArgumentException)
-                    {
-                        return false;
-                    }
-                    catch (IOException)
-                    {
-                        return false;
-                    }
-
-                    sb.Append("F|").Append(per.FilePath).Append('|').Append(refIdentity.FullName).AppendLine();
+                    writer.Write($"{key}:");
                 }
-                else
-                {
-                    if (!TryFindAssemblyForPortableExecutableMetadata(per, out Assembly dynAsm)
-                        || !codegenPeIdentityByAssembly.TryGetValue(dynAsm, out string peId))
-                    {
-                        return false;
-                    }
 
-                    sb.Append("S|").Append(peId).AppendLine();
+                void WriteBoolean(bool value, [CallerArgumentExpression(nameof(value))] string key = "")
+                {
+                    WriteKey(key);
+                    writer.WriteLine(value);
+                }
+
+                void Write<T>([AllowNull] T value, [CallerArgumentExpression(nameof(value))] string key = "")
+                {
+                    WriteKey(key);
+                    writer.WriteLine(value);
                 }
             }
-
-            var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString()));
-            fingerprintHex = Convert.ToHexString(hashBytes).ToLowerInvariant();
+            ms.Position = 0; // Seek to beginning before computing hash.
+            fingerprintHex = Convert.ToHexString(SHA256.HashData(ms)).ToLowerInvariant();
             assemblyName = $"tg{fingerprintHex[..16]}";
             return true;
         }
@@ -380,12 +411,7 @@ namespace Microsoft.StreamProcessing
                 CodegenAssemblyCacheHits++;
                 return true;
             }
-            catch (BadImageFormatException)
-            {
-                assembly = null;
-                return false;
-            }
-            catch (FileLoadException)
+            catch (Exception e) when (e is TypeLoadException or BadImageFormatException or FileLoadException or FileNotFoundException or ReflectionTypeLoadException)
             {
                 assembly = null;
                 return false;
@@ -779,7 +805,7 @@ namespace System.Runtime.CompilerServices
 #if CODEGEN_TIMING
             sw.Stop();
             Console.WriteLine("Time to generate and instantiate a memory pool for {0},{1}: {2}ms",
-                tKey.GetCSharpSourceSyntax(), tPayload.GetCSharpSourceSyntax(), sw.ElapsedMilliseconds);
+                keyType.GetCSharpSourceSyntax(), payloadType.GetCSharpSourceSyntax(), sw.ElapsedMilliseconds);
 #endif
             return instantiatedType;
         }
@@ -1070,7 +1096,7 @@ namespace System.Runtime.CompilerServices
             this.assemblyReferences.AddRange(Transformer.AssemblyReferencesNeededFor(keyType));
             this.keyType = keyType;
 
-#region Decompose TPayload into columns
+            #region Decompose TPayload into columns
             var payloadType = payloadRepresentation.RepresentationFor;
             this.assemblyReferences.AddRange(Transformer.AssemblyReferencesNeededFor(payloadType));
             this.payloadType = payloadType;
@@ -1078,7 +1104,7 @@ namespace System.Runtime.CompilerServices
             this.types = [.. payloadRepresentation.AllFields.Select(f => f.Type).Where(t => !t.MemoryPoolHasGetMethodFor())];
 
             this.assemblyReferences.AddRange(this.types.SelectMany(t => Transformer.AssemblyReferencesNeededFor(t)));
-#endregion
+            #endregion
 
             this.generatedClassName = Transformer.GetMemoryPoolClassName(keyType, payloadType);
             this.className = this.generatedClassName.CleanUpIdentifierName();

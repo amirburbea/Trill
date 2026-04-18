@@ -4,6 +4,9 @@
 // *********************************************************************
 using System;
 using System.Collections.Generic;
+#if CODEGEN_TIMING
+using System.Diagnostics;
+#endif
 using System.Diagnostics.Contracts;
 using System.Reflection;
 

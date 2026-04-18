@@ -3,6 +3,9 @@
 // Licensed under the MIT License
 // *********************************************************************
 using System;
+#if CODEGEN_TIMING
+using System.Diagnostics;
+#endif
 using System.Diagnostics.Contracts;
 using System.Reflection;
 

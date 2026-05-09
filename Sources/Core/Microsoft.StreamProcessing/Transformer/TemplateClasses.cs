@@ -6,7 +6,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
@@ -17,7 +16,6 @@ using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
-using System.Security.Cryptography;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -49,25 +47,11 @@ namespace Microsoft.StreamProcessing
             return (Action<CSharpCompilationOptions>)method.CreateDelegate(typeof(Action<CSharpCompilationOptions>));
         }
 
-        private static readonly SortedDictionary<string, Assembly> fingerprintReferenceAssemblies = new()
-        {
-            ["corlib"] = typeof(object).Assembly,
-            ["roslynFeatures"] = typeof(Compilation).Assembly,
-            ["roslynCSharp"] = typeof(CSharpCompilation).Assembly,
-            ["trill"] = typeof(StreamMessage).Assembly,
-        };
-
         // used so the compiler has access to the Microsoft.StramProcessing types it needs.
         // Fix this when there is a static location so we don't have to use Reflection to get it each time
         public static Assembly SystemRuntimeSerializationDll = typeof(System.Runtime.Serialization.DataContractAttribute).Assembly;
         public static Assembly SystemDll = typeof(Uri).Assembly;
         public static Assembly SystemCoreDll = typeof(BinaryExpression).Assembly;
-
-        /// <summary>Increments when a Roslyn emit is avoided by loading a matching DLL from <see cref="Config.CodegenAssemblyCachePath"/>.</summary>
-        internal static long CodegenAssemblyCacheHits;
-
-        /// <summary>Increments when Roslyn emit runs for a compilation eligible for disk caching (miss or skipped cache).</summary>
-        internal static long CodegenAssemblyCacheMisses;
 
         /// <summary>
         /// This is used as part of constructing the name of a field in a StreamMessage that is a column representing a field of the payload type.
@@ -139,49 +123,9 @@ namespace Microsoft.StreamProcessing
             return t;
         }
 
-        internal static void PrepareCompileSourceCodeFingerprintInputs(
-            string sourceCode,
-            IEnumerable<Assembly> references,
-            bool includeIgnoreAccessChecksAssembly,
-            bool includeDebugInfo,
-            out List<MetadataReference> refs,
-            out CSharpCompilationOptions options,
-            out SyntaxTree treeForFingerprint)
-        {
-            var uniqueReferences = references.Distinct();
-            if (includeIgnoreAccessChecksAssembly)
-            {
-                uniqueReferences = uniqueReferences.Concat([IgnoreAccessChecks.Assembly]);
-            }
-
-            uniqueReferences = uniqueReferences.Where(r => !r.FullName.Contains("System.Private.CoreLib"));
-
-
-            refs = [
-                MetadataReference.CreateFromFile(typeof(StreamMessage).Assembly.Location),
-                ..baseAssemblyReferences.Value,
-                ..uniqueReferences.Where(r => Path.IsPathRooted(r.Location)).Select(r => MetadataReference.CreateFromFile(r.Location)),
-                ..uniqueReferences.Where(reference => metadataReferenceCache.ContainsKey(reference)).Select(reference => metadataReferenceCache[reference])
-            ];
-
-            options = new CSharpCompilationOptions(
-                OutputKind.DynamicallyLinkedLibrary,
-                metadataImportOptions: MetadataImportOptions.All,
-                allowUnsafe: true,
-                optimizationLevel: includeDebugInfo ? OptimizationLevel.Debug : OptimizationLevel.Release);
-
-            updateTopLevelBinderFlags.Invoke(options);
-
-            treeForFingerprint = CSharpSyntaxTree.ParseText(
-                sourceCode,
-                encoding: Encoding.GetEncoding(0),
-                options: new CSharpParseOptions(LanguageVersion.Latest));
-        }
-
         /// <summary>
-        /// Compiles <paramref name="sourceCode"/> with Roslyn and loads the resulting assembly (including from the codegen disk cache when configured).
-        /// Runs <paramref name="resolveType"/> on that assembly immediately. If resolution fails but the assembly was loaded from the disk cache,
-        /// the cached DLL for that fingerprint is removed and compilation is retried once with a fresh emit.
+        /// Compiles <paramref name="sourceCode"/> with Roslyn and loads the resulting assembly.
+        /// Runs <paramref name="resolveType"/> on that assembly immediately.
         /// When debug codegen is enabled and paths are set, sources may be written under <see cref="Config.GeneratedCodePath"/>.
         /// On failure, <c>null</c> is returned and <paramref name="errorMessages"/> contains compiler diagnostics and/or resolution details.
         /// </summary>
@@ -206,429 +150,81 @@ namespace Microsoft.StreamProcessing
 #endif
 
             bool includeDebugInfo = Config.CodegenOptions.GenerateDebugInfo;
-            bool diskCacheRequested = !string.IsNullOrWhiteSpace(Config.CodegenAssemblyCachePath);
 
-            PrepareCompileSourceCodeFingerprintInputs(sourceCode, references, includeIgnoreAccessChecksAssembly, includeDebugInfo, out List<MetadataReference> refs, out CSharpCompilationOptions options, out SyntaxTree treeForFingerprint);
+            var uniqueReferences = references.Distinct();
+            if (includeIgnoreAccessChecksAssembly)
+            {
+                uniqueReferences = uniqueReferences.Concat([IgnoreAccessChecks.Assembly]);
+            }
+
+            uniqueReferences = uniqueReferences.Where(r => !r.FullName.Contains("System.Private.CoreLib"));
+
+            var refs = new List<MetadataReference>
+            {
+                MetadataReference.CreateFromFile(typeof(StreamMessage).Assembly.Location)
+            };
+            refs.AddRange(baseAssemblyReferences.Value);
+            refs.AddRange(uniqueReferences.Where(r => Path.IsPathRooted(r.Location)).Select(r => MetadataReference.CreateFromFile(r.Location)));
+            refs.AddRange(uniqueReferences.Where(reference => metadataReferenceCache.ContainsKey(reference)).Select(reference => metadataReferenceCache[reference]));
+
+            var options = new CSharpCompilationOptions(
+                OutputKind.DynamicallyLinkedLibrary,
+                metadataImportOptions: MetadataImportOptions.All,
+                allowUnsafe: true,
+                optimizationLevel: includeDebugInfo ? OptimizationLevel.Debug : OptimizationLevel.Release);
+
+            updateTopLevelBinderFlags.Invoke(options);
 
             var assemblyName = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
-            string fingerprintHex = null;
+            var tree = CSharpSyntaxTree.ParseText(
+                sourceCode,
+                encoding: Encoding.GetEncoding(0),
+                options: new CSharpParseOptions(LanguageVersion.Latest));
 
-            if (diskCacheRequested && TryComputeCodegenDiskCacheIdentity(
-                    treeForFingerprint,
-                    refs,
-                    options,
-                    includeIgnoreAccessChecksAssembly,
-                    includeDebugInfo,
-                    out string deterministicName,
-                    out fingerprintHex))
+            var compilation = CSharpCompilation.Create(assemblyName, [tree], refs, options);
+            var assembly = EmitCompilationAndLoadAssembly(
+                compilation,
+                includeDebugInfo,
+                out errorMessages);
+
+            if (assembly is null)
             {
-                assemblyName = deterministicName;
-            }
-            else
-            {
-                assemblyName = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
-                fingerprintHex = null;
-            }
-
-            SyntaxTree tree;
-            if (includeDebugInfo
-                && diskCacheRequested
-                && !string.IsNullOrWhiteSpace(Config.GeneratedCodePath))
-            {
-                if (!Directory.Exists(Config.GeneratedCodePath))
-                {
-                    Directory.CreateDirectory(Config.GeneratedCodePath); // let any exceptions bleed through
-                }
-
-                var baseFile = Path.Combine(Config.GeneratedCodePath, assemblyName);
-                string sourcePath = Path.GetFullPath(Path.ChangeExtension(baseFile, ".cs"));
-                tree = treeForFingerprint.WithFilePath(sourcePath);
-            }
-            else
-            {
-                tree = treeForFingerprint;
-            }
-
-            // Disk codegen cache (read/write under CodegenAssemblyCachePath) only when configured and fingerprinting succeeded.
-            string cacheRoot = diskCacheRequested && fingerprintHex != null ? Config.CodegenAssemblyCachePath : null;
-
-            for (int resolveAttempt = 0; resolveAttempt < 2; resolveAttempt++)
-            {
-                // After a failed resolve on a cache hit, the first assembly remains loaded in the default ALC; a retry emit
-                // must use a new simple name so LoadFromStream can succeed.
-                string emitAssemblyName = resolveAttempt == 0 ? assemblyName : $"{assemblyName}__retry{resolveAttempt}";
-                var compilation = CSharpCompilation.Create(emitAssemblyName, [tree], refs, options);
-
-                var assembly = EmitCompilationAndLoadAssembly(
-                    compilation,
-                    includeDebugInfo,
-                    out errorMessages,
-                    out bool loadedFromCodegenDiskCache,
-                    cacheRoot,
-                    fingerprintHex);
-
-                if (assembly is null)
-                {
 #if CODEGEN_TIMING
-                    sw.Stop();
-                    Console.WriteLine("Time to compile: {0}ms", sw.ElapsedMilliseconds);
+                sw.Stop();
+                Console.WriteLine("Time to compile: {0}ms", sw.ElapsedMilliseconds);
 #endif
-                    return null;
-                }
+                return null;
+            }
 
-                try
-                {
-                    Type resolved = resolveType(assembly);
-                    if (resolved is null)
-                    {
-                        const string msg = "Type resolution returned null for the generated assembly.";
-                        if (resolveAttempt == 0
-                            && loadedFromCodegenDiskCache
-                            && !string.IsNullOrEmpty(cacheRoot)
-                            && !string.IsNullOrEmpty(fingerprintHex))
-                        {
-                            TryDeleteCodegenCacheDll(cacheRoot, fingerprintHex);
-                            string retryNote = msg + " Discarded codegen cache entry and retrying with a fresh emit.";
-                            errorMessages = string.IsNullOrEmpty(errorMessages) ? retryNote : errorMessages + Environment.NewLine + retryNote;
-                            continue;
-                        }
-
-                        errorMessages = string.IsNullOrEmpty(errorMessages) ? msg : errorMessages + Environment.NewLine + msg;
+            Type resolved = resolveType(assembly);
+            if (resolved is null)
+            {
+                const string msg = "Type resolution returned null for the generated assembly.";
+                errorMessages = string.IsNullOrEmpty(errorMessages) ? msg : errorMessages + Environment.NewLine + msg;
 #if CODEGEN_TIMING
-                        sw.Stop();
-                        Console.WriteLine("Time to compile: {0}ms", sw.ElapsedMilliseconds);
+                sw.Stop();
+                Console.WriteLine("Time to compile: {0}ms", sw.ElapsedMilliseconds);
 #endif
-                        return null;
-                    }
+                return null;
+            }
 
 #if CODEGEN_TIMING
-                    sw.Stop();
-                    Console.WriteLine("Time to compile: {0}ms", sw.ElapsedMilliseconds);
+            sw.Stop();
+            Console.WriteLine("Time to compile: {0}ms", sw.ElapsedMilliseconds);
 #endif
-                    return resolved;
-                }
-                catch (Exception ex) when (resolveAttempt == 0
-                    && loadedFromCodegenDiskCache
-                    && !string.IsNullOrEmpty(cacheRoot)
-                    && !string.IsNullOrEmpty(fingerprintHex))
-                {
-                    TryDeleteCodegenCacheDll(cacheRoot, fingerprintHex);
-                    string retryNote = "Type resolution failed on a cached assembly; discarded codegen cache entry and retrying with a fresh emit." + Environment.NewLine + ex;
-                    errorMessages = string.IsNullOrEmpty(errorMessages) ? retryNote : errorMessages + Environment.NewLine + retryNote;
-                }
-            }
-
-            throw new InvalidOperationException("Internal error: codegen resolve retry exceeded.");
+            return resolved;
         }
 
         public static ConcurrentDictionary<Assembly, MetadataReference> metadataReferenceCache = new();
 
-        /// <summary>
-        /// SHA256-based identity for each in-memory PE we expose as a Roslyn stream reference, so disk-cache
-        /// fingerprints stay correct and we do not disable caching merely because a ref is stream-backed.
-        /// </summary>
-        private static readonly ConcurrentDictionary<Assembly, string> codegenPeIdentityByAssembly = new();
-
         private static readonly InteractiveAssemblyLoader loader = new();
-
-        private static void RegisterCodegenPeIdentity(Assembly assembly, ReadOnlySpan<byte> peImage)
-        {
-            if (assembly is null)
-            {
-                return;
-            }
-
-            string id = "pe|" + Convert.ToHexString(SHA256.HashData(peImage)).ToLowerInvariant();
-            _ = codegenPeIdentityByAssembly.TryAdd(assembly, id);
-        }
-
-        private static bool TryFindAssemblyForPortableExecutableMetadata(PortableExecutableReference per, out Assembly assembly)
-        {
-            foreach (KeyValuePair<Assembly, MetadataReference> kv in metadataReferenceCache)
-            {
-                if (ReferenceEquals(kv.Value, per))
-                {
-                    assembly = kv.Key;
-                    return true;
-                }
-            }
-
-            assembly = null;
-            return false;
-        }
-
-        private static string GetAssemblyFingerprint(Assembly asm)
-        {
-            string info = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-            if (!string.IsNullOrEmpty(info))
-            {
-                return info;
-            }
-
-            return asm.GetName().Version?.ToString() ?? asm.FullName ?? string.Empty;
-        }
-
-        /// <summary>
-        /// Builds a fingerprint of Roslyn inputs and a deterministic assembly name so the same logical compilation
-        /// produces the same PE across processes when disk caching is enabled. Includes whether portable PDB emit is
-        /// used so debug and release codegen paths do not share a cache entry when they differ.
-        /// </summary>
-        internal static bool TryComputeFingerprint(
-            string source,
-            [AllowNull] ParseOptions parseOptions,
-            List<MetadataReference> refs,
-            CSharpCompilationOptions options,
-            bool includeIgnoreAccessChecksAssembly,
-            bool emitPortablePdb,
-            [MaybeNullWhen(false)] out string assemblyName,
-            [MaybeNullWhen(false)] out string fingerprintHex)
-        {
-            assemblyName = null;
-            fingerprintHex = null;
-
-            var parseOpts = parseOptions as CSharpParseOptions;
-            var langVer = parseOpts?.LanguageVersion.ToString() ?? string.Empty;
-            using MemoryStream ms = new(Math.Max(1024, source.Length + refs.Count * 128));
-            using (StreamWriter writer = new(ms, leaveOpen: true))
-            {
-                writer.WriteLine("v3");
-                WriteBoolean(includeIgnoreAccessChecksAssembly);
-                WriteBoolean(emitPortablePdb);
-                Write(options.OptimizationLevel, "optimization");
-                WriteBoolean(options.AllowUnsafe, "allowUnsafe");
-                Write(langVer);
-                Write(RuntimeInformation.FrameworkDescription, "framework");
-                Write(RuntimeInformation.ProcessArchitecture, "architecture");
-                Write(Environment.Version, "runtimeVersion");
-                Write(AppContext.GetData("TARGETFRAMEWORKNAME")?.ToString() ?? string.Empty, "tfm");
-                foreach ((string key, Assembly assembly) in fingerprintReferenceAssemblies)
-                {
-                    Write(GetAssemblyFingerprint(assembly), key);
-                }
-                Write(source);
-                WriteKey("refs");
-                writer.WriteLine();
-                foreach (var mr in refs.OrderBy(r => r.Display ?? string.Empty, StringComparer.Ordinal))
-                {
-                    if (mr is not PortableExecutableReference per)
-                    {
-                        return false;
-                    }
-
-                    if (!string.IsNullOrEmpty(per.FilePath) && File.Exists(per.FilePath))
-                    {
-                        AssemblyName refIdentity;
-                        try
-                        {
-                            refIdentity = AssemblyName.GetAssemblyName(per.FilePath);
-                        }
-                        catch (BadImageFormatException)
-                        {
-                            return false;
-                        }
-                        catch (FileNotFoundException)
-                        {
-                            return false;
-                        }
-                        catch (ArgumentException)
-                        {
-                            return false;
-                        }
-                        catch (IOException)
-                        {
-                            return false;
-                        }
-                        writer.WriteLine($"F|{per.FilePath}|{refIdentity.FullName}");
-                    }
-                    else
-                    {
-                        if (!TryFindAssemblyForPortableExecutableMetadata(per, out Assembly dynAsm)
-                            || !codegenPeIdentityByAssembly.TryGetValue(dynAsm, out string peId))
-                        {
-                            return false;
-                        }
-                        writer.WriteLine($"S|{peId}");
-                    }
-                }
-
-                void WriteKey(string key)
-                {
-                    writer.Write($"{key}:");
-                }
-
-                void WriteBoolean(bool value, [CallerArgumentExpression(nameof(value))] string key = "")
-                {
-                    WriteKey(key);
-                    writer.WriteLine(value);
-                }
-
-                void Write<T>([AllowNull] T value, [CallerArgumentExpression(nameof(value))] string key = "")
-                {
-                    WriteKey(key);
-                    writer.WriteLine(value);
-                }
-            }
-            ms.Position = 0; // Seek to beginning before computing hash.
-            fingerprintHex = Convert.ToHexString(SHA256.HashData(ms)).ToLowerInvariant();
-            assemblyName = $"tg{fingerprintHex[..16]}";
-            return true;
-        }
-
-        private static bool TryComputeCodegenDiskCacheIdentity(
-            SyntaxTree tree,
-            List<MetadataReference> refs,
-            CSharpCompilationOptions options,
-            bool includeIgnoreAccessChecksAssembly,
-            bool emitPortablePdb,
-            out string assemblyName,
-            out string fingerprintHex)
-            => TryComputeFingerprint(
-                tree.GetRoot().ToFullString(),
-                tree.Options,
-                refs,
-                options,
-                includeIgnoreAccessChecksAssembly,
-                emitPortablePdb,
-                out assemblyName,
-                out fingerprintHex);
-
-        private static bool TryLoadAssemblyFromCodegenCache(string cacheRoot, string fingerprintHex, out Assembly assembly)
-        {
-            assembly = null;
-            var path = Path.Combine(cacheRoot, fingerprintHex + ".dll");
-            if (!File.Exists(path))
-            {
-                return false;
-            }
-
-            byte[] bytes;
-            try
-            {
-                bytes = File.ReadAllBytes(path);
-            }
-            catch (IOException)
-            {
-                return false;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return false;
-            }
-
-            if (bytes.Length == 0)
-            {
-                return false;
-            }
-
-            try
-            {
-                assembly = AssemblyFromMemoryStream(new MemoryStream(bytes));
-                loader.RegisterDependency(assembly);
-                var aref = MetadataReference.CreateFromStream(new MemoryStream(bytes));
-                if (metadataReferenceCache.TryAdd(assembly, aref))
-                {
-                    RegisterCodegenPeIdentity(assembly, bytes);
-                }
-
-                CodegenAssemblyCacheHits++;
-                return true;
-            }
-            catch (BadImageFormatException)
-            {
-                assembly = null;
-                return false;
-            }
-            catch (FileLoadException)
-            {
-                assembly = null;
-                return false;
-            }
-        }
-
-        private static void TryWriteCodegenCacheFile(string cacheRoot, string fingerprintHex, byte[] peImage)
-        {
-            try
-            {
-                if (!Directory.Exists(cacheRoot))
-                {
-                    Directory.CreateDirectory(cacheRoot);
-                }
-
-                var dest = Path.Combine(cacheRoot, fingerprintHex + ".dll");
-                var tmp = Path.Combine(cacheRoot, fingerprintHex + "." + Guid.NewGuid().ToString("N") + ".tmp");
-                File.WriteAllBytes(tmp, peImage);
-                File.Move(tmp, dest, overwrite: true);
-            }
-            catch (IOException)
-            {
-            }
-            catch (UnauthorizedAccessException)
-            {
-            }
-        }
-
-        /// <summary>Removes a fingerprinted codegen cache DLL so the next load is forced through Roslyn emit.</summary>
-        private static void TryDeleteCodegenCacheDll(string cacheRoot, string fingerprintHex)
-        {
-            if (string.IsNullOrEmpty(cacheRoot) || string.IsNullOrEmpty(fingerprintHex))
-            {
-                return;
-            }
-
-            try
-            {
-                var path = Path.Combine(cacheRoot, fingerprintHex + ".dll");
-                if (File.Exists(path))
-                {
-                    File.Delete(path);
-                }
-            }
-            catch (IOException)
-            {
-            }
-            catch (UnauthorizedAccessException)
-            {
-            }
-        }
 
         internal static Assembly EmitCompilationAndLoadAssembly(
             CSharpCompilation compilation,
             bool makeAssemblyDebuggable,
-            out string errorMessages,
-            out bool loadedFromCodegenDiskCache,
-            string codegenCacheRoot = null,
-            string fingerprintHex = null)
+            out string errorMessages)
         {
             Contract.Requires(compilation.SyntaxTrees.Length == 1);
-
-            loadedFromCodegenDiskCache = false;
-
-            if (!string.IsNullOrEmpty(codegenCacheRoot)
-                && !string.IsNullOrEmpty(fingerprintHex)
-                && TryLoadAssemblyFromCodegenCache(codegenCacheRoot, fingerprintHex, out Assembly cached))
-            {
-                if (makeAssemblyDebuggable)
-                {
-                    // Optional: sync .cs next to the debug output path when loading from CodegenAssemblyCachePath (already non-empty here).
-                    SyntaxTree tree = compilation.SyntaxTrees.Single();
-                    string baseFile = tree.FilePath;
-                    if (!string.IsNullOrEmpty(baseFile))
-                    {
-                        string dir = Path.GetDirectoryName(baseFile);
-                        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                        {
-                            Directory.CreateDirectory(dir);
-                        }
-
-                        string sourceFile = Path.ChangeExtension(baseFile, ".cs");
-                        File.WriteAllText(sourceFile, tree.GetRoot().ToFullString());
-                    }
-                }
-
-                errorMessages = string.Empty;
-                loadedFromCodegenDiskCache = true;
-                return cached;
-            }
 
             Assembly assembly = null;
             EmitResult emitResult;
@@ -650,31 +246,7 @@ namespace Microsoft.StreamProcessing
 
                     if (emitResult.Success)
                     {
-                        if (!string.IsNullOrEmpty(codegenCacheRoot))
-                        {
-                            CodegenAssemblyCacheMisses++;
-                        }
-
                         assembly = AssemblyFromFile(assemblyFile);
-                        if (!string.IsNullOrEmpty(codegenCacheRoot) && !string.IsNullOrEmpty(fingerprintHex))
-                        {
-                            try
-                            {
-                                byte[] peImage = File.ReadAllBytes(assemblyFile);
-                                TryWriteCodegenCacheFile(codegenCacheRoot, fingerprintHex, peImage);
-                                var aref = MetadataReference.CreateFromStream(new MemoryStream(peImage));
-                                if (metadataReferenceCache.TryAdd(assembly, aref))
-                                {
-                                    RegisterCodegenPeIdentity(assembly, peImage);
-                                }
-                            }
-                            catch (IOException)
-                            {
-                            }
-                            catch (UnauthorizedAccessException)
-                            {
-                            }
-                        }
                     }
                 }
                 else
@@ -684,24 +256,12 @@ namespace Microsoft.StreamProcessing
                     emitResult = compilation.Emit(peStream, pdbStream, options: new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb));
                     if (emitResult.Success)
                     {
-                        if (!string.IsNullOrEmpty(codegenCacheRoot))
-                        {
-                            CodegenAssemblyCacheMisses++;
-                        }
-
                         byte[] peImage = peStream.ToArray();
-                        if (!string.IsNullOrEmpty(codegenCacheRoot) && !string.IsNullOrEmpty(fingerprintHex))
-                        {
-                            TryWriteCodegenCacheFile(codegenCacheRoot, fingerprintHex, peImage);
-                        }
 
                         assembly = AssemblyFromMemoryStream(new MemoryStream(peImage));
                         loader.RegisterDependency(assembly);
                         var aref = MetadataReference.CreateFromStream(new MemoryStream(peImage));
-                        if (metadataReferenceCache.TryAdd(assembly, aref))
-                        {
-                            RegisterCodegenPeIdentity(assembly, peImage);
-                        }
+                        metadataReferenceCache.TryAdd(assembly, aref);
                     }
                 }
             }
@@ -711,25 +271,13 @@ namespace Microsoft.StreamProcessing
                 emitResult = compilation.Emit(stream);
                 if (emitResult.Success)
                 {
-                    if (!string.IsNullOrEmpty(codegenCacheRoot))
-                    {
-                        CodegenAssemblyCacheMisses++;
-                    }
-
                     byte[] peImage = stream.ToArray();
-                    if (!string.IsNullOrEmpty(codegenCacheRoot) && !string.IsNullOrEmpty(fingerprintHex))
-                    {
-                        TryWriteCodegenCacheFile(codegenCacheRoot, fingerprintHex, peImage);
-                    }
 
                     assembly = AssemblyFromMemoryStream(new MemoryStream(peImage));
 
                     loader.RegisterDependency(assembly);
                     var aref = MetadataReference.CreateFromStream(new MemoryStream(peImage));
-                    if (metadataReferenceCache.TryAdd(assembly, aref))
-                    {
-                        RegisterCodegenPeIdentity(assembly, peImage);
-                    }
+                    metadataReferenceCache.TryAdd(assembly, aref);
                 }
             }
 

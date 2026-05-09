@@ -93,7 +93,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
 
         /// <summary>
         /// Clears all entries from the dictionary and the per-key lock table.
-        /// Marked internal (not private) so that test code can clear the codegen cache
+        /// Marked internal (not private) so that test code can clear generated-type caches
         /// (e.g. EquiJoinStreamable.cachedPipes) to ensure deterministic test behavior
         /// without relying on reflection.
         /// </summary>

@@ -45,6 +45,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="5.3.0" />
+    <PackageReference Include="System.Numerics.Tensors" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>

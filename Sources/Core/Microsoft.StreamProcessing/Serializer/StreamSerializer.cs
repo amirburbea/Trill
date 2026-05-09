@@ -4,6 +4,7 @@
 // *********************************************************************
 using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using Microsoft.StreamProcessing.Serializer.Serializers;
 
 namespace Microsoft.StreamProcessing.Serializer
@@ -15,6 +16,7 @@ namespace Microsoft.StreamProcessing.Serializer
     {
         private static readonly ConcurrentDictionary<Tuple<Type, SerializerSettings>, object> TypedSerializers
             = new();
+        private static readonly Lock serializersLock = new();
 
         /// <summary>
         /// Create instance of serializer for given object type
@@ -39,7 +41,7 @@ namespace Microsoft.StreamProcessing.Serializer
             ArgumentNullException.ThrowIfNull(settings);
 
             var key = Tuple.Create(typeof(T), settings);
-            lock (TypedSerializers)
+            using (serializersLock.EnterScope())
             {
                 if (TypedSerializers.TryGetValue(key, out object serializer) && settings.UseCache)
                     return (StateSerializer<T>)serializer;

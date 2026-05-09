@@ -578,12 +578,9 @@ namespace Microsoft.StreamProcessing
 
             public override void ProduceQueryPlan(PlanNode previous) => this.Parent.ReceiveLeftQueryPlan(previous);
 
-            private sealed class RightObserver : ObserverBase<TRight, TLeft>
+            private sealed class RightObserver(BinaryPipe<TKey, TLeft, TRight, TResult> parent, BinaryPipe<TKey, TLeft, TRight, TResult>.ObserverBase<TLeft, TRight> left)
+                : ObserverBase<TRight, TLeft>(parent, left)
             {
-                public RightObserver(BinaryPipe<TKey, TLeft, TRight, TResult> parent, ObserverBase<TLeft, TRight> left)
-                    : base(parent, left)
-                { }
-
                 public override void OnNext(StreamMessage<TKey, TRight> batch) => this.Parent.OnRight(batch);
 
                 public override void Checkpoint(Stream stream) => this.Parent.CheckpointRight(stream);

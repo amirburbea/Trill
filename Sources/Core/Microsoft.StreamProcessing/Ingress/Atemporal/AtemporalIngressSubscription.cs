@@ -13,7 +13,7 @@ namespace Microsoft.StreamProcessing
     [DataContract]
     internal sealed class MonotonicSubscriptionWallClock<TPayload> : ObserverSubscriptionBase<TPayload, TPayload, TPayload>
     {
-        private readonly object sentinel = new();
+        private readonly Lock sentinel = new();
         private IDisposable timer;
 
         public MonotonicSubscriptionWallClock() { }
@@ -44,7 +44,7 @@ namespace Microsoft.StreamProcessing
 
         public override void OnCompleted()
         {
-            lock (this.sentinel)
+            using (sentinel.EnterScope())
             {
                 this.timer?.Dispose();
                 this.timer = null;
@@ -56,7 +56,7 @@ namespace Microsoft.StreamProcessing
         public override void OnNext(TPayload value)
         {
             Contract.EnsuresOnThrow<IngressException>(true);
-            lock (this.sentinel)
+            using (sentinel.EnterScope())
             {
                 this.currentTime = Math.Max(DateTimeOffset.UtcNow.Ticks, this.currentTime);
 
@@ -67,7 +67,7 @@ namespace Microsoft.StreamProcessing
 
         private void EmitPunctuation(object state)
         {
-            lock (this.sentinel)
+            using (sentinel.EnterScope())
             {
                 if (this.timer != null)
                 {
@@ -80,7 +80,7 @@ namespace Microsoft.StreamProcessing
 
         protected override void DisposeState()
         {
-            lock (this.sentinel)
+            using (sentinel.EnterScope())
             {
                 this.timer?.Dispose();
                 this.timer = null;
@@ -94,7 +94,9 @@ namespace Microsoft.StreamProcessing
             this.FlushContents();
             this.OnPunctuation(StreamEvent.CreatePunctuation<TPayload>(punctuationTime));
             if (this.flushPolicy != FlushPolicy.FlushOnPunctuation)
+            {
                 this.OnFlush();
+            }
         }
     }
 
@@ -145,8 +147,8 @@ namespace Microsoft.StreamProcessing
                     this.eventCount = 0;
                     this.currentTime++;
 
-                this.FlushContents();
-                this.OnPunctuation(StreamEvent.CreatePunctuation<TPayload>(this.currentTime));
+                    this.FlushContents();
+                    this.OnPunctuation(StreamEvent.CreatePunctuation<TPayload>(this.currentTime));
                 }
         }
 
@@ -155,7 +157,9 @@ namespace Microsoft.StreamProcessing
             this.FlushContents();
             this.OnPunctuation(StreamEvent.CreatePunctuation<TPayload>(punctuationTime));
             if (this.flushPolicy != FlushPolicy.FlushOnPunctuation)
+            {
                 this.OnFlush();
+            }
         }
     }
 

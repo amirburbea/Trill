@@ -53,22 +53,6 @@ namespace Microsoft.StreamProcessing
         private static SerializationCompressionLevel serializationCompressionLevel = SerializationCompressionLevel.None;
         private static int aggregateHashTableInitSize = 1;
         private static string generatedCodePath = "Generated";
-        private static string codegenAssemblyCachePath;
-
-        /// <summary>
-        /// When null or empty, Roslyn output is not persisted across process restarts (default).
-        /// When set to a directory path, Trill writes compiled codegen assemblies under that folder keyed by a
-        /// content fingerprint and reloads them on subsequent runs to skip Roslyn emit when inputs match.
-        /// </summary>
-        public static string CodegenAssemblyCachePath
-        {
-            get => codegenAssemblyCachePath;
-            set
-            {
-                TraceConfigChanges("CodegenAssemblyCachePath", codegenAssemblyCachePath, value);
-                codegenAssemblyCachePath = value;
-            }
-        }
 
         /// <summary>
         /// The file system location to which any generated code artifacts should be stored.
@@ -457,7 +441,6 @@ namespace Microsoft.StreamProcessing
                 MultiStringTransforms,
                 Scheduler = SchedToStr(StreamScheduler.scheduler),
                 GeneratedCodePath,
-                CodegenAssemblyCachePath,
                 CodegenOptions.GenerateDebugInfo,
                 CodegenOptions.BreakIntoCodeGen,
                 CodegenOptions.DontFallBackToRowBasedExecution,
@@ -502,19 +485,6 @@ namespace Microsoft.StreamProcessing
                 {
                     var old = Config.GeneratedCodePath;
                     Config.GeneratedCodePath = v;
-                    return old;
-                }));
-            return this;
-        }
-
-        public ConfigModifier CodegenAssemblyCachePath(string value)
-        {
-            this.modifications.Add(GatedModification<string>.Create(
-                value,
-                v =>
-                {
-                    var old = Config.CodegenAssemblyCachePath;
-                    Config.CodegenAssemblyCachePath = v;
                     return old;
                 }));
             return this;

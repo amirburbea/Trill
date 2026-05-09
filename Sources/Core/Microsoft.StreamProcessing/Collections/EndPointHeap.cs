@@ -253,7 +253,7 @@ namespace Microsoft.StreamProcessing.Internal.Collections
 
             // Calculate new capacity to be twice as large as before.
             this.capacity <<= 1;
-            if (this.capacity < 0 || this.capacity > MaxCapacity)
+            if (this.capacity is < 0 or > MaxCapacity)
             {
                 // Handle case of capacity going larger than MaxCapacity,
                 // or overflowing (which would make it appear negative).

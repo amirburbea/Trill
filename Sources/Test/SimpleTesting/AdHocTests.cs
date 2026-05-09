@@ -2332,7 +2332,7 @@ namespace SimpleTesting
         public struct JoinResult { public int LeftX; public int RightX; }
 
         /// <summary>
-        /// Apply gated config first, then clear the join codegen cache. Ordering is important:
+        /// Apply gated config first, then clear the join generated-pipe cache. Ordering is important:
         /// multiple test initializer methods do not have a guaranteed run order, so a separate
         /// initializer could clear the cache before base setup applied
         /// <c>DontFallBackToRowBasedExecution</c>, letting another test repopulate the cache.
@@ -2357,7 +2357,7 @@ namespace SimpleTesting
         /// <summary>
         /// This test has a left comparer which has a reference to the left payload instead of
         /// just to its fields. Codegen should always throw StreamProcessingException when
-        /// compiling this join fresh. The [TestInitialize] method clears the codegen cache
+        /// compiling this join fresh. The [TestInitialize] method clears the generated-pipe cache
         /// before this test runs to ensure deterministic behavior in the full test suite.
         /// </summary>
         [TestMethod]

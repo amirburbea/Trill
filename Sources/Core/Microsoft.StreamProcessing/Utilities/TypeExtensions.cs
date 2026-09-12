@@ -419,9 +419,19 @@ namespace Microsoft.StreamProcessing
                     if (getMethod == null) continue;
                     if (!getMethod.IsDefined(typeof(CompilerGeneratedAttribute))) continue;
                     var setMethod = p.SetMethod;
-                    // A get-only autoprop (no setter at all) cannot be assigned during columnar
-                    // reconstitution, which sets each property via a plain assignment.
-                    if (setMethod == null) return false;
+                    if (setMethod == null)
+                    {
+                        // A get-only autoprop (no setter at all) cannot be assigned during
+                        // columnar reconstitution, which sets each property via a plain
+                        // assignment - UNLESS its getter is non-public, in which case this isn't
+                        // user-facing row state at all: every `record` (but not `record struct`)
+                        // synthesizes a `protected virtual Type EqualityContract => typeof(T);`
+                        // exactly like this (compiler-generated, get-only, non-public). It has no
+                        // independent storage - it is always re-derivable from the runtime type -
+                        // so there is nothing for columnar reconstitution to lose by not touching it.
+                        if (!getMethod.IsPublic) continue;
+                        return false;
+                    }
                     if (!setMethod.IsDefined(typeof(CompilerGeneratedAttribute))) continue;
 
                     // p is definitely an autoprop. Cannot columnarize if the property is not visible.

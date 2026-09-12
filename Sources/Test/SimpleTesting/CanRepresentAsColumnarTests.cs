@@ -87,6 +87,26 @@ namespace SimpleTesting.ColumnarTests
             public int A { get; init; }
         }
 
+        // Every `record` (not `record struct`) synthesizes a compiler-generated, get-only,
+        // non-public `EqualityContract` property. A plain mutable record class must still be
+        // columnar-representable despite that - EqualityContract has no independent storage and
+        // is not row state.
+        public sealed record PlainRecordClass
+        {
+            public int A { get; set; }
+            public string B { get; set; } = "";
+        }
+
+        // A genuinely non-public autoprop with BOTH accessors present (as opposed to
+        // EqualityContract's get-only shape) must still disqualify the type - the
+        // EqualityContract carve-out is narrowly for "non-public and no setter at all".
+        public sealed class NonPublicBothAccessorsClass
+        {
+            internal int Hidden { get; set; }
+
+            public int Exposed { get => this.Hidden; set => this.Hidden = value; }
+        }
+
         [TestMethod]
         public void MutableClass_IsColumnarRepresentable() =>
             Assert.IsTrue(typeof(MutableClass).CanRepresentAsColumnar());
@@ -142,5 +162,13 @@ namespace SimpleTesting.ColumnarTests
         [TestMethod]
         public void Primitive_IsColumnarRepresentable() =>
             Assert.IsTrue(typeof(int).CanRepresentAsColumnar());
+
+        [TestMethod]
+        public void PlainRecordClass_IsColumnarRepresentable_DespiteSynthesizedEqualityContract() =>
+            Assert.IsTrue(typeof(PlainRecordClass).CanRepresentAsColumnar());
+
+        [TestMethod]
+        public void NonPublicAutopropWithBothAccessors_IsNotColumnarRepresentable() =>
+            Assert.IsFalse(typeof(NonPublicBothAccessorsClass).CanRepresentAsColumnar());
     }
 }

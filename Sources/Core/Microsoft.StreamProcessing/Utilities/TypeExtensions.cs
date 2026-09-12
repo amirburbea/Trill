@@ -405,6 +405,11 @@ namespace Microsoft.StreamProcessing
                     ;
                 if (allFields.Any()) return false;
 
+                // A public instance field only works if columnar reconstitution can assign it
+                // directly; a readonly field (as in a "readonly struct" or a hand-written
+                // immutable type) can only be set from a constructor, which we do not generate.
+                if (fields.Any(f => f.IsInitOnly)) return false;
+
                 // Check only the autoprops: any non-autoprop will not be able to depend on non-public fields
                 // due to the check for non-public fields.
                 var allProperties = type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
@@ -414,11 +419,21 @@ namespace Microsoft.StreamProcessing
                     if (getMethod == null) continue;
                     if (!getMethod.IsDefined(typeof(CompilerGeneratedAttribute))) continue;
                     var setMethod = p.SetMethod;
-                    if (setMethod == null) continue;
+                    // A get-only autoprop (no setter at all) cannot be assigned during columnar
+                    // reconstitution, which sets each property via a plain assignment.
+                    if (setMethod == null) return false;
                     if (!setMethod.IsDefined(typeof(CompilerGeneratedAttribute))) continue;
 
                     // p is definitely an autoprop. Cannot columnarize if the property is not visible.
                     if (!(getMethod.IsPublic && setMethod.IsPublic)) return false;
+
+                    // An init-only setter (`{ get; init; }`) has IsExternalInit among its return
+                    // parameter's required custom modifiers. It is public and compiler-generated
+                    // like a normal autoprop setter, but callable only from a constructor or an
+                    // object initializer - not from the plain assignment columnar reconstitution
+                    // generates - so it must be excluded explicitly.
+                    if (setMethod.ReturnParameter.GetRequiredCustomModifiers().Contains(typeof(IsExternalInit)))
+                        return false;
                 }
             }
 

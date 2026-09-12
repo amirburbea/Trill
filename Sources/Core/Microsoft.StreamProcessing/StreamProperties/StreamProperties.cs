@@ -88,9 +88,12 @@ namespace Microsoft.StreamProcessing
         private Func<bool> predicate = () => true;
 
         /// <summary>
-        /// Indicates whether the stream contains data in columnar payload format.
+        /// Indicates whether the stream contains data in columnar payload format. Reading this
+        /// property resolves any pending codegen-dependent determination (see
+        /// <see cref="ToDelayedColumnar"/>) - the first read for a given ingress may trigger a
+        /// compilation of the columnar pipeline to find out whether one can be generated at all.
         /// </summary>
-        internal bool IsColumnar
+        public bool IsColumnar
         {
             get
             {
@@ -98,7 +101,7 @@ namespace Microsoft.StreamProcessing
                 this.predicate = () => true;
                 return this.isColumnar;
             }
-            set
+            internal set
             {
                 this.isColumnar = value;
                 this.predicate = () => true;
